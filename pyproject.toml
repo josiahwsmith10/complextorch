@@ -1,0 +1,22 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "complextorch"
+version = "0.0.1"
+authors = [
+  { name="Josiah W. Smith", email="josiah.radar@gmail.com" },
+]
+description = "A lightweight complex-valued neural network package built on PyTorch."
+readme = "README.md"
+requires-python = ">=3.7"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+]
+
+[project.urls]
+"Homepage" = "https://github.com/josiahwsmith10/complextorch"
+"Bug Tracker" = "https://github.com/josiahwsmith10/complextorch/issues"

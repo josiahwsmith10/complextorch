@@ -1,0 +1,79 @@
+import torch
+import torch.nn as nn
+import torch.nn.functional as F
+
+from .. import functional as cvF
+from ... import CVTensor
+
+__all__ = ['CVLinear']
+
+
+class CVLinear(nn.Module):
+    """Complex-Valued Linear Layer."""
+
+    def __init__(
+        self,
+        in_features: int,
+        out_features: int,
+        bias: bool = False,
+        device=None,
+        dtype=None,
+    ) -> None:
+        super(CVLinear, self).__init__()
+
+        # Assumes PyTorch complex weight initialization is correct
+        __temp = nn.Linear(
+            in_features=in_features,
+            out_features=out_features,
+            bias=bias,
+            device=device,
+            dtype=torch.complex64,
+        )
+
+        self.linear_r = nn.Linear(
+            in_features=in_features,
+            out_features=out_features,
+            bias=bias,
+            device=device,
+            dtype=dtype,
+        )
+        self.linear_i = nn.Linear(
+            in_features=in_features,
+            out_features=out_features,
+            bias=bias,
+            device=device,
+            dtype=dtype,
+        )
+
+        self.linear_r.weight.data = __temp.weight.real
+        self.linear_i.weight.data = __temp.weight.imag
+
+        if bias:
+            self.linear_r.bias.data = __temp.bias.real
+            self.linear_i.bias.data = __temp.bias.imag
+
+    @property
+    def weight(self) -> CVTensor:
+        return CVTensor(self.linear_r.weight, self.linear_i.weight)
+
+    @property
+    def bias(self) -> CVTensor:
+        if self.linear_r.bias is None:
+            return None
+        else:
+            return CVTensor(self.linear_r.bias, self.linear_i.bias)
+
+    def forward(self, x: CVTensor) -> CVTensor:
+        """
+        Computes multiplication 25% faster than naive method by using Gauss'
+        multiplication trick
+        """
+        t1 = self.linear_r(x.real)
+        t2 = self.linear_i(x.imag)
+        bias = None if self.linear_r.bias is None else (self.linear_r.bias + self.linear_i.bias)
+        t3 = F.linear(
+            input=(x.real + x.imag),
+            weight=(self.linear_r.weight + self.linear_i.weight),
+            bias=bias
+        )
+        return CVTensor(t1 - t2, t3 - t2 - t1)
