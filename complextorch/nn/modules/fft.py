@@ -9,8 +9,10 @@ class FFTBlock(nn.Module):
     """
     FFT Block
     ---------
-    
-    A complex-valued module that performs the forward fast Fourier transform. 
+
+    A complex-valued module that performs the forward fast Fourier transform.
+
+    For more information, see `PyTorch fft <https://pytorch.org/docs/stable/fft.html>`.
     """
 
     def __init__(self, n=None, dim=-1, norm=None) -> None:
@@ -20,24 +22,26 @@ class FFTBlock(nn.Module):
         self.dim = dim
         self.norm = norm
 
-    def forward(self, x: CVTensor) -> CVTensor:
+    def forward(self, input: CVTensor) -> CVTensor:
         """Performs forward fast Fourier transform (FFT) on the input tensor.
 
         Args:
-            x (CVTensor): input tensor
+            input (CVTensor): input tensor
 
         Returns:
             CVTensor: fft(x) using configuration established on initialization
         """
-        return x.fft(x, n=self.n, dim=self.dim, norm=self.norm)
+        return input.fft(input, n=self.n, dim=self.dim, norm=self.norm)
 
 
 class IFFTBlock(nn.Module):
     """
     IFFT Block
     ----------
-    
-    A complex-valued module that performs the inverse fast Fourier transform. 
+
+    A complex-valued module that performs the inverse fast Fourier transform.
+
+    For more information, see `PyTorch fft <https://pytorch.org/docs/stable/fft.html>`.
     """
 
     def __init__(self, n=None, dim=-1, norm=None) -> None:
@@ -47,13 +51,13 @@ class IFFTBlock(nn.Module):
         self.dim = dim
         self.norm = norm
 
-    def forward(self, x: CVTensor) -> CVTensor:
+    def forward(self, input: CVTensor) -> CVTensor:
         """Performs inverse fast Fourier transform (FFT) on the input tensor.
 
         Args:
-            x (CVTensor): input tensor
+            input (CVTensor): input tensor
 
         Returns:
             CVTensor: ifft(x) using configuration established on initialization
         """
-        return x.ifft(x, n=self.n, dim=self.dim, norm=self.norm)
+        return input.ifft(input, n=self.n, dim=self.dim, norm=self.norm)

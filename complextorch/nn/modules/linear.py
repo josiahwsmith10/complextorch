@@ -8,7 +8,12 @@ __all__ = ["CVLinear"]
 
 
 class CVLinear(nn.Module):
-    """Complex-Valued Linear Layer."""
+    """
+    Complex-Valued Linear Layer
+    ---------------------------
+    
+    Follows `PyTorch implementation <https://pytorch.org/docs/stable/generated/torch.nn.Linear.html>`_ using Gauss' trick to improve the computation as in :doc:`Complex-Valued Convolution <./conv>`.
+    """
 
     def __init__(
         self,
@@ -62,20 +67,19 @@ class CVLinear(nn.Module):
         else:
             return CVTensor(self.linear_r.bias, self.linear_i.bias)
 
-    def forward(self, x: CVTensor) -> CVTensor:
+    def forward(self, input: CVTensor) -> CVTensor:
         """
-        Computes multiplication 25% faster than naive method by using Gauss'
-        multiplication trick
+        Computes multiplication 25% faster than naive method by using Gauss' multiplication trick
         """
-        t1 = self.linear_r(x.real)
-        t2 = self.linear_i(x.imag)
+        t1 = self.linear_r(input.real)
+        t2 = self.linear_i(input.imag)
         bias = (
             None
             if self.linear_r.bias is None
             else (self.linear_r.bias + self.linear_i.bias)
         )
         t3 = F.linear(
-            input=(x.real + x.imag),
+            input=(input.real + input.imag),
             weight=(self.linear_r.weight + self.linear_i.weight),
             bias=bias,
         )

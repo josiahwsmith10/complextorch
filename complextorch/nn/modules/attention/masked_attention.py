@@ -39,14 +39,14 @@ class _CVMaskedChannelAttention(nn.Module):
         self.conv_down = None
         self.conv_up = None
 
-    def forward(self, x: CVTensor) -> CVTensor:
+    def forward(self, input: CVTensor) -> CVTensor:
         # Get attention values
-        attn = self.conv_up(self.act(self.conv_down(x)))
+        attn = self.conv_up(self.act(self.conv_down(input)))
 
         # Compute mask
         mask = self.MaskingClass(attn)
 
-        return x * mask
+        return input * mask
 
 
 class CVMaskedChannelAttention1d(_CVMaskedChannelAttention):

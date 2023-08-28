@@ -20,5 +20,13 @@ class CVDropout(nn.Module):
         self.dropout_r = nn.Dropout(p, inplace)
         self.dropout_i = nn.Dropout(p, inplace)
 
-    def forward(self, x: CVTensor) -> CVTensor:
-        return cvF.apply_complex_split(self.dropout_r, self.dropout_i, x)
+    def forward(self, input: CVTensor) -> CVTensor:
+        """Performs complex-valued dropout on the input tensor
+
+        Args:
+            x (CVTensor): input tensor
+
+        Returns:
+            CVTensor: cvdropout(x)
+        """
+        return cvF.apply_complex_split(self.dropout_r, self.dropout_i, input)

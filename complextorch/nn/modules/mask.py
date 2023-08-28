@@ -17,6 +17,6 @@ class ComplexRatioMask(nn.Module):
     def __init__(self) -> None:
         super(ComplexRatioMask, self).__init__()
 
-    def forward(self, x: CVTensor) -> CVTensor:
-        x_mag = x.abs()
-        return x_mag.sigmoid() * (x / x_mag)
+    def forward(self, input: CVTensor) -> CVTensor:
+        x_mag = input.abs()
+        return x_mag.sigmoid() * (input / x_mag)

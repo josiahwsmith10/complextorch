@@ -53,9 +53,9 @@ class SlowCVConv1d(nn.Module):
             dtype=torch.complex64,
         )
 
-    def forward(self, x: CVTensor) -> CVTensor:
-        x = self.conv(x.complex)
-        return CVTensor(x.real, x.imag)
+    def forward(self, input: CVTensor) -> CVTensor:
+        input = self.conv(input.complex)
+        return CVTensor(input.real, input.imag)
 
 
 class _CVConv(nn.Module):
@@ -148,17 +148,17 @@ class _CVConv(nn.Module):
     def bias(self) -> CVTensor:
         return CVTensor(self.conv_r.bias, self.conv_i.bias)
 
-    def forward(self, x: CVTensor) -> CVTensor:
+    def forward(self, input: CVTensor) -> CVTensor:
         """
         Computes convolution 25% faster than naive method by using Gauss' multiplication trick
         """
-        t1 = self.conv_r(x.real)
-        t2 = self.conv_i(x.imag)
+        t1 = self.conv_r(input.real)
+        t2 = self.conv_i(input.imag)
         bias = (
             None if self.conv_r.bias is None else (self.conv_r.bias + self.conv_i.bias)
         )
         t3 = self.ConvFunc(
-            input=(x.real + x.imag),
+            input=(input.real + input.imag),
             weight=(self.conv_r.weight + self.conv_i.weight),
             bias=bias,
             stride=self.stride,
@@ -452,19 +452,19 @@ class _CVConvTranspose(nn.Module):
     def bias(self) -> CVTensor:
         return CVTensor(self.convt_r.bias, self.convt_i.bias)
 
-    def forward(self, x: CVTensor) -> CVTensor:
+    def forward(self, input: CVTensor) -> CVTensor:
         """
         Computes convolution 25% faster than naive method by using Gauss' multiplication trick
         """
-        t1 = self.convt_r(x.real)
-        t2 = self.convt_i(x.imag)
+        t1 = self.convt_r(input.real)
+        t2 = self.convt_i(input.imag)
         bias = (
             None
             if self.convt_r.bias is None
             else (self.convt_r.bias + self.convt_i.bias)
         )
         t3 = self.ConvFunc(
-            input=(x.real + x.imag),
+            input=(input.real + input.imag),
             weight=(self.convt_r.weight + self.convt_i.weight),
             bias=bias,
             stride=self.stride,

@@ -47,12 +47,12 @@ class _CVEfficientChannelAttention(nn.Module):
         out = k if k % 2 else k + 1
         return out
 
-    def forward(self, x: CVTensor) -> CVTensor:
-        batch_size, channels, *im_size = x.shape
+    def forward(self, input: CVTensor) -> CVTensor:
+        batch_size, channels, *im_size = input.shape
         one_vec = [1] * len(im_size)
 
         # feature descriptor on the global spatial information
-        y = self.avg_pool(x)
+        y = self.avg_pool(input)
 
         # Two different branches of ECA module
         y = self.conv(y.squeeze(-1).view(batch_size, 1, channels)).transpose(-1, -2)
@@ -61,7 +61,7 @@ class _CVEfficientChannelAttention(nn.Module):
         # Multi-scale information fusion
         y = self.sigmoid(y)
 
-        return x * y
+        return input * y
 
 
 class CVEfficientChannelAttention1d(_CVEfficientChannelAttention):

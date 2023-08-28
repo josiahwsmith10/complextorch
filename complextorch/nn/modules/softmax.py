@@ -17,8 +17,8 @@ class CVSoftmax(nn.Module):
         self.softmax_r = nn.Softmax(dim)
         self.softmax_i = nn.Softmax(dim)
 
-    def forward(self, x: CVTensor) -> CVTensor:
-        return cvF.apply_complex_split(self.softmax_r, self.softmax_i, x)
+    def forward(self, input: CVTensor) -> CVTensor:
+        return cvF.apply_complex_split(self.softmax_r, self.softmax_i, input)
 
 
 class PhaseSoftmax(nn.Module):
@@ -35,9 +35,9 @@ class PhaseSoftmax(nn.Module):
 
         self.softmax = nn.Softmax(dim)
 
-    def forward(self, x: CVTensor) -> CVTensor:
-        x_mag = x.abs()
-        return self.softmax(x_mag) * (x / x_mag)
+    def forward(self, input: CVTensor) -> CVTensor:
+        x_mag = input.abs()
+        return self.softmax(x_mag) * (input / x_mag)
 
 
 class MagSoftmax(nn.Module):
@@ -48,8 +48,8 @@ class MagSoftmax(nn.Module):
 
         self.softmax = nn.Softmax(dim)
 
-    def forward(self, x: CVTensor) -> CVTensor:
-        return self.softmax(x.abs())
+    def forward(self, input: CVTensor) -> CVTensor:
+        return self.softmax(input.abs())
 
 
 class MagMinMaxNorm(nn.Module):
@@ -60,9 +60,9 @@ class MagMinMaxNorm(nn.Module):
 
         self.dim = dim
 
-    def forward(self, x: CVTensor) -> CVTensor:
-        x_mag = x.abs()
+    def forward(self, input: CVTensor) -> CVTensor:
+        x_mag = input.abs()
         x_min = x_mag.min(self.dim, keepdim=True)[0]
         x_max = x_mag.max(self.dim, keepdim=True)[0]
-        out = (x - x_min) / (x_max - x_min)
+        out = (input - x_min) / (x_max - x_min)
         return CVTensor(out.real, out.imag)

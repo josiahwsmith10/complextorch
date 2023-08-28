@@ -12,21 +12,21 @@ class CVAdaptiveAvgPool1d(nn.AdaptiveAvgPool1d):
     def __init__(self, output_size: Union[int, Tuple[int]]) -> None:
         super().__init__(output_size)
 
-    def forward(self, x: CVTensor) -> CVTensor:
-        return cvF.apply_complex_split(super().forward, super().forward, x)
+    def forward(self, input: CVTensor) -> CVTensor:
+        return cvF.apply_complex_split(super().forward, super().forward, input)
 
 
 class CVAdaptiveAvgPool2d(nn.AdaptiveAvgPool2d):
     def __init__(self, output_size) -> None:
         super().__init__(output_size)
 
-    def forward(self, x: CVTensor) -> CVTensor:
-        return cvF.apply_complex_split(super().forward, super().forward, x)
+    def forward(self, input: CVTensor) -> CVTensor:
+        return cvF.apply_complex_split(super().forward, super().forward, input)
 
 
 class CVAdaptiveAvgPool3d(nn.AdaptiveAvgPool3d):
     def __init__(self, output_size) -> None:
         super().__init__(output_size)
 
-    def forward(self, x: CVTensor) -> CVTensor:
-        return cvF.apply_complex_split(super().forward, super().forward, x)
+    def forward(self, input: CVTensor) -> CVTensor:
+        return cvF.apply_complex_split(super().forward, super().forward, input)
