@@ -11,7 +11,10 @@ __all__ = [
 
 
 class _CVMaskedChannelAttention(nn.Module):
-    """Complex-valued masked channel attention base module."""
+    """
+    Complex-Valued Masked Channel Attention Base Module
+    ---------------------------------------------------
+    """
 
     def __init__(
         self,
@@ -48,13 +51,18 @@ class _CVMaskedChannelAttention(nn.Module):
 
 class CVMaskedChannelAttention1d(_CVMaskedChannelAttention):
     """
-    Complex-Valued Masked Channel Attention Module.
+    1-D Complex-Valued Masked Channel Attention Module
+    --------------------------------------------------
 
-    HW Cho, S Choi, YR Cho, and J Kim: Complex-Valued Channel Attention and Application in Ego-Velocity Estimation With Automotive Radar
-    Fig. 3
-    https://ieeexplore.ieee.org/abstract/document/9335579
+    Generalized for arbitrary masking function (see :doc:`mask <../mask>` for implemented masking functions)
 
-    Generalized for arbitrary masking function (see mask.py for implemented masking functions)
+    Based on work from the following paper:
+
+        **HW Cho, S Choi, YR Cho, and J Kim: Complex-Valued Channel Attention and Application in Ego-Velocity Estimation With Automotive Radar**
+            
+            - Fig. 3
+            
+            - https://ieeexplore.ieee.org/abstract/document/9335579
     """
 
     def __init__(
@@ -90,13 +98,18 @@ class CVMaskedChannelAttention1d(_CVMaskedChannelAttention):
 
 class CVMaskedChannelAttention2d(_CVMaskedChannelAttention):
     """
-    Complex-Valued Masked Channel Attention Module.
+    2-D Complex-Valued Masked Channel Attention Module
+    --------------------------------------------------
 
-    HW Cho, S Choi, YR Cho, and J Kim: Complex-Valued Channel Attention and Application in Ego-Velocity Estimation With Automotive Radar
-    Fig. 3
-    https://ieeexplore.ieee.org/abstract/document/9335579
+    Generalized for arbitrary masking function (see :doc:`mask <../mask>` for implemented masking functions)
 
-    Generalized for arbitrary masking function (see mask.py for implemented masking functions)
+    Based on work from the following paper:
+
+        **HW Cho, S Choi, YR Cho, and J Kim: Complex-Valued Channel Attention and Application in Ego-Velocity Estimation With Automotive Radar**
+            
+            - Fig. 3
+            
+            - https://ieeexplore.ieee.org/abstract/document/9335579
     """
 
     def __init__(
@@ -132,13 +145,18 @@ class CVMaskedChannelAttention2d(_CVMaskedChannelAttention):
 
 class CVMaskedChannelAttention3d(_CVMaskedChannelAttention):
     """
-    Complex-Valued Masked Channel Attention Module.
+    3-D Complex-Valued Masked Channel Attention Module
+    --------------------------------------------------
 
-    HW Cho, S Choi, YR Cho, and J Kim: Complex-Valued Channel Attention and Application in Ego-Velocity Estimation With Automotive Radar
-    Fig. 3
-    https://ieeexplore.ieee.org/abstract/document/9335579
+    Generalized for arbitrary masking function (see :doc:`mask <../mask>` for implemented masking functions)
 
-    Generalized for arbitrary masking function (see mask.py for implemented masking functions)
+    Based on work from the following paper:
+
+        **HW Cho, S Choi, YR Cho, and J Kim: Complex-Valued Channel Attention and Application in Ego-Velocity Estimation With Automotive Radar**
+            
+            - Fig. 3
+            
+            - https://ieeexplore.ieee.org/abstract/document/9335579
     """
 
     def __init__(

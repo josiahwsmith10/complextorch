@@ -9,13 +9,31 @@ __all__ = ["CVScaledDotProductAttention", "CVMultiheadAttention"]
 
 
 class CVScaledDotProductAttention(nn.Module):
-    """Complex-Valued Scaled Dot-Product Attention."""
+    """
+    Complex-Valued Scaled Dot-Product Attention
+    -------------------------------------------
+
+    The ever-popular scaled dot-product attention is the backbone of many attention-based methods, most notably the transformer.
+
+    Implements the operation:
+
+    .. math::
+
+        G(Q, K, V) = \mathcal{S}(Q K^T / t) V
+
+    where :math:`Q, K, V` are complex-valued tensors, :math:`t` is known as the temperature typically :math:`t = \sqrt{d_attn}`, and :math:`\mathcal{S}` is the softmax function.
+
+    For complex-values, the `traditional softmax function <https://pytorch.org/docs/stable/generated/torch.nn.Softmax.html>`_ cannot be applied, and variants must be applied.
+    Included in this library are several options for :doc:`complex-valued softmax <./softmax>` and similar :doc:`masking <./mask>` functions.
+
+    By default, the :class:`CVScaledDotProductAttention` employs the :class:`complextorch.nn.CVSoftmax`, which applies the traditional softmax to the magnitude of the complex-valued tensor while leaving the phase information unchanged.
+    """
 
     def __init__(
         self,
         temperature: float,
         attn_dropout: float = 0.1,
-        SoftMaxClass: nn.Module = cvnn.MagMinMaxNorm,
+        SoftMaxClass: nn.Module = cvnn.CVSoftmax,
     ) -> None:
         super(CVScaledDotProductAttention, self).__init__()
 
@@ -24,6 +42,16 @@ class CVScaledDotProductAttention(nn.Module):
         self.softmax = SoftMaxClass(dim=-1)
 
     def forward(self, q: CVTensor, k: CVTensor, v: CVTensor) -> CVTensor:
+        """Implements the complex-valued scaled dot-product attention operation.
+
+        Args:
+            q (CVTensor): complex-valued query tensor
+            k (CVTensor): complex-valued key tensor
+            v (CVTensor): complex-valued value tensor
+
+        Returns:
+            CVTensor: \mathcal{S}(Q K^T / t) V
+        """
         attn = torch.matmul(q.complex / self.temperature, k.complex.transpose(-2, -1))
 
         attn = self.dropout(self.softmax(attn))
@@ -32,6 +60,15 @@ class CVScaledDotProductAttention(nn.Module):
 
 
 class CVMultiheadAttention(nn.Module):
+    """
+    Complex-Valued Multihead Attention
+    ----------------------------------
+
+    Multihead self attention extended to complex-valued tensors.
+
+    By default, the :class:`CVMultiheadAttention` employs the :class:`complextorch.nn.CVSoftmax`, which applies the traditional softmax to the magnitude of the complex-valued tensor while leaving the phase information unchanged.
+    """
+
     def __init__(
         self,
         n_heads: int,
@@ -39,7 +76,7 @@ class CVMultiheadAttention(nn.Module):
         d_k: int,
         d_v: int,
         dropout: float = 0.1,
-        SoftMaxClass: nn.Module = cvnn.MagMinMaxNorm,
+        SoftMaxClass: nn.Module = cvnn.CVSoftmax,
     ) -> None:
         super(CVMultiheadAttention, self).__init__()
 
@@ -86,95 +123,3 @@ class CVMultiheadAttention(nn.Module):
         q += res
 
         return self.layer_norm(q)
-
-
-class CVEfficientChannelAttention1d(nn.Module):
-    """Complex-valued efficient channel attention."""
-
-    def __init__(self, channels: int, b: int = 1, gamma: int = 2) -> None:
-        super(CVEfficientChannelAttention1d, self).__init__()
-        self.avg_pool = cvnn.CVAdaptiveAvgPool1d(1)
-        self.channels = channels
-        self.b = b
-        self.gamma = gamma
-        self.conv = cvnn.CVConv1d(
-            in_channels=1,
-            out_channels=1,
-            kernel_size=self.kernel_size(),
-            padding=(self.kernel_size() - 1) // 2,
-            bias=False,
-        )
-        self.sigmoid = cvnn.CSigmoid()
-
-    def kernel_size(self) -> int:
-        k = int(abs((np.log2(self.channels) / self.gamma) + self.b / self.gamma))
-        out = k if k % 2 else k + 1
-        return out
-
-    def forward(self, x: CVTensor) -> CVTensor:
-        # feature descriptor on the global spatial information
-        y = self.avg_pool(x)
-
-        # Two different branches of ECA module
-        y = self.conv(y.transpose(-1, -2)).transpose(-1, -2)
-
-        # Multi-scale information fusion
-        y = self.sigmoid(y)
-
-        return x * y.expand_as(x)
-
-
-class CVMaskedChannelAttention1d(nn.Module):
-    """
-    Complex-Valued Masked Channel Attention Module.
-
-    HW Cho, S Choi, YR Cho, and J Kim: Complex-Valued Channel Attention and Application in Ego-Velocity Estimation With Automotive Radar
-    Fig. 3
-    https://ieeexplore.ieee.org/abstract/document/9335579
-
-    Generalized for arbitrary masking function (see mask.py for implemented masking functions)
-    """
-
-    def __init__(
-        self,
-        channels: int,
-        reduction_factor: int = 2,
-        MaskingClass: nn.Module = cvnn.ComplexRatioMask,
-        act: nn.Module = cvnn.CReLU,
-    ) -> None:
-        super(CVMaskedChannelAttention1d, self).__init__()
-        self.channels = channels
-        self.reduction_factor = reduction_factor
-        self.MaskingClass = MaskingClass()
-        self.act = act()
-
-        self.avg_pool = cvnn.CVAdaptiveAvgPool1d(1)
-
-        assert (
-            channels % reduction_factor == 0
-        ), "Channels / Reduction Factor must yield integer"
-
-        reduced_channels = int(channels / reduction_factor)
-
-        self.conv_down = cvnn.CVConv1d(
-            in_channels=channels,
-            out_channels=reduced_channels,
-            kernel_size=1,
-            bias=False,
-        )
-
-        self.conv_up = cvnn.CVConv1d(
-            in_channels=reduced_channels,
-            out_channels=channels,
-            kernel_size=1,
-            bias=False,
-        )
-
-    def forward(self, x: CVTensor) -> CVTensor:
-        # Get attention values
-        attn = self.conv_up(self.act(self.conv_down(x)))
-
-        # Compute mask
-        mask = self.MaskingClass(attn)
-
-        return x * mask

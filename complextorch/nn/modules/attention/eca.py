@@ -12,7 +12,18 @@ __all__ = [
 
 
 class _CVEfficientChannelAttention(nn.Module):
-    """Complex-valued efficient channel attention base class."""
+    """
+    Complex-Valued Efficient Channel Attention Base Class
+    -----------------------------------------------------
+    
+    Implements the operation:
+    
+    .. math::
+    
+        G(\mathbf{z}) = sigma(conv(GP(\mathbf{z}))) \odot \mathbf{z}
+        
+    where :math:`GP(\cdot)` is the complex-valued global :doc:`pooling <../pooling>` operator.
+    """
 
     def __init__(self, channels: int, b: int = 1, gamma: int = 2) -> None:
         super(_CVEfficientChannelAttention, self).__init__()
@@ -55,11 +66,24 @@ class _CVEfficientChannelAttention(nn.Module):
 
 class CVEfficientChannelAttention1d(_CVEfficientChannelAttention):
     """
-    1-D complex-valued efficient channel attention.
+    1-D Complex-Valued Efficient Channel Attention
+    ----------------------------------------------
+    
+    Implements the operation:
+    
+    .. math::
+    
+        G(\mathbf{z}) = sigma(conv(GP(\mathbf{z}))) \odot \mathbf{z}
+        
+    where :math:`GP(\cdot)` is the complex-valued global :doc:`pooling <../pooling>` operator.
 
-    Q Wang, B Wu, P Zhu, P Li, W Zuo, and Q Hu: ECA-Net: Efficient Channel Attention for Deep Convolutional Neural Networks
-    Fig. 2
-    https://openaccess.thecvf.com/content_CVPR_2020/papers/Wang_ECA-Net_Efficient_Channel_Attention_for_Deep_Convolutional_Neural_Networks_CVPR_2020_paper.pdf
+    Based on work from the following paper:
+
+        **Q Wang, B Wu, P Zhu, P Li, W Zuo, and Q Hu: ECA-Net: Efficient Channel Attention for Deep Convolutional Neural Networks**
+            
+            - Fig. 2
+        
+            - https://openaccess.thecvf.com/content_CVPR_2020/papers/Wang_ECA-Net_Efficient_Channel_Attention_for_Deep_Convolutional_Neural_Networks_CVPR_2020_paper.pdf
     """
 
     def __init__(self, channels: int, b: int = 1, gamma: int = 2) -> None:
@@ -71,11 +95,24 @@ class CVEfficientChannelAttention1d(_CVEfficientChannelAttention):
 
 class CVEfficientChannelAttention2d(_CVEfficientChannelAttention):
     """
-    2-D complex-valued efficient channel attention.
+    2-D Complex-Valued Efficient Channel Attention
+    ----------------------------------------------
+    
+    Implements the operation:
+    
+    .. math::
+    
+        G(\mathbf{z}) = sigma(conv(GP(\mathbf{z}))) \odot \mathbf{z}
+        
+    where :math:`GP(\cdot)` is the complex-valued global :doc:`pooling <../pooling>` operator.
 
-    Q Wang, B Wu, P Zhu, P Li, W Zuo, and Q Hu: ECA-Net: Efficient Channel Attention for Deep Convolutional Neural Networks
-    Fig. 2
-    https://openaccess.thecvf.com/content_CVPR_2020/papers/Wang_ECA-Net_Efficient_Channel_Attention_for_Deep_Convolutional_Neural_Networks_CVPR_2020_paper.pdf
+    Based on work from the following paper:
+
+        **Q Wang, B Wu, P Zhu, P Li, W Zuo, and Q Hu: ECA-Net: Efficient Channel Attention for Deep Convolutional Neural Networks**
+            
+            - Fig. 2
+        
+            - https://openaccess.thecvf.com/content_CVPR_2020/papers/Wang_ECA-Net_Efficient_Channel_Attention_for_Deep_Convolutional_Neural_Networks_CVPR_2020_paper.pdf
     """
 
     def __init__(self, channels: int, b: int = 1, gamma: int = 2) -> None:
@@ -87,11 +124,24 @@ class CVEfficientChannelAttention2d(_CVEfficientChannelAttention):
 
 class CVEfficientChannelAttention3d(_CVEfficientChannelAttention):
     """
-    3-D complex-valued efficient channel attention.
+    3-D Complex-Valued Efficient Channel Attention
+    ----------------------------------------------
+    
+    Implements the operation:
+    
+    .. math::
+    
+        G(\mathbf{z}) = sigma(conv(GP(\mathbf{z}))) \odot \mathbf{z}
+        
+    where :math:`GP(\cdot)` is the complex-valued global :doc:`pooling <../pooling>` operator.
 
-    Q Wang, B Wu, P Zhu, P Li, W Zuo, and Q Hu: ECA-Net: Efficient Channel Attention for Deep Convolutional Neural Networks
-    Fig. 2
-    https://openaccess.thecvf.com/content_CVPR_2020/papers/Wang_ECA-Net_Efficient_Channel_Attention_for_Deep_Convolutional_Neural_Networks_CVPR_2020_paper.pdf
+    Based on work from the following paper:
+
+        **Q Wang, B Wu, P Zhu, P Li, W Zuo, and Q Hu: ECA-Net: Efficient Channel Attention for Deep Convolutional Neural Networks**
+            
+            - Fig. 2
+        
+            - https://openaccess.thecvf.com/content_CVPR_2020/papers/Wang_ECA-Net_Efficient_Channel_Attention_for_Deep_Convolutional_Neural_Networks_CVPR_2020_paper.pdf
     """
 
     def __init__(self, channels: int, b: int = 1, gamma: int = 2) -> None:
