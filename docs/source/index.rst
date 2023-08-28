@@ -4,16 +4,16 @@ Welcome to complextorch's documentation!
 :Author:  Josiah W. Smith
 :Version: 0.0.1 of 08/27/2023
 
-.. automodule:: complextorch.CVTorch
-    :members:
-
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 3
    
    installation
    getting_started
-   CVTensor
+   _cvtensor
+   _cvrandom
    nn
+
+   about
 
 Indices and tables
 ==================
