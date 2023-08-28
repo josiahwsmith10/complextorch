@@ -169,7 +169,7 @@ class CVBatchNorm3d(_CVBatchNorm):
 
         **J. A. Barrachina, C. Ren, G. Vieillard, C. Morisseau, and J.-P. Ovarlez. Theory and Implementation of Complex-Valued Neural Networks.**
 
-            - Eq. (36)
+            - Section 6
 
             - https://arxiv.org/abs/2302.08286
     """
