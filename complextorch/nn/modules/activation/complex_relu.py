@@ -7,11 +7,22 @@ __all__ = ["CVSplitReLU", "CReLU", "CPReLU"]
 
 class CVSplitReLU(GeneralizedSplitActivation):
     """
-    Split Complex-Valued Rectified Linear Unit.
+    Split Complex-Valued Rectified Linear Unit
+    ------------------------------------------
 
-    Jingkun Gao, Bin Deng, Yuliang Qin, Hongqiang Wang and Xiang Li. Enhanced Radar Imaging Using a Complex-valued Convolutional Neural Network.
-    Eq. (5)
-    https://arxiv.org/abs/1712.10096
+    Implements the operation:
+
+    .. math::
+
+        G(\mathbf{z}) = ReLU(\mathbf{z}_{real}) + j ReLU(\mathbf{z}_{imag})
+
+    Based on work from the following paper:
+
+        **Jingkun Gao, Bin Deng, Yuliang Qin, Hongqiang Wang and Xiang Li. Enhanced Radar Imaging Using a Complex-valued Convolutional Neural Network.**
+
+            - Eq. (5)
+
+            - https://arxiv.org/abs/1712.10096
     """
 
     def __init__(self, inplace: bool = True) -> None:
@@ -19,16 +30,42 @@ class CVSplitReLU(GeneralizedSplitActivation):
 
 
 class CReLU(CVSplitReLU):
+    """
+    Split Complex-Valued Rectified Linear Unit
+    ------------------------------------------
+
+    Implements the operation:
+
+    .. math::
+
+        G(\mathbf{z}) = ReLU(\mathbf{z}_{real}) + j ReLU(\mathbf{z}_{imag})
+
+    Alias for :class:`CVSplitReLU`. The nomenclature CReLU is used only in certain literature to denote the split complex-valued rectified linear unit.
+    """
+
     pass
 
 
 class CPReLU(GeneralizedSplitActivation):
     """
-    Split Complex-Valed Parametric Rectified Linear Unit.
+    Split Complex-Valued Parametric Rectified Linear Unit
+    -----------------------------------------------------
 
-    H. Jing, S. Li, K. Miao, S. Wang, X. Cui, G. Zhao and H. Sun. Enhanced Millimeter-Wave 3-D Imaging via Complex-Valued Fully Convolutional Neural Network.
-    Eq. (2)
-    https://www.mdpi.com/2079-9292/11/1/147
+    Split Type-A extension of the `Parametric ReLU <https://pytorch.org/docs/stable/generated/torch.nn.PReLU.html>`_ for complex-valued tensors.
+
+    Implements the operation:
+
+    .. math::
+
+        G(\mathbf{z}) = PReLU(\mathbf{z}_{real}) + j PReLU(\mathbf{z}_{imag})
+
+    Based on work from the following paper:
+
+        **H. Jing, S. Li, K. Miao, S. Wang, X. Cui, G. Zhao and H. Sun. Enhanced Millimeter-Wave 3-D Imaging via Complex-Valued Fully Convolutional Neural Network.**
+
+            - Eq. (2)
+
+            - https://www.mdpi.com/2079-9292/11/1/147
     """
 
     def __init__(self) -> None:

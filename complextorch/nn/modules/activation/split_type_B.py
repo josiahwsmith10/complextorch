@@ -4,21 +4,29 @@ import torch.nn as nn
 from .... import CVTensor
 from ... import functional as cvF
 
-__all__ = ['GeneralizedPolarActivation', 'CVPolarTanh', 'CVPolarSquash', 'CVPolarLog']
+__all__ = ["GeneralizedPolarActivation", "CVPolarTanh", "CVPolarSquash", "CVPolarLog"]
 
 
 class GeneralizedPolarActivation(nn.Module):
     """
-    Generalized Polar Activation Function.
+    Generalized Split *Type-B* Polar Activation Function
+    ----------------------------------------------------
 
     Operates on the magnitude and phase separately.
 
-    g(x) = g_mag(abs(x)) * exp(1j * g_phase(angle(x)))
+    Implements the operation:
+
+    .. math::
+
+        G(\mathbf{z}) = G_{mag}(|\mathbf{z}|) * \exp(j G_{phase}(angle(\mathbf{z})))
 
     `Type-B` activation function is defined in the following paper:
-    J. A. Barrachina, C. Ren, G. Vieillard, C. Morisseau, and J.-P. Ovarlez. Theory and Implementation of Complex-Valued Neural Networks.
-    Section 4
-    https://arxiv.org/abs/2302.08286
+
+        **J. A. Barrachina, C. Ren, G. Vieillard, C. Morisseau, and J.-P. Ovarlez. Theory and Implementation of Complex-Valued Neural Networks.**
+
+            - Section 4
+
+            - https://arxiv.org/abs/2302.08286
     """
 
     def __init__(self, activation_mag: nn.Module, activation_phase: nn.Module) -> None:
@@ -29,6 +37,14 @@ class GeneralizedPolarActivation(nn.Module):
         )
 
     def forward(self, input: CVTensor) -> CVTensor:
+        """Computes the generalized *Type-A* split activation function.
+
+        Args:
+            input (CVTensor): input tensor
+
+        Returns:
+            CVTensor: activation_mag(input.abs()) * exp(1j*angle(activation_phase(input.angle())))
+        """
         return cvF.apply_complex_polar(
             self.activation_mag, self.activation_phase, input
         )
@@ -36,15 +52,24 @@ class GeneralizedPolarActivation(nn.Module):
 
 class CVPolarTanh(GeneralizedPolarActivation):
     """
-    Complex-Valued Polar Tanh Activation Function.
+    Complex-Valued Polar Tanh Activation Function
+    ---------------------------------------------
 
-    CVPolarTanh(z) = tanh(|z|) * exp(1j * angle(z))
+    Implements the operation:
 
-    A Hirose, S Yoshida. Generalization characteristics of complex-valued feedforward neural networks in relation to signal coherence
-    Eq. (15)
-    https://ieeexplore.ieee.org/abstract/document/6138313
+    .. math::
 
-    Phase information is unchanged
+        G(\mathbf{z}) = \\tanh(|z|) * \exp(j * angle(\mathbf{z}))
+
+    *Note*: phase information is unchanged
+
+    Based on work from the following paper:
+
+        **A Hirose, S Yoshida. Generalization characteristics of complex-valued feedforward neural networks in relation to signal coherence**
+
+            - Eq. (15)
+
+            - https://ieeexplore.ieee.org/abstract/document/6138313
     """
 
     def __init__(self):
@@ -55,25 +80,46 @@ class _Squash(nn.Module):
     """
     Helper class to compute `squash` functionality on real-valued magnitude torch.Tensor.
 
-    squash(z) = z^2 / (1 + z^2)
+    Implements the operation:
+
+    .. math::
+
+        G(x) = x^2 / (1 + x^2)
     """
 
     def __init__(self) -> None:
         super(_Squash, self).__init__()
 
     def forward(self, input: torch.Tensor) -> torch.Tensor:
+        """Computes the squash functionality.
+
+        Args:
+            input (torch.Tensor): input tensor
+
+        Returns:
+            torch.Tensor: :math:`x^2 / (1 + x^2)`
+        """
         return input**2 / (1 + input**2)
 
 
 class CVPolarSquash(GeneralizedPolarActivation):
     """
-    Complex-Valued Polar Squash Activation Function.
+    Complex-Valued Polar Squash Activation Function
+    -----------------------------------------------
 
-    CVPolarSquash(z) = |z|^2 / (1 + |z|^2) * exp(1j * angle(z))
+    Implements the operation:
 
-    D Hayakawa, T Masuko, H Fujimura. Applying complex-valued neural networks to acoustic modeling for speech recognition.
-    Section III-C
-    http://www.apsipa.org/proceedings/2018/pdfs/0001725.pdf
+    .. math::
+
+        G(\mathbf{z}) = |\mathbf{z}|^2 / (1 + |\mathbf{z}|^2) * \exp(j * angle(\mathbf{z}))
+
+    Based on work from the following paper:
+
+        **D Hayakawa, T Masuko, H Fujimura. Applying complex-valued neural networks to acoustic modeling for speech recognition.**
+
+            - Section III-C
+
+            - http://www.apsipa.org/proceedings/2018/pdfs/0001725.pdf
     """
 
     def __init__(self):
@@ -82,27 +128,48 @@ class CVPolarSquash(GeneralizedPolarActivation):
 
 class _LogXPlus1(nn.Module):
     """
-    Helper class to compute log(x + 1) on real-valued magnitude torch.Tensor.
+    Helper class to compute :math:`\log(x + 1)` on real-valued magnitude torch.Tensor.
 
-    logxp1(z) = ln(x + 1)
+    Implements the operation:
+
+    .. math::
+
+        G(x) = \ln(x + 1)
     """
 
     def __init__(self) -> None:
         super(_LogXPlus1, self).__init__()
 
     def forward(self, input: torch.Tensor) -> torch.Tensor:
+        """Computes the :math:`\log(x + 1)` functionality.
+
+        Args:
+            input (torch.Tensor): input tensor
+
+        Returns:
+            torch.Tensor: :math:`\ln(x + 1)`
+        """
         return torch.log(input + 1)
 
 
 class CVPolarLog(GeneralizedPolarActivation):
     """
-    Complex-Valued Polar Squash Activation Function.
+    Complex-Valued Polar Squash Activation Function
+    -----------------------------------------------
 
-    CVPolarLog(z) = ln(|z| + 1) * exp(1j * angle(z))
+    Implements the operation
 
-    D Hayakawa, T Masuko, H Fujimura. Applying complex-valued neural networks to acoustic modeling for speech recognition.
-    Section III-C
-    http://www.apsipa.org/proceedings/2018/pdfs/0001725.pdf
+    .. math::
+
+        G(\mathbf{z}) = \ln(|\mathbf{z}| + 1) * \exp(j * angle(\mathbf{z}))
+
+    Based on work from the following paper:
+
+        **D Hayakawa, T Masuko, H Fujimura. Applying complex-valued neural networks to acoustic modeling for speech recognition.**
+
+            - Section III-C
+
+            - http://www.apsipa.org/proceedings/2018/pdfs/0001725.pdf
     """
 
     def __init__(self):
