@@ -66,8 +66,8 @@ class _wFMConv2dHelper(nn.Module):
             )
         )
 
-    def forward(self, x: torch.Tensor) -> torch.Tensor:
-        batch_size, mag_ang, in_channels, *input_shape = x.shape
+    def forward(self, input: torch.Tensor) -> torch.Tensor:
+        batch_size, mag_ang, in_channels, *input_shape = input.shape
 
         assert mag_ang == 2, "Input must be complex valued in polar form (mag, ang)"
         assert in_channels == self.in_channels, "Input channels must match"
@@ -79,10 +79,10 @@ class _wFMConv2dHelper(nn.Module):
         output_shape = self.compute_output_shape(input_shape)
         L = np.prod(output_shape)  # Total number of unfolded blocks
 
-        x = x.view(batch_size * 2, in_channels, *input_shape)
+        input = input.view(batch_size * 2, in_channels, *input_shape)
 
         # unfolded shape: (batch_size * 2, in_channels * prod_kernel_size, L)
-        temporal_buckets = self.unfold(x).view(
+        temporal_buckets = self.unfold(input).view(
             batch_size, 2, in_channels, prod_kernel_size, L
         )
 
@@ -194,8 +194,8 @@ class wFMConv2d(nn.Module):
             )
         )
 
-    def forward(self, x: CVTensor) -> CVTensor:
-        batch_size, in_channels, *input_shape = x.shape
+    def forward(self, input: CVTensor) -> CVTensor:
+        batch_size, in_channels, *input_shape = input.shape
 
         assert in_channels == self.in_channels, "Input channels must match"
 
@@ -213,7 +213,7 @@ class wFMConv2d(nn.Module):
         )
 
         # Separate magnitude and angle from CVTensor input
-        (x_mag, x_ang) = x.polar
+        (x_mag, x_ang) = input.polar
 
         ### Do magnitude processing
         x_mag = self.unfold(x_mag).view(batch_size, in_channels, prod_kernel_size, L)
@@ -303,8 +303,8 @@ class wFMConv1d(nn.Module):
 
         self.wFM_conv = self.conv1d.wFM_conv
 
-    def forward(self, x: CVTensor) -> CVTensor:
-        return self.conv1d(x.unsqueeze(-2)).squeeze()
+    def forward(self, input: CVTensor) -> CVTensor:
+        return self.conv1d(input.unsqueeze(-2)).squeeze()
 
     @property
     def weight_matrix_ang(self) -> torch.Tensor:

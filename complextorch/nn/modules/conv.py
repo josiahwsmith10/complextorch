@@ -54,6 +54,14 @@ class SlowCVConv1d(nn.Module):
         )
 
     def forward(self, input: CVTensor) -> CVTensor:
+        """Computes 1-D complex-valued convolution using PyTorch.
+
+        Args:
+            input (CVTensor): input tensor
+
+        Returns:
+            CVTensor: Conv1d(input)
+        """
         input = self.conv(input.complex)
         return CVTensor(input.real, input.imag)
 

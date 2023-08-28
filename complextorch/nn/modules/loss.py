@@ -23,11 +23,14 @@ __all__ = [
 
 class GeneralizedSplitLoss(nn.Module):
     """
-    Generalized Split Loss Function.
+    Generalized Split Loss Function
+    -------------------------------
 
-    Operates on the real and imaginary parts separately and sums the losses.
+    Operates on the real and imaginary parts separately and sums the losses using the operation:
 
-    f(x, y) = f_r(x_r, y_r) + 1j * f_i(x_i, y_i)
+    .. math::
+
+        G(\mathbf{x}, \mathbf{y}) = G_{real}(\mathbf{x}_{real}, \mathbf{y}_{real}) + G_{imag}(\mathbf{x}_{imag}, \mathbf{y}_{imag})
     """
 
     def __init__(self, loss_r: nn.Module, loss_i: nn.Module) -> None:
@@ -36,16 +39,30 @@ class GeneralizedSplitLoss(nn.Module):
         self.loss_i = loss_i
 
     def forward(self, x: CVTensor, y: CVTensor) -> torch.Tensor:
+        """Computes the real/imag split loss function.
+
+        Args:
+            x (CVTensor): estimated label
+            y (CVTensor): target/ground truth label
+
+        Returns:
+            torch.Tensor: :math:`G_{real}(\mathbf{x}_{real}, \mathbf{y}_{real}) + G_{imag}(\mathbf{x}_{imag}, \mathbf{y}_{imag})`
+        """
         return self.loss_r(x.real, y.real) + self.loss_i(x.imag, y.imag)
 
 
 class GeneralizedPolarLoss(nn.Module):
     """
-    Generalized Polar Loss Function.
+    Generalized Polar Loss Function
+    -------------------------------
 
-    Operates on the magnitude and phase separately and performs weighted sum of the losses.
+    Operates on the magnitude and phase separately and performs weighted sum of the losses using the operation:
 
-    g(x, y) = weight_mag * g_mag(abs(x), abs(y)) + weight_phase * g_phase(angle(x), angle(y))
+    .. math::
+
+        G(\mathbf{x}, \mathbf{y}) = w_{mag} * G_{mag}(|\mathbf{x}|, |\mathbf{y}|) + w_{phase} * G_{phase}(angle(\mathbf{x}), angle(\mathbf{y}))
+
+    where :math:`w_{mag}` and :math:`w_{phase}` are scalar weights for the magnitiude and phase metrics, respectively.
     """
 
     def __init__(
@@ -70,9 +87,12 @@ class GeneralizedPolarLoss(nn.Module):
 
 class SplitL1(GeneralizedSplitLoss):
     """
-    Split L1 Loss Function.
+    Split L1 Loss Function
+    ----------------------
 
-    L1(x, y) = L1(x_r, y_r) + L1(x_i, y_i)
+    .. math::
+
+        L1(x, y) = L1(\mathbf{x}_{real}, \mathbf{y}_{real}) + L1(\mathbf{x}_{imag}, \mathbf{y}_{imag})
     """
 
     def __init__(self) -> None:
@@ -81,9 +101,12 @@ class SplitL1(GeneralizedSplitLoss):
 
 class SplitMSE(GeneralizedSplitLoss):
     """
-    Split MSE Loss Function.
+    Split MSE Loss Function
+    -----------------------
 
-    MSE(x, y) = MSE(x_r, y_r) + MSE(x_i, y_i)
+    .. math::
+
+        MSE(x, y) = MSE(\mathbf{x}_{real}, \mathbf{y}_{real}) + MSE(\mathbf{x}_{imag}, \mathbf{y}_{imag})
     """
 
     def __init__(self) -> None:
@@ -92,7 +115,8 @@ class SplitMSE(GeneralizedSplitLoss):
 
 class SSIM(nn.Module):
     """
-    Typical SSIM Loss Function
+    Traditional Real-Valued SSIM Loss Function
+    ------------------------------------------
 
     Code modified from: https://gitlab.com/computational-imaging-lab/perp_loss
     """
@@ -118,6 +142,17 @@ class SSIM(nn.Module):
         data_range: Optional[torch.Tensor] = None,
         full: bool = False,
     ) -> torch.Tensor:
+        """Computes the SSIM metric on the real-valued tensors.
+
+        Args:
+            x (torch.Tensor): estimated labels
+            y (torch.Tensor): target/ground truth labels
+            data_range (Optional[torch.Tensor], optional): Optional data range (max value of data, e.g., 255). Defaults to None.
+            full (bool, optional): Compute full SSIM. Defaults to False.
+
+        Returns:
+            torch.Tensor: SSIM(x, y)
+        """
         assert isinstance(self.w, torch.Tensor)
 
         if data_range is None:
@@ -152,7 +187,8 @@ class SSIM(nn.Module):
 
 class SplitSSIM(GeneralizedSplitLoss):
     """
-    Split SSIM Loss Function.
+    Split SSIM Loss Function
+    ------------------------
 
     Returns sum of SSIM over real and imaginary parts separately.
     """
@@ -174,13 +210,20 @@ class SplitSSIM(GeneralizedSplitLoss):
 
 class PerpLossSSIM(nn.Module):
     """
-    Perpendicular SSIM Loss Function.
+    Perpendicular SSIM Loss Function
+    --------------------------------
 
-    M. L. Terpstra, M. Maspero, A. Sbrizzi, C. van den Berg. ⊥-loss: A symmetric loss function for magnetic resonance imaging reconstruction and image registration with deep learning.
-    See Fig. 1 for perpendicular explanation
-    Eq. (5)
-    https://www.sciencedirect.com/science/article/pii/S1361841522001566
-    Code: https://gitlab.com/computational-imaging-lab/perp_loss
+    Based on work from the following paper:
+
+       **M. L. Terpstra, M. Maspero, A. Sbrizzi, C. van den Berg. ⊥-loss: A symmetric loss function for magnetic resonance imaging reconstruction and image registration with deep learning.**
+
+            - See Fig. 1 for perpendicular explanation
+
+            - Eq. (5)
+
+            - https://www.sciencedirect.com/science/article/pii/S1361841522001566
+
+            - Code: https://gitlab.com/computational-imaging-lab/perp_loss
     """
 
     def __init__(self) -> None:
@@ -190,6 +233,15 @@ class PerpLossSSIM(nn.Module):
         self.param = nn.Parameter(torch.ones(1) / 2)
 
     def forward(self, x: CVTensor, y: CVTensor) -> torch.Tensor:
+        """Computes perpendicular SSIM loss function.
+
+        Args:
+            x (CVTensor): estimated label
+            y (CVTensor): target/ground truth label
+
+        Returns:
+            torch.Tensor: PerpLossSSIM(x, y)
+        """
         mag_input = torch.abs(x)
         mag_target = torch.abs(y)
         cross = torch.abs(x.real * y.imag - x.imag * y.real)
@@ -214,37 +266,69 @@ class PerpLossSSIM(nn.Module):
 
 class CVQuadError(nn.Module):
     """
-    Complex-Valued Quadratic Error Function CVQuadError.
+    Complex-Valued Quadratic Error Function
+    ---------------------------------------
 
-    CVQuadError(x, y) = 1/2 * sum(err * err.H), with err = x - y.
+    .. math::
 
-    Ronny Hänsch. Complex-valued multi-layer perceptrons - an application to polarimetric SAR data
-    Eq. (11)
-    https://www.ingentaconnect.com/content/asprs/pers/2010/00000076/00000009/art00008?crawler=true&mimetype=application/pdf
+        G(x, y) = 1/2 * sum(err * err.H), with err = x - y.
+
+    Based on work from the following paper:
+
+        **Ronny Hänsch. Complex-valued multi-layer perceptrons - an application to polarimetric SAR data**
+
+            - Eq. (11)
+
+            - https://www.ingentaconnect.com/content/asprs/pers/2010/00000076/00000009/art00008?crawler=true&mimetype=application/pdf
     """
 
     def __init__(self) -> None:
         super(CVQuadError, self).__init__()
 
     def forward(self, x: CVTensor, y: CVTensor) -> torch.Tensor:
+        """Computes the complex-valued quadratic error function.
+
+        Args:
+            x (CVTensor): estimated labels
+            y (CVTensor): target/ground truth labels
+
+        Returns:
+            torch.Tensor: 1/2 * sum(err * err.H), with err = x - y.
+        """
         return 0.5 * ((x - y).abs() ** 2).sum()
 
 
 class CVFourthPowError(nn.Module):
     """
-    Complex Fourth Power Error Function CVFourthPowError.
+    Complex Fourth Power Error Function
+    -----------------------------------
 
-    CVFourthPowError(x, y) = 1/2 * sum( (err * err.H)^2 ), with err = x - y.
+    .. math::
 
-    Ronny Hänsch. Complex-valued multi-layer perceptrons - an application to polarimetric SAR data
-    Eq. (12)
-    https://www.ingentaconnect.com/content/asprs/pers/2010/00000076/00000009/art00008?crawler=true&mimetype=application/pdf
+        G(x, y) = 1/2 * sum( (err * err.H)^2 ), with err = x - y.
+
+    Based on work from the following paper:
+
+        **Ronny Hänsch. Complex-valued multi-layer perceptrons - an application to polarimetric SAR data**
+
+            - Eq. (12)
+
+            - https://www.ingentaconnect.com/content/asprs/pers/2010/00000076/00000009/art00008?crawler=true&mimetype=application/pdf
     """
 
     def __init__(self) -> None:
         super(CVFourthPowError, self).__init__()
 
     def forward(self, x: CVTensor, y: CVTensor) -> torch.Tensor:
+        """Computes the complex-valued fourth power error function.
+
+        Args:
+            x (CVTensor): estimated labels
+            y (CVTensor): target/ground truth labels
+
+        Returns:
+            torch.Tensor: 1/2 * sum( (err * err.H)^2 ), with err = x - y.
+        """
         return 0.5 * ((x - y).abs() ** 4).sum()
 
 
@@ -252,11 +336,17 @@ class CVCauchyError(nn.Module):
     """
     Complex-Valued Cauchy Error Function CVCauchyError.
 
-    CVCauchyError(x, y) = 1/2 * sum( (err * err.H)^2 ), with err = x - y.
+    .. math::
 
-    Ronny Hänsch. Complex-valued multi-layer perceptrons - an application to polarimetric SAR data
-    Eq. (13)
-    https://www.ingentaconnect.com/content/asprs/pers/2010/00000076/00000009/art00008?crawler=true&mimetype=application/pdf
+        G(x, y) = 1/2 * sum( (err * err.H)^2 ), with err = x - y.
+
+    Based on work from the following paper:
+
+        **Ronny Hänsch. Complex-valued multi-layer perceptrons - an application to polarimetric SAR data**
+
+            - Eq. (13)
+
+            - https://www.ingentaconnect.com/content/asprs/pers/2010/00000076/00000009/art00008?crawler=true&mimetype=application/pdf
     """
 
     def __init__(self, c: float = 1) -> None:
@@ -265,6 +355,15 @@ class CVCauchyError(nn.Module):
         self.c2 = c**2
 
     def forward(self, x: CVTensor, y: CVTensor) -> torch.Tensor:
+        """Computes the complex-valued Cauchy error function.
+
+        Args:
+            x (CVTensor): estimated labels
+            y (CVTensor): target/ground truth labels
+
+        Returns:
+            torch.Tensor: 1/2 * sum( (err * err.H)^2 ), with err = x - y.
+        """
         return (self.c2 / 2 * torch.log(1 + ((x - y).abs() ** 2) / self.c2)).sum()
 
 
@@ -272,17 +371,32 @@ class CVLogCoshError(nn.Module):
     """
     Complex-Valued Log-Cosh Error Function CVLogCoshError.
 
-    CVLogCoshError(x, y) = sum(ln(cosh(err * err.H)), with err = x - y.
+    .. math::
 
-    Ronny Hänsch. Complex-valued multi-layer perceptrons - an application to polarimetric SAR data
-    Eq. (14)
-    https://www.ingentaconnect.com/content/asprs/pers/2010/00000076/00000009/art00008?crawler=true&mimetype=application/pdf
+        G(x, y) = sum(ln(cosh(err * err.H)), with err = x - y
+
+    Based on work from the following paper:
+
+        **Ronny Hänsch. Complex-valued multi-layer perceptrons - an application to polarimetric SAR data**
+
+            - Eq. (14)
+
+            - https://www.ingentaconnect.com/content/asprs/pers/2010/00000076/00000009/art00008?crawler=true&mimetype=application/pdf
     """
 
     def __init__(self) -> None:
         super(CVLogCoshError, self).__init__()
 
     def forward(self, x: CVTensor, y: CVTensor) -> torch.Tensor:
+        """Computes the complex-valued log-cosh error function.
+
+        Args:
+            x (CVTensor): estimated labels
+            y (CVTensor): target/ground truth labels
+
+        Returns:
+            torch.Tensor: sum(ln(cosh(err * err.H)), with err = x - y.
+        """
         return torch.log(torch.cosh((x - y).abs() ** 2)).sum()
 
 
@@ -290,16 +404,31 @@ class CVLogError(nn.Module):
     """
     Complex-Valued Log Error Function CVLogError.
 
-    CVLogError(x, y) = sum(err * err.H), with err = log(x) - log(y).
+    .. math::
 
-    J Bassey, L Qian, X Li. A Survey of Complex-Valued Neural Networks.
-    Eq. (10)
-    https://arxiv.org/abs/2101.12249
+        G(x, y) = sum(err * err.H), with err = log(x) - log(y)
+
+    Based on work from the following paper:
+
+        **J Bassey, L Qian, X Li. A Survey of Complex-Valued Neural Networks**
+
+            - Eq. (10)
+
+            - https://arxiv.org/abs/2101.12249
     """
 
     def __init__(self) -> None:
         super(CVLogError, self).__init__()
 
     def forward(self, x: CVTensor, y: CVTensor) -> torch.Tensor:
+        """Computes the complex-valued log error function.
+
+        Args:
+            x (CVTensor): estimated labels
+            y (CVTensor): target/ground truth labels
+
+        Returns:
+            torch.Tensor: sum(err * err.H), with err = log(x) - log(y)
+        """
         err = torch.log(x.complex) - torch.log(y.complex)
         return (err.abs() ** 2).sum()
