@@ -53,9 +53,9 @@ class modReLU(nn.Module):
 
     .. math::
 
-        G(x) = ReLU(||\mathbf{z}|| + b) * \mathbf{z} / ||\mathbf{z}|| = ReLU(||\mathbf{z}|| + b) * \exp(1j * angle(\mathbf{z}))
+        G(x) = ReLU(|\mathbf{z}| + b) * \mathbf{z} / |\mathbf{z}| = ReLU(|\mathbf{z}| + b) * \exp(1j * angle(\mathbf{z}))
 
-    Notice that :math:`||\mathbf{z}||` (:math:`\mathbf{z}`.abs()) is always positive, so if :math:`b > 0`  then :math:`||\mathbf{z}|| + b > = 0` always.
+    Notice that :math:`|\mathbf{z}|` (:math:`\mathbf{z}`.abs()) is always positive, so if :math:`b > 0`  then :math:`|\mathbf{z}| + b > = 0` always.
     In order to have any non-linearity effect, :math:`b` must be smaller than :math:`0` (:math:`b < 0`).
 
     Based on work from the following papers:
@@ -90,7 +90,7 @@ class modReLU(nn.Module):
             input (CVTensor): input tensor
 
         Returns:
-            CVTensor: :math:`ReLU(||\mathbf{z}|| + b) * \mathbf{z} / ||\mathbf{z}|| = ReLU(||\mathbf{z}|| + b) * \exp(1j * angle(\mathbf{z}))`
+            CVTensor: :math:`ReLU(|\mathbf{z}| + b) * \mathbf{z} / |\mathbf{z}| = ReLU(|\mathbf{z}| + b) * \exp(1j * angle(\mathbf{z}))`
         """
         out = self.relu(input.abs() + self.bias) * torch.exp(1j * input.angle())
         return CVTensor(out.real, out.imag)
@@ -197,7 +197,7 @@ class CVSigLog(nn.Module):
 
     .. math::
 
-        G(\mathbf{z}) = \\frac{\mathbf{z}}{(c + 1/r * ||\mathbf{z}||)}
+        G(\mathbf{z}) = \\frac{\mathbf{z}}{(c + 1/r * |\mathbf{z}|)}
 
     Based on work from the following paper:
 
@@ -221,6 +221,6 @@ class CVSigLog(nn.Module):
             input (CVTensor): input tensor
 
         Returns:
-            CVTensor: :math:`\\frac{\mathbf{z}}{(c + 1/r * ||\mathbf{z}||)}`
+            CVTensor: :math:`\\frac{\mathbf{z}}{(c + 1/r * |\mathbf{z}|)}`
         """
         return input / (self.c + input.abs() / self.r)
