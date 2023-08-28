@@ -59,9 +59,9 @@ class CVMaskedChannelAttention1d(_CVMaskedChannelAttention):
     Based on work from the following paper:
 
         **HW Cho, S Choi, YR Cho, and J Kim: Complex-Valued Channel Attention and Application in Ego-Velocity Estimation With Automotive Radar**
-            
+
             - Fig. 3
-            
+
             - https://ieeexplore.ieee.org/abstract/document/9335579
     """
 
@@ -106,9 +106,9 @@ class CVMaskedChannelAttention2d(_CVMaskedChannelAttention):
     Based on work from the following paper:
 
         **HW Cho, S Choi, YR Cho, and J Kim: Complex-Valued Channel Attention and Application in Ego-Velocity Estimation With Automotive Radar**
-            
+
             - Fig. 3
-            
+
             - https://ieeexplore.ieee.org/abstract/document/9335579
     """
 
@@ -153,9 +153,9 @@ class CVMaskedChannelAttention3d(_CVMaskedChannelAttention):
     Based on work from the following paper:
 
         **HW Cho, S Choi, YR Cho, and J Kim: Complex-Valued Channel Attention and Application in Ego-Velocity Estimation With Automotive Radar**
-            
+
             - Fig. 3
-            
+
             - https://ieeexplore.ieee.org/abstract/document/9335579
     """
 

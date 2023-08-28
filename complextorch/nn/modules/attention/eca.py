@@ -15,13 +15,13 @@ class _CVEfficientChannelAttention(nn.Module):
     """
     Complex-Valued Efficient Channel Attention Base Class
     -----------------------------------------------------
-    
+
     Implements the operation:
-    
+
     .. math::
-    
+
         G(\mathbf{z}) = sigma(conv(GP(\mathbf{z}))) \odot \mathbf{z}
-        
+
     where :math:`GP(\cdot)` is the complex-valued global :doc:`pooling <../pooling>` operator.
     """
 
@@ -68,21 +68,21 @@ class CVEfficientChannelAttention1d(_CVEfficientChannelAttention):
     """
     1-D Complex-Valued Efficient Channel Attention
     ----------------------------------------------
-    
+
     Implements the operation:
-    
+
     .. math::
-    
+
         G(\mathbf{z}) = sigma(conv(GP(\mathbf{z}))) \odot \mathbf{z}
-        
+
     where :math:`GP(\cdot)` is the complex-valued global :doc:`pooling <../pooling>` operator.
 
     Based on work from the following paper:
 
         **Q Wang, B Wu, P Zhu, P Li, W Zuo, and Q Hu: ECA-Net: Efficient Channel Attention for Deep Convolutional Neural Networks**
-            
+
             - Fig. 2
-        
+
             - https://openaccess.thecvf.com/content_CVPR_2020/papers/Wang_ECA-Net_Efficient_Channel_Attention_for_Deep_Convolutional_Neural_Networks_CVPR_2020_paper.pdf
     """
 
@@ -97,21 +97,21 @@ class CVEfficientChannelAttention2d(_CVEfficientChannelAttention):
     """
     2-D Complex-Valued Efficient Channel Attention
     ----------------------------------------------
-    
+
     Implements the operation:
-    
+
     .. math::
-    
+
         G(\mathbf{z}) = sigma(conv(GP(\mathbf{z}))) \odot \mathbf{z}
-        
+
     where :math:`GP(\cdot)` is the complex-valued global :doc:`pooling <../pooling>` operator.
 
     Based on work from the following paper:
 
         **Q Wang, B Wu, P Zhu, P Li, W Zuo, and Q Hu: ECA-Net: Efficient Channel Attention for Deep Convolutional Neural Networks**
-            
+
             - Fig. 2
-        
+
             - https://openaccess.thecvf.com/content_CVPR_2020/papers/Wang_ECA-Net_Efficient_Channel_Attention_for_Deep_Convolutional_Neural_Networks_CVPR_2020_paper.pdf
     """
 
@@ -126,21 +126,21 @@ class CVEfficientChannelAttention3d(_CVEfficientChannelAttention):
     """
     3-D Complex-Valued Efficient Channel Attention
     ----------------------------------------------
-    
+
     Implements the operation:
-    
+
     .. math::
-    
+
         G(\mathbf{z}) = sigma(conv(GP(\mathbf{z}))) \odot \mathbf{z}
-        
+
     where :math:`GP(\cdot)` is the complex-valued global :doc:`pooling <../pooling>` operator.
 
     Based on work from the following paper:
 
         **Q Wang, B Wu, P Zhu, P Li, W Zuo, and Q Hu: ECA-Net: Efficient Channel Attention for Deep Convolutional Neural Networks**
-            
+
             - Fig. 2
-        
+
             - https://openaccess.thecvf.com/content_CVPR_2020/papers/Wang_ECA-Net_Efficient_Channel_Attention_for_Deep_Convolutional_Neural_Networks_CVPR_2020_paper.pdf
     """
 
