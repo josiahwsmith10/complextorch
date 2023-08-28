@@ -12,10 +12,19 @@ __all__ = ["CVLayerNorm"]
 
 class CVLayerNorm(nn.Module):
     """
-    Complex-Valued Layer Normalization.
+    Complex-Valued Layer Normalization
+    ----------------------------------
 
     Uses whitening transformation to ensure standard normal complex distribution
     with equal variance in both real and imaginary components.
+
+    Extending the batch normalization whitening definitions in the following paper:
+
+        **J. A. Barrachina, C. Ren, G. Vieillard, C. Morisseau, and J.-P. Ovarlez. Theory and Implementation of Complex-Valued Neural Networks.**
+
+            - Section 6
+
+            - https://arxiv.org/abs/2302.08286
     """
 
     def __init__(

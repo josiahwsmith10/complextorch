@@ -111,17 +111,17 @@ class CVBatchNorm1d(_CVBatchNorm):
     """
     1-D Complex-Valued Batch Normalization
     --------------------------------------
-    
-    Complex-valued batch normalization for 2-D and 3-D tensors. 
+
+    Complex-valued batch normalization for 2-D and 3-D tensors.
     Similar to the `PyTorch BatchNorm1d <https://pytorch.org/docs/stable/generated/torch.nn.BatchNorm1d.html>`_ implementation but performs the proper batch normalization for complex-valued data.
 
     See `torch.nn.BatchNorm1d <https://pytorch.org/docs/stable/generated/torch.nn.BatchNorm1d.html>`_ for additional details.
 
-    Based on work from the following papers:
+    Based on work from the following paper:
 
         **J. A. Barrachina, C. Ren, G. Vieillard, C. Morisseau, and J.-P. Ovarlez. Theory and Implementation of Complex-Valued Neural Networks.**
 
-            - Eq. (36)
+            - Section 6
 
             - https://arxiv.org/abs/2302.08286
     """
@@ -135,17 +135,17 @@ class CVBatchNorm2d(_CVBatchNorm):
     """
     2-D Complex-Valued Batch Normalization
     --------------------------------------
-    
-    Complex-valued batch normalization for 4-D tensors. 
+
+    Complex-valued batch normalization for 4-D tensors.
     Similar to the `PyTorch BatchNorm2d <https://pytorch.org/docs/stable/generated/torch.nn.BatchNorm2d.html>`_ implementation but performs the proper batch normalization for complex-valued data.
 
     See `torch.nn.BatchNorm2d <https://pytorch.org/docs/stable/generated/torch.nn.BatchNorm2d.html>`_ for additional details.
 
-    Based on work from the following papers:
+    Based on work from the following paper:
 
         **J. A. Barrachina, C. Ren, G. Vieillard, C. Morisseau, and J.-P. Ovarlez. Theory and Implementation of Complex-Valued Neural Networks.**
 
-            - Eq. (36)
+            - Section 6
 
             - https://arxiv.org/abs/2302.08286
     """
@@ -159,13 +159,13 @@ class CVBatchNorm3d(_CVBatchNorm):
     """
     3-D Complex-Valued Batch Normalization
     --------------------------------------
-    
-    Complex-valued batch normalization for 5-D tensors. 
+
+    Complex-valued batch normalization for 5-D tensors.
     Similar to the `PyTorch BatchNorm3d <https://pytorch.org/docs/stable/generated/torch.nn.BatchNorm3d.html>`_ implementation but performs the proper batch normalization for complex-valued data.
 
     See `torch.nn.BatchNorm3d <https://pytorch.org/docs/stable/generated/torch.nn.BatchNorm3d.html>`_ for additional details.
 
-    Based on work from the following papers:
+    Based on work from the following paper:
 
         **J. A. Barrachina, C. Ren, G. Vieillard, C. Morisseau, and J.-P. Ovarlez. Theory and Implementation of Complex-Valued Neural Networks.**
 
