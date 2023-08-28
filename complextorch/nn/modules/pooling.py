@@ -5,7 +5,7 @@ import torch.nn as nn
 from ... import CVTensor
 from .. import functional as cvF
 
-__all__ = ['CVAdaptiveAvgPool1d', 'CVAdaptiveAvgPool2d', 'CVAdaptiveAvgPool3d']
+__all__ = ["CVAdaptiveAvgPool1d", "CVAdaptiveAvgPool2d", "CVAdaptiveAvgPool3d"]
 
 
 class CVAdaptiveAvgPool1d(nn.AdaptiveAvgPool1d):

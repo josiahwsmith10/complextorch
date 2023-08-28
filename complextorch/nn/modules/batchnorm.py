@@ -5,7 +5,7 @@ from torch.nn import init
 from .. import functional as cvF
 from ... import CVTensor
 
-__all__ = ['CVBatchNorm1d', 'CVBatchNorm2d', 'CVBatchNorm3d']
+__all__ = ["CVBatchNorm1d", "CVBatchNorm2d", "CVBatchNorm3d"]
 
 
 class _CVBatchNorm(nn.Module):

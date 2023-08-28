@@ -2,7 +2,7 @@ import torch
 
 from . import CVTensor
 
-__all__ = ['randn']
+__all__ = ["randn"]
 
 
 def randn(*size, dtype=torch.complex64, device="cpu", requires_grad=False) -> CVTensor:

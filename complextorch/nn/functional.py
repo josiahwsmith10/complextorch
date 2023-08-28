@@ -16,9 +16,7 @@ __all__ = [
 
 
 def apply_complex(
-    real_module: nn.Module, 
-    imag_module: nn.Module, 
-    x: CVTensor
+    real_module: nn.Module, imag_module: nn.Module, x: CVTensor
 ) -> CVTensor:
     """
     Naive complex computation between a complex-valued module defined by two
@@ -26,7 +24,7 @@ def apply_complex(
     """
     return CVTensor(
         real_module(x.real) - imag_module(x.imag),
-        real_module(x.imag) + imag_module(x.real)
+        real_module(x.imag) + imag_module(x.real),
     )
 
 

@@ -7,7 +7,7 @@ from torch.nn import init
 from .. import functional as cvF
 from ... import CVTensor
 
-__all__ = ['CVLayerNorm']
+__all__ = ["CVLayerNorm"]
 
 
 class CVLayerNorm(nn.Module):
@@ -23,7 +23,7 @@ class CVLayerNorm(nn.Module):
         normalized_shape: Union[int, List[int], torch.Size],
         *,
         eps: float = 1e-5,
-        elementwise_affine: bool = True
+        elementwise_affine: bool = True,
     ) -> None:
         super().__init__()
 

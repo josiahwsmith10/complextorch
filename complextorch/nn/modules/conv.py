@@ -96,7 +96,7 @@ class _CVConv(nn.Module):
         dtype=None,
     ) -> None:
         super(_CVConv, self).__init__()
-        
+
         self.ConvFunc = ConvFunc
         self.in_channels = in_channels
         self.out_channels = out_channels
@@ -170,12 +170,16 @@ class _CVConv(nn.Module):
         """
         t1 = self.conv_r(x.real)
         t2 = self.conv_i(x.imag)
-        bias = None if self.conv_r.bias is None else (self.conv_r.bias + self.conv_i.bias)
+        bias = (
+            None if self.conv_r.bias is None else (self.conv_r.bias + self.conv_i.bias)
+        )
         t3 = self.ConvFunc(
-            input=(x.real + x.imag), 
-            weight=(self.conv_r.weight + self.conv_i.weight), 
-            bias=bias, 
-            stride=self.stride, padding=self.padding, groups=self.groups
+            input=(x.real + x.imag),
+            weight=(self.conv_r.weight + self.conv_i.weight),
+            bias=bias,
+            stride=self.stride,
+            padding=self.padding,
+            groups=self.groups,
         )
         return CVTensor(t1 - t2, t3 - t2 - t1)
 

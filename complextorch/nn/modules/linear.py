@@ -2,10 +2,9 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
-from .. import functional as cvF
 from ... import CVTensor
 
-__all__ = ['CVLinear']
+__all__ = ["CVLinear"]
 
 
 class CVLinear(nn.Module):
@@ -70,10 +69,14 @@ class CVLinear(nn.Module):
         """
         t1 = self.linear_r(x.real)
         t2 = self.linear_i(x.imag)
-        bias = None if self.linear_r.bias is None else (self.linear_r.bias + self.linear_i.bias)
+        bias = (
+            None
+            if self.linear_r.bias is None
+            else (self.linear_r.bias + self.linear_i.bias)
+        )
         t3 = F.linear(
             input=(x.real + x.imag),
             weight=(self.linear_r.weight + self.linear_i.weight),
-            bias=bias
+            bias=bias,
         )
         return CVTensor(t1 - t2, t3 - t2 - t1)

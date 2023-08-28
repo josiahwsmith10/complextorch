@@ -3,7 +3,7 @@ import torch.nn as nn
 from ... import CVTensor
 from .. import functional as cvF
 
-__all__ = ['CVDropout']
+__all__ = ["CVDropout"]
 
 
 class CVDropout(nn.Module):

@@ -24,17 +24,17 @@ class CVSoftmax(nn.Module):
 class PhaseSoftmax(nn.Module):
     """
     Phase-Preserving Complex-Valued Softmax Layer.
-    
+
     G(x) = softmax(|x|) * x / |x|
-    
+
     Retains phase and applies softmax function to magnitude.
     """
-    
+
     def __init__(self, dim: Optional[int] = None) -> None:
         super(PhaseSoftmax, self).__init__()
-        
+
         self.softmax = nn.Softmax(dim)
-    
+
     def forward(self, x: CVTensor) -> CVTensor:
         x_mag = x.abs()
         return self.softmax(x_mag) * (x / x_mag)

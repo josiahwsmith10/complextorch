@@ -5,9 +5,9 @@ from .... import CVTensor
 from .... import nn as cvnn
 
 __all__ = [
-    'CVEfficientChannelAttention1d',
-    'CVEfficientChannelAttention2d',
-    'CVEfficientChannelAttention3d'
+    "CVEfficientChannelAttention1d",
+    "CVEfficientChannelAttention2d",
+    "CVEfficientChannelAttention3d",
 ]
 
 
@@ -27,7 +27,7 @@ class _CVEfficientChannelAttention(nn.Module):
             padding=(self.kernel_size() - 1) // 2,
             bias=False,
         )
-        
+
         # Placeholders
         self.avg_pool = None
 
@@ -39,7 +39,7 @@ class _CVEfficientChannelAttention(nn.Module):
     def forward(self, x: CVTensor) -> CVTensor:
         batch_size, channels, *im_size = x.shape
         one_vec = [1] * len(im_size)
-        
+
         # feature descriptor on the global spatial information
         y = self.avg_pool(x)
 
@@ -52,10 +52,11 @@ class _CVEfficientChannelAttention(nn.Module):
 
         return x * y
 
+
 class CVEfficientChannelAttention1d(_CVEfficientChannelAttention):
     """
     1-D complex-valued efficient channel attention.
-    
+
     Q Wang, B Wu, P Zhu, P Li, W Zuo, and Q Hu: ECA-Net: Efficient Channel Attention for Deep Convolutional Neural Networks
     Fig. 2
     https://openaccess.thecvf.com/content_CVPR_2020/papers/Wang_ECA-Net_Efficient_Channel_Attention_for_Deep_Convolutional_Neural_Networks_CVPR_2020_paper.pdf
@@ -63,16 +64,15 @@ class CVEfficientChannelAttention1d(_CVEfficientChannelAttention):
 
     def __init__(self, channels: int, b: int = 1, gamma: int = 2) -> None:
         super(CVEfficientChannelAttention1d, self).__init__(
-            channels=channels,
-            b=b,
-            gamma=gamma
+            channels=channels, b=b, gamma=gamma
         )
         self.avg_pool = cvnn.CVAdaptiveAvgPool1d(1)
+
 
 class CVEfficientChannelAttention2d(_CVEfficientChannelAttention):
     """
     2-D complex-valued efficient channel attention.
-    
+
     Q Wang, B Wu, P Zhu, P Li, W Zuo, and Q Hu: ECA-Net: Efficient Channel Attention for Deep Convolutional Neural Networks
     Fig. 2
     https://openaccess.thecvf.com/content_CVPR_2020/papers/Wang_ECA-Net_Efficient_Channel_Attention_for_Deep_Convolutional_Neural_Networks_CVPR_2020_paper.pdf
@@ -80,16 +80,15 @@ class CVEfficientChannelAttention2d(_CVEfficientChannelAttention):
 
     def __init__(self, channels: int, b: int = 1, gamma: int = 2) -> None:
         super(CVEfficientChannelAttention2d, self).__init__(
-            channels=channels,
-            b=b,
-            gamma=gamma
+            channels=channels, b=b, gamma=gamma
         )
         self.avg_pool = cvnn.CVAdaptiveAvgPool2d(1)
+
 
 class CVEfficientChannelAttention3d(_CVEfficientChannelAttention):
     """
     3-D complex-valued efficient channel attention.
-    
+
     Q Wang, B Wu, P Zhu, P Li, W Zuo, and Q Hu: ECA-Net: Efficient Channel Attention for Deep Convolutional Neural Networks
     Fig. 2
     https://openaccess.thecvf.com/content_CVPR_2020/papers/Wang_ECA-Net_Efficient_Channel_Attention_for_Deep_Convolutional_Neural_Networks_CVPR_2020_paper.pdf
@@ -97,8 +96,6 @@ class CVEfficientChannelAttention3d(_CVEfficientChannelAttention):
 
     def __init__(self, channels: int, b: int = 1, gamma: int = 2) -> None:
         super(CVEfficientChannelAttention3d, self).__init__(
-            channels=channels,
-            b=b,
-            gamma=gamma
+            channels=channels, b=b, gamma=gamma
         )
         self.avg_pool = cvnn.CVAdaptiveAvgPool3d(1)

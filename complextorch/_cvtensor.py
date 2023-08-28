@@ -167,7 +167,7 @@ class CVTensor:
 
     def __matmul__(self, other):
         """
-        Matrix multiplication of two complex tensors. 
+        Matrix multiplication of two complex tensors.
         Using Gauss' multiplication trick to reduce computation time.
         """
         if is_complex(other):
@@ -385,7 +385,7 @@ class CVTensor:
     def sum(self, dim=None, keepdim=False):
         """Sum of the complex tensor."""
         return CVTensor(self.real.sum(dim, keepdim), self.imag.sum(dim, keepdim))
-    
+
     def roll(self, shifts, dims=None):
         """Same as torch.roll() but for CVTensor."""
         return CVTensor(self.real.roll(shifts, dims), self.imag.roll(shifts, dims))

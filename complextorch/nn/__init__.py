@@ -38,7 +38,11 @@ from .modules.loss import SplitSSIM, PerpLossSSIM, SplitL1, SplitMSE
 from .modules.loss import CVQuadError, CVFourthPowError, CVCauchyError, CVLogCoshError
 from .modules.loss import CVLogError
 
-from .modules.pooling import CVAdaptiveAvgPool1d, CVAdaptiveAvgPool2d, CVAdaptiveAvgPool3d
+from .modules.pooling import (
+    CVAdaptiveAvgPool1d,
+    CVAdaptiveAvgPool2d,
+    CVAdaptiveAvgPool3d,
+)
 
 from .modules.fft import FFTBlock, IFFTBlock
 
