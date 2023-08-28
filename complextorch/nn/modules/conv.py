@@ -5,7 +5,6 @@ from torch.nn.common_types import _size_1_t, _size_2_t, _size_3_t
 
 from typing import Tuple, Union
 
-from .. import functional as cvF
 from ... import CVTensor
 
 __all__ = [
@@ -16,17 +15,17 @@ __all__ = [
     "CVConvTranpose1d",
     "CVConvTranpose2d",
     "CVConvTranpose3d",
-    "default_slow_cvconv1d",
-    "default_cvconv1d",
 ]
 
 
 class SlowCVConv1d(nn.Module):
     """
-    Slow complex-valued 1D convolution.
-        - Implemented using torch.nn.Conv1d and complex-valued tensors.
-        - slower than using CVTensor. PyTorch must have some additional overhead that makes
-          this method significantly slower than using CVTensors and the other CVConv layers
+    Slow Complex-Valued 1-D Convolution
+    -----------------------------------
+
+        - Implemented using `torch.nn.Conv1d <https://pytorch.org/docs/stable/generated/torch.nn.Conv1d.html>`_ and complex-valued tensors.
+
+        - Slower than using CVTensor. PyTorch must have some additional overhead that makes this method significantly slower than using CVTensors and the other CVConv layers
     """
 
     def __init__(
@@ -59,25 +58,11 @@ class SlowCVConv1d(nn.Module):
         return CVTensor(x.real, x.imag)
 
 
-def default_slow_cvconv1d(
-    in_channels: int, out_channels: int, kernel_size: int, bias: bool = False
-) -> SlowCVConv1d:
-    """
-    Default complex-valued 1D convolution.
-        - Implemented using torch.nn.Conv1d and complex-valued tensors.
-        - slower than using CVTensor
-    """
-    return SlowCVConv1d(
-        in_channels=in_channels,
-        out_channels=out_channels,
-        kernel_size=kernel_size,
-        padding=kernel_size // 2,
-        bias=bias,
-    )
-
-
 class _CVConv(nn.Module):
-    """CVTensor-based complex-valued convolution."""
+    """
+    CVTensor-based Complex-Valued Convolution
+    -----------------------------------------
+    """
 
     def __init__(
         self,
@@ -165,8 +150,7 @@ class _CVConv(nn.Module):
 
     def forward(self, x: CVTensor) -> CVTensor:
         """
-        Computes convolution 25% faster than naive method by using Gauss'
-        multiplication trick
+        Computes convolution 25% faster than naive method by using Gauss' multiplication trick
         """
         t1 = self.conv_r(x.real)
         t2 = self.conv_i(x.imag)
@@ -185,7 +169,36 @@ class _CVConv(nn.Module):
 
 
 class CVConv1d(_CVConv):
-    """CVTensor-based complex-valued 1D convolution."""
+    """
+    1-D Complex-Valued Convolution
+    ------------------------------
+
+    Based on the `PyTorch torch.nn.Conv1d <https://pytorch.org/docs/stable/generated/torch.nn.Conv1d.html>`_ implementation.
+
+    Employs Gauss' multiplication trick to reduce number of computations by 25% compare with the naive implementation.
+
+    The most common implementation of complex-valued convolution entails the following computation:
+
+    .. math::
+
+        G(\mathbf{z}) = conv(\mathbf{z}_{real}, \mathbf{W}_{real}, \mathbf{b}_{real})) - conv(\mathbf{z}_{imag}, \mathbf{W}_{imag}, \mathbf{b}_{imag})) + j(conv(\mathbf{z}_{real}, \mathbf{W}_{imag}, \mathbf{b}_{imag})) + conv(\mathbf{z}_{imag}, \mathbf{W}_{real}, \mathbf{b}_{real})))
+
+    where :math:`\mathbf{W}` and :math:`\mathbf{b}` are the complex-valued weight and bias tensors, respectively, and :math:`conv(\cdot)` is the conovlution operator.
+
+    By comparison, using Gauss' trick, the complex-vauled convolution can be implemented as:
+
+    .. math::
+
+        t1 =& conv(\mathbf{z}_{real}, \mathbf{W}_{real}, \mathbf{b}_{real}))
+
+        t2 =& conv(\mathbf{z}_{imag}, \mathbf{W}_{imag}, \mathbf{b}_{imag}))
+
+        t3 =& conv(\mathbf{z}_{real} + \mathbf{z}_{imag}, \mathbf{W}_{real} + \mathbf{W}_{imag}, \mathbf{b}_{real} + \mathbf{b}_{imag}))
+
+        G(\mathbf{z}) =& t1 - t2 + j(t3 - t2 - t1)
+
+    requiring only 3 convolution operations.
+    """
 
     def __init__(
         self,
@@ -218,21 +231,37 @@ class CVConv1d(_CVConv):
         )
 
 
-def default_cvconv1d(
-    in_channels: int, out_channels: int, kernel_size: int, bias: bool = False
-) -> CVConv1d:
-    """Default complex-valued 1D convolution."""
-    return CVConv1d(
-        in_channels=in_channels,
-        out_channels=out_channels,
-        kernel_size=kernel_size,
-        padding=kernel_size // 2,
-        bias=bias,
-    )
-
-
 class CVConv2d(_CVConv):
-    """CVTensor-based complex-valued 2D convolution."""
+    """
+    2-D Complex-Valued Convolution
+    ------------------------------
+
+    Based on the `PyTorch torch.nn.Conv2d <https://pytorch.org/docs/stable/generated/torch.nn.Conv2d.html>`_ implementation.
+
+    Employs Gauss' multiplication trick to reduce number of computations by 25% compare with the naive implementation.
+
+    The most common implementation of complex-valued convolution entails the following computation:
+
+    .. math::
+
+        G(\mathbf{z}) = conv(\mathbf{z}_{real}, \mathbf{W}_{real}, \mathbf{b}_{real})) - conv(\mathbf{z}_{imag}, \mathbf{W}_{imag}, \mathbf{b}_{imag})) + j(conv(\mathbf{z}_{real}, \mathbf{W}_{imag}, \mathbf{b}_{imag})) + conv(\mathbf{z}_{imag}, \mathbf{W}_{real}, \mathbf{b}_{real})))
+
+    where :math:`\mathbf{W}` and :math:`\mathbf{b}` are the complex-valued weight and bias tensors, respectively, and :math:`conv(\cdot)` is the conovlution operator.
+
+    By comparison, using Gauss' trick, the complex-vauled convolution can be implemented as:
+
+    .. math::
+
+        t1 =& conv(\mathbf{z}_{real}, \mathbf{W}_{real}, \mathbf{b}_{real}))
+
+        t2 =& conv(\mathbf{z}_{imag}, \mathbf{W}_{imag}, \mathbf{b}_{imag}))
+
+        t3 =& conv(\mathbf{z}_{real} + \mathbf{z}_{imag}, \mathbf{W}_{real} + \mathbf{W}_{imag}, \mathbf{b}_{real} + \mathbf{b}_{imag}))
+
+        G(\mathbf{z}) =& t1 - t2 + j(t3 - t2 - t1)
+
+    requiring only 3 convolution operations.
+    """
 
     def __init__(
         self,
@@ -266,7 +295,36 @@ class CVConv2d(_CVConv):
 
 
 class CVConv3d(_CVConv):
-    """CVTensor-based complex-valued 3D convolution."""
+    """
+    3-D Complex-Valued Convolution
+    ------------------------------
+
+    Based on the `PyTorch torch.nn.Conv3d <https://pytorch.org/docs/stable/generated/torch.nn.Conv3d.html>`_ implementation.
+
+    Employs Gauss' multiplication trick to reduce number of computations by 25% compare with the naive implementation.
+
+    The most common implementation of complex-valued convolution entails the following computation:
+
+    .. math::
+
+        G(\mathbf{z}) = conv(\mathbf{z}_{real}, \mathbf{W}_{real}, \mathbf{b}_{real})) - conv(\mathbf{z}_{imag}, \mathbf{W}_{imag}, \mathbf{b}_{imag})) + j(conv(\mathbf{z}_{real}, \mathbf{W}_{imag}, \mathbf{b}_{imag})) + conv(\mathbf{z}_{imag}, \mathbf{W}_{real}, \mathbf{b}_{real})))
+
+    where :math:`\mathbf{W}` and :math:`\mathbf{b}` are the complex-valued weight and bias tensors, respectively, and :math:`conv(\cdot)` is the conovlution operator.
+
+    By comparison, using Gauss' trick, the complex-vauled convolution can be implemented as:
+
+    .. math::
+
+        t1 =& conv(\mathbf{z}_{real}, \mathbf{W}_{real}, \mathbf{b}_{real}))
+
+        t2 =& conv(\mathbf{z}_{imag}, \mathbf{W}_{imag}, \mathbf{b}_{imag}))
+
+        t3 =& conv(\mathbf{z}_{real} + \mathbf{z}_{imag}, \mathbf{W}_{real} + \mathbf{W}_{imag}, \mathbf{b}_{real} + \mathbf{b}_{imag}))
+
+        G(\mathbf{z}) =& t1 - t2 + j(t3 - t2 - t1)
+
+    requiring only 3 convolution operations.
+    """
 
     def __init__(
         self,
@@ -300,11 +358,15 @@ class CVConv3d(_CVConv):
 
 
 class _CVConvTranspose(nn.Module):
-    """CVTensor-based complex-valued convolution."""
+    """
+    CVTensor-based Complex-Valued Transposed Convolution
+    ----------------------------------------------------
+    """
 
     def __init__(
         self,
-        ConvClass,
+        ConvClass: nn.Module,
+        ConvFunc,
         in_channels: int,
         out_channels: int,
         kernel_size: Tuple[int, ...],
@@ -319,6 +381,16 @@ class _CVConvTranspose(nn.Module):
         dtype=None,
     ) -> None:
         super(_CVConvTranspose, self).__init__()
+
+        self.ConvFunc = ConvFunc
+        self.in_channels = in_channels
+        self.out_channels = out_channels
+        self.kernel_size = kernel_size
+        self.stride = stride
+        self.padding = padding
+        self.dilation = dilation
+        self.output_padding = output_padding
+        self.groups = groups
 
         # Assumes PyTorch complex weight initialization is correct
         __temp = ConvClass(
@@ -381,11 +453,59 @@ class _CVConvTranspose(nn.Module):
         return CVTensor(self.convt_r.bias, self.convt_i.bias)
 
     def forward(self, x: CVTensor) -> CVTensor:
-        return cvF.apply_complex(self.convt_r, self.convt_i, x)
+        """
+        Computes convolution 25% faster than naive method by using Gauss' multiplication trick
+        """
+        t1 = self.convt_r(x.real)
+        t2 = self.convt_i(x.imag)
+        bias = (
+            None
+            if self.convt_r.bias is None
+            else (self.convt_r.bias + self.convt_i.bias)
+        )
+        t3 = self.ConvFunc(
+            input=(x.real + x.imag),
+            weight=(self.convt_r.weight + self.convt_i.weight),
+            bias=bias,
+            stride=self.stride,
+            padding=self.padding,
+            groups=self.groups,
+        )
+        return CVTensor(t1 - t2, t3 - t2 - t1)
 
 
 class CVConvTranpose1d(_CVConvTranspose):
-    """CVTensor-based complex-valued 2D transpose convolution."""
+    """
+    1-D Complex-Valued Transposed Convolution
+    -----------------------------------------
+
+    Based on the `PyTorch torch.nn.ConvTranspose1d <https://pytorch.org/docs/stable/generated/torch.nn.ConvTranspose1d.html>`_ implementation.
+
+    Employs Gauss' multiplication trick to reduce number of computations by 25% compare with the naive implementation.
+
+    The most common implementation of complex-valued convolution entails the following computation:
+
+    .. math::
+
+        G(\mathbf{z}) = convT(\mathbf{z}_{real}, \mathbf{W}_{real}, \mathbf{b}_{real})) - convT(\mathbf{z}_{imag}, \mathbf{W}_{imag}, \mathbf{b}_{imag}))
+        + j(convT(\mathbf{z}_{real}, \mathbf{W}_{imag}, \mathbf{b}_{imag})) + convT(\mathbf{z}_{imag}, \mathbf{W}_{real}, \mathbf{b}_{real})))
+
+    where :math:`\mathbf{W}` and :math:`\mathbf{b}` are the complex-valued weight and bias tensors, respectively, and :math:`convT(\cdot)` is the transposed conovlution operator.
+
+    By comparison, using Gauss' trick, the complex-vauled convolution can be implemented as:
+
+    .. math::
+
+        t1 =& convT(\mathbf{z}_{real}, \mathbf{W}_{real}, \mathbf{b}_{real}))
+
+        t2 =& convT(\mathbf{z}_{imag}, \mathbf{W}_{imag}, \mathbf{b}_{imag}))
+
+        t3 =& convT(\mathbf{z}_{real} + \mathbf{z}_{imag}, \mathbf{W}_{real} + \mathbf{W}_{imag}, \mathbf{b}_{real} + \mathbf{b}_{imag}))
+
+        G(\mathbf{z}) =& t1 - t2 + j(t3 - t2 - t1)
+
+    requiring only 3 transposed convolution operations.
+    """
 
     def __init__(
         self,
@@ -404,6 +524,7 @@ class CVConvTranpose1d(_CVConvTranspose):
     ) -> None:
         super(CVConvTranpose1d, self).__init__(
             ConvClass=nn.ConvTranspose1d,
+            ConvFunc=F.conv_transpose1d,
             in_channels=in_channels,
             out_channels=out_channels,
             kernel_size=kernel_size,
@@ -420,7 +541,37 @@ class CVConvTranpose1d(_CVConvTranspose):
 
 
 class CVConvTranpose2d(_CVConvTranspose):
-    """CVTensor-based complex-valued 2D transpose convolution."""
+    """
+    2-D Complex-Valued Transposed Convolution
+    -----------------------------------------
+
+    Based on the `PyTorch torch.nn.ConvTranspose2d <https://pytorch.org/docs/stable/generated/torch.nn.ConvTranspose2d.html>`_ implementation.
+
+    Employs Gauss' multiplication trick to reduce number of computations by 25% compare with the naive implementation.
+
+    The most common implementation of complex-valued convolution entails the following computation:
+
+    .. math::
+
+        G(\mathbf{z}) = convT(\mathbf{z}_{real}, \mathbf{W}_{real}, \mathbf{b}_{real})) - convT(\mathbf{z}_{imag}, \mathbf{W}_{imag}, \mathbf{b}_{imag}))
+        + j(convT(\mathbf{z}_{real}, \mathbf{W}_{imag}, \mathbf{b}_{imag})) + convT(\mathbf{z}_{imag}, \mathbf{W}_{real}, \mathbf{b}_{real})))
+
+    where :math:`\mathbf{W}` and :math:`\mathbf{b}` are the complex-valued weight and bias tensors, respectively, and :math:`convT(\cdot)` is the transposed conovlution operator.
+
+    By comparison, using Gauss' trick, the complex-vauled convolution can be implemented as:
+
+    .. math::
+
+        t1 =& convT(\mathbf{z}_{real}, \mathbf{W}_{real}, \mathbf{b}_{real}))
+
+        t2 =& convT(\mathbf{z}_{imag}, \mathbf{W}_{imag}, \mathbf{b}_{imag}))
+
+        t3 =& convT(\mathbf{z}_{real} + \mathbf{z}_{imag}, \mathbf{W}_{real} + \mathbf{W}_{imag}, \mathbf{b}_{real} + \mathbf{b}_{imag}))
+
+        G(\mathbf{z}) =& t1 - t2 + j(t3 - t2 - t1)
+
+    requiring only 3 transposed convolution operations.
+    """
 
     def __init__(
         self,
@@ -439,6 +590,7 @@ class CVConvTranpose2d(_CVConvTranspose):
     ) -> None:
         super(CVConvTranpose2d, self).__init__(
             ConvClass=nn.ConvTranspose2d,
+            ConvFunc=F.conv_transpose2d,
             in_channels=in_channels,
             out_channels=out_channels,
             kernel_size=kernel_size,
@@ -455,7 +607,37 @@ class CVConvTranpose2d(_CVConvTranspose):
 
 
 class CVConvTranpose3d(_CVConvTranspose):
-    """CVTensor-based complex-valued 3D transpose convolution."""
+    """
+    3-D Complex-Valued Transposed Convolution
+    -----------------------------------------
+
+    Based on the `PyTorch torch.nn.ConvTranspose3d <https://pytorch.org/docs/stable/generated/torch.nn.ConvTranspose3d.html>`_ implementation.
+
+    Employs Gauss' multiplication trick to reduce number of computations by 25% compare with the naive implementation.
+
+    The most common implementation of complex-valued convolution entails the following computation:
+
+    .. math::
+
+        G(\mathbf{z}) = convT(\mathbf{z}_{real}, \mathbf{W}_{real}, \mathbf{b}_{real})) - convT(\mathbf{z}_{imag}, \mathbf{W}_{imag}, \mathbf{b}_{imag}))
+        + j(convT(\mathbf{z}_{real}, \mathbf{W}_{imag}, \mathbf{b}_{imag})) + convT(\mathbf{z}_{imag}, \mathbf{W}_{real}, \mathbf{b}_{real})))
+
+    where :math:`\mathbf{W}` and :math:`\mathbf{b}` are the complex-valued weight and bias tensors, respectively, and :math:`convT(\cdot)` is the transposed conovlution operator.
+
+    By comparison, using Gauss' trick, the complex-vauled convolution can be implemented as:
+
+    .. math::
+
+        t1 =& convT(\mathbf{z}_{real}, \mathbf{W}_{real}, \mathbf{b}_{real}))
+
+        t2 =& convT(\mathbf{z}_{imag}, \mathbf{W}_{imag}, \mathbf{b}_{imag}))
+
+        t3 =& convT(\mathbf{z}_{real} + \mathbf{z}_{imag}, \mathbf{W}_{real} + \mathbf{W}_{imag}, \mathbf{b}_{real} + \mathbf{b}_{imag}))
+
+        G(\mathbf{z}) =& t1 - t2 + j(t3 - t2 - t1)
+
+    requiring only 3 transposed convolution operations.
+    """
 
     def __init__(
         self,
@@ -474,6 +656,7 @@ class CVConvTranpose3d(_CVConvTranspose):
     ) -> None:
         super(CVConvTranpose3d, self).__init__(
             ConvClass=nn.ConvTranspose3d,
+            ConvFunc=F.conv_transpose3d,
             in_channels=in_channels,
             out_channels=out_channels,
             kernel_size=kernel_size,

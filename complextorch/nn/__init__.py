@@ -15,7 +15,6 @@ from .modules.activation import (
     CVPolarLog,
 )
 
-from .modules.conv import default_cvconv1d, default_slow_cvconv1d
 from .modules.conv import SlowCVConv1d
 from .modules.conv import CVConv1d, CVConv2d, CVConv3d
 from .modules.conv import CVConvTranpose1d, CVConvTranpose2d, CVConvTranpose3d
