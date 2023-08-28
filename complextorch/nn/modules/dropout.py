@@ -7,7 +7,12 @@ __all__ = ["CVDropout"]
 
 
 class CVDropout(nn.Module):
-    """Complex-Valued Dropout Layer."""
+    """
+    Complex-Valued Dropout Layer
+    ----------------------------
+
+    Applies `PyTorch Droput <https://pytorch.org/docs/stable/generated/torch.nn.Dropout.html>`_ to real and imaginary parts separately.
+    """
 
     def __init__(self, p: float = 0.5, inplace: bool = False) -> None:
         super(CVDropout, self).__init__()
