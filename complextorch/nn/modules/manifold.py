@@ -11,19 +11,49 @@ __all__ = ["wFMConv1d", "wFMConv2d"]
 
 
 def _normalize_weights_squared(weights: torch.Tensor) -> torch.Tensor:
+    """Normalizes the square of input tensor (weights) such that the sum of the output is 1.
+    Follows the function `weightNormalize1` from https://github.com/xingyifei2016/RotLieNet/blob/master/layers.py.
+
+    Args:
+        weights (torch.Tensor): input tensor
+
+    Returns:
+        torch.Tensor: normalized output
+    """
     return (weights**2) / torch.sum(weights**2)
 
 
 def _normalize_weights(weights: torch.Tensor) -> torch.Tensor:
+    """Normalizes the input tensor by the sum of its square.
+    Follows the function `weightNormalize2` from https://github.com/xingyifei2016/RotLieNet/blob/master/layers.py.
+
+    Args:
+        weights (torch.Tensor): input tensor
+
+    Returns:
+        torch.Tensor: normalized output
+    """
     return weights / torch.sum(weights**2)
 
 
 def _normalize_rows(weights: torch.Tensor) -> torch.Tensor:
-    return weights**2 / torch.sum(weights**2, dim=1, keepdim=True)
+    """Normalizes the square of input tensor by each row such that the sum of each row of the output is 1.
+    Follows the function `weightNormalize` from https://github.com/xingyifei2016/RotLieNet/blob/master/layers.py.
+
+    Args:
+        weights (torch.Tensor): input tensor
+
+    Returns:
+        torch.Tensor: normalized output
+    """
+    return (weights**2) / torch.sum(weights**2, dim=1, keepdim=True)
 
 
 class _wFMConv2dHelper(nn.Module):
-    """Helper class for wFMConv2d."""
+    """
+    Helper Class for wFMConv2d
+    --------------------------
+    """
 
     def __init__(
         self,
@@ -138,13 +168,35 @@ class _wFMConv2dHelper(nn.Module):
 
 class wFMConv2d(nn.Module):
     """
-    Weighted Frechet Mean 2D Convolutional Layer.
+    2-D Weighted Frechet Mean Convolution Layer
+    -------------------------------------------
 
-    R Chakraborty, Y Xing, S Yu. SurReal: Complex-Valued Learning as Principled Transformations on a Scaling and Rotation Manifold.
-    Eqs. (14)-(16)
-    https://arxiv.org/abs/1910.11334
+    In a paper title `Complex-Valued Learning as Principled Transformations on a Scaling and Rotation Manifold`, the authors R Chakraborty, Y Xing, and S Yu introduce a complex-valued convolution operator offering similar equivariance properties to the spatial equivariance of the traditional real-valued convolution operator.
+    By approach the complex domain as a Riemannian homogeneous space consisting of the product of planar rotation and non-zero scaling, they define a convolution operator equivariant to phase shift and amplitude scaling.
+    Although their paper shows promising results in reducing the number of parameters of a complex-valued network for several problems, their work has not gained mainstream support.
 
-    Modified from implementation: https://github.com/xingyifei2016/RotLieNet
+    As the authors mention in the final bullet point in Section IV-A1,
+
+        If :math:`d` is the manifold distance in (2) for the Euclidean
+        space that is also Riemannian, then wFM has exactly the
+        weighted average as its closed-form solution. That is, our
+        wFM convolution on the Euclidean manifold is reduced
+        to the standard convolution, although with the additional
+        convexity constraint on the weights.
+
+    Hence, the implementation closely follows the conventional convolution operator with the exception of the weight normalization.
+
+    Note: the weight normalization, although consistent with the authors' implementation, lacks adequate explanation from the literature and could be improved for further clarity.
+
+    Based on work from the following paper:
+
+        **R Chakraborty, Y Xing, S Yu. SurReal: Complex-Valued Learning as Principled Transformations on a Scaling and Rotation Manifold**
+
+            - Eqs. (14)-(16)
+
+            - https://arxiv.org/abs/1910.11334
+
+            - Modified from implementation: https://github.com/xingyifei2016/RotLieNet (yields consistent results as this implementation)
     """
 
     def __init__(
@@ -195,6 +247,14 @@ class wFMConv2d(nn.Module):
         )
 
     def forward(self, input: CVTensor) -> CVTensor:
+        """Computes the 2-D weighted Frechet mean (wFM) convolution.
+
+        Args:
+            input (CVTensor): input tensor
+
+        Returns:
+            CVTensor: output tensor
+        """
         batch_size, in_channels, *input_shape = input.shape
 
         assert in_channels == self.in_channels, "Input channels must match"
@@ -264,15 +324,37 @@ class wFMConv2d(nn.Module):
 
 class wFMConv1d(nn.Module):
     """
-    Weighted Frechet Mean 1D Convolutional Layer.
+    1-D Weighted Frechet Mean Convolution Layer
+    -------------------------------------------
 
-    R Chakraborty, Y Xing, S Yu. SurReal: Complex-Valued Learning as Principled Transformations on a Scaling and Rotation Manifold.
-    Eqs. (14)-(16)
-    https://arxiv.org/abs/1910.11334
+    In a paper title `Complex-Valued Learning as Principled Transformations on a Scaling and Rotation Manifold`, the authors R Chakraborty, Y Xing, and S Yu introduce a complex-valued convolution operator offering similar equivariance properties to the spatial equivariance of the traditional real-valued convolution operator.
+    By approach the complex domain as a Riemannian homogeneous space consisting of the product of planar rotation and non-zero scaling, they define a convolution operator equivariant to phase shift and amplitude scaling.
+    Although their paper shows promising results in reducing the number of parameters of a complex-valued network for several problems, their work has not gained mainstream support.
 
-    Modified from implementation: https://github.com/xingyifei2016/RotLieNet
+    As the authors mention in the final bullet point in Section IV-A1,
+
+        If :math:`d` is the manifold distance in (2) for the Euclidean
+        space that is also Riemannian, then wFM has exactly the
+        weighted average as its closed-form solution. That is, our
+        wFM convolution on the Euclidean manifold is reduced
+        to the standard convolution, although with the additional
+        convexity constraint on the weights.
+
+    Hence, the implementation closely follows the conventional convolution operator with the exception of the weight normalization.
+
+    Note: the weight normalization, although consistent with the authors' implementation, lacks adequate explanation from the literature and could be improved for further clarity.
 
     Note: This is a wrapper around wFMConv2d that performs a 1D convolution
+
+    Based on work from the following paper:
+
+        **R Chakraborty, Y Xing, S Yu. SurReal: Complex-Valued Learning as Principled Transformations on a Scaling and Rotation Manifold**
+
+            - Eqs. (14)-(16)
+
+            - https://arxiv.org/abs/1910.11334
+
+            - Modified from implementation: https://github.com/xingyifei2016/RotLieNet (yields consistent results as this implementation)
     """
 
     def __init__(
@@ -304,6 +386,14 @@ class wFMConv1d(nn.Module):
         self.wFM_conv = self.conv1d.wFM_conv
 
     def forward(self, input: CVTensor) -> CVTensor:
+        """Computes the 1-D weighted Frechet mean (wFM) convolution. See :class:`wFMConv2d` for more implementation details as :class:`wFMConv1d` is a wrapper around :class:`wFMConv2d`.
+
+        Args:
+            input (CVTensor): input tensor
+
+        Returns:
+            CVTensor: output tensor
+        """
         return self.conv1d(input.unsqueeze(-2)).squeeze()
 
     @property
