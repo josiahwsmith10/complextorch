@@ -101,7 +101,7 @@ class SplitL1(GeneralizedSplitLoss):
 
     .. math::
 
-        L1(x, y) = \\texttt{L1}(\mathbf{x}_{real}, \mathbf{y}_{real}) + \\texttt{L1}(\mathbf{x}_{imag}, \mathbf{y}_{imag})
+        L1(\mathbf{x}, \mathbf{y}) = \\texttt{L1}(\mathbf{x}_{real}, \mathbf{y}_{real}) + \\texttt{L1}(\mathbf{x}_{imag}, \mathbf{y}_{imag})
     """
 
     def __init__(self) -> None:
@@ -115,7 +115,7 @@ class SplitMSE(GeneralizedSplitLoss):
 
     .. math::
 
-        MSE(x, y) = \\texttt{MSE}(\mathbf{x}_{real}, \mathbf{y}_{real}) + \\texttt{MSE}(\mathbf{x}_{imag}, \mathbf{y}_{imag})
+        MSE(\mathbf{x}, \mathbf{y}) = \\texttt{MSE}(\mathbf{x}_{real}, \mathbf{y}_{real}) + \\texttt{MSE}(\mathbf{x}_{imag}, \mathbf{y}_{imag})
     """
 
     def __init__(self) -> None:
@@ -160,7 +160,7 @@ class SSIM(nn.Module):
             full (bool, optional): Compute full SSIM. Defaults to False.
 
         Returns:
-            torch.Tensor: :math:`\\texttt{SSIM}(x, y)`
+            torch.Tensor: :math:`\\texttt{SSIM}(\mathbf{x}, \mathbf{y})`
         """
         assert isinstance(self.w, torch.Tensor)
 
@@ -249,7 +249,7 @@ class PerpLossSSIM(nn.Module):
             y (CVTensor): target/ground truth label
 
         Returns:
-            torch.Tensor: :math:`\\texttt{PerpLossSSIM}(x, y)`
+            torch.Tensor: :math:`\\texttt{PerpLossSSIM}(\mathbf{x}, \mathbf{y})`
         """
         mag_input = torch.abs(x)
         mag_target = torch.abs(y)
@@ -280,7 +280,7 @@ class CVQuadError(nn.Module):
 
     .. math::
 
-        G(x, y) = 1/2 * \\text{sum}(|x - y|^2)
+        G(\mathbf{x}, \mathbf{y}) = 1/2 * \\text{sum}(|\mathbf{x} - \mathbf{y}|^2)
 
     Based on work from the following paper:
 
@@ -302,7 +302,7 @@ class CVQuadError(nn.Module):
             y (CVTensor): target/ground truth labels
 
         Returns:
-            torch.Tensor: :math:`1/2 * \\text{sum}(|x - y|^2)`
+            torch.Tensor: :math:`1/2 * \\text{sum}(|\mathbf{x} - \mathbf{y}|^2)`
         """
         return 0.5 * ((x - y).abs() ** 2).sum()
 
@@ -314,7 +314,7 @@ class CVFourthPowError(nn.Module):
 
     .. math::
 
-        G(x, y) = 1/2 * \\text{sum}(|x - y|^4)
+        G(\mathbf{x}, \mathbf{y}) = 1/2 * \\text{sum}(|\mathbf{x} - \mathbf{y}|^4)
 
     Based on work from the following paper:
 
@@ -336,7 +336,7 @@ class CVFourthPowError(nn.Module):
             y (CVTensor): target/ground truth labels
 
         Returns:
-            torch.Tensor: :math:`1/2 * \\text{sum}(|x - y|^4)`
+            torch.Tensor: :math:`1/2 * \\text{sum}(|\mathbf{x} - \mathbf{y}|^4)`
         """
         return 0.5 * ((x - y).abs() ** 4).sum()
 
@@ -347,7 +347,7 @@ class CVCauchyError(nn.Module):
 
     .. math::
 
-        G(x, y) = 1/2 * \\text{sum}( c^2 / 2 \ln(1 + |x - y|^2/c^2) )
+        G(\mathbf{x}, \mathbf{y}) = 1/2 * \\text{sum}( c^2 / 2 \ln(1 + |\mathbf{x} - \mathbf{y}|^2/c^2) )
         
     where :math:`c` is typically set to unity.
 
@@ -373,7 +373,7 @@ class CVCauchyError(nn.Module):
             y (CVTensor): target/ground truth labels
 
         Returns:
-            torch.Tensor: :math:`1/2 * \\text{sum}( c^2 / 2 \ln(1 + |x - y|^2/c^2) )`
+            torch.Tensor: :math:`1/2 * \\text{sum}( c^2 / 2 \ln(1 + |\mathbf{x} - \mathbf{y}|^2/c^2) )`
         """
         return (self.c2 / 2 * torch.log(1 + ((x - y).abs() ** 2) / self.c2)).sum()
 
@@ -384,7 +384,7 @@ class CVLogCoshError(nn.Module):
 
     .. math::
 
-        G(x, y) = \\text{sum}(\ln(\cosh(|x - y|^2))
+        G(\mathbf{x}, \mathbf{y}) = \\text{sum}(\ln(\cosh(|\mathbf{x} - \mathbf{y}|^2))
 
     Based on work from the following paper:
 
@@ -406,7 +406,7 @@ class CVLogCoshError(nn.Module):
             y (CVTensor): target/ground truth labels
 
         Returns:
-            torch.Tensor: :math:`\\text{sum}(\ln(\cosh(|x - y|^2))`
+            torch.Tensor: :math:`\\text{sum}(\ln(\cosh(|\mathbf{x} - \mathbf{y}|^2))`
         """
         return torch.log(torch.cosh((x - y).abs() ** 2)).sum()
 
@@ -417,7 +417,7 @@ class CVLogError(nn.Module):
 
     .. math::
 
-        G(x, y) = \\text{sum}(|log(x) - log(y)|^2)
+        G(\mathbf{x}, \mathbf{y}) = \\text{sum}(|\ln(\mathbf{x}) - \ln(\mathbf{y})|^2)
 
     Based on work from the following paper:
 
@@ -439,7 +439,7 @@ class CVLogError(nn.Module):
             y (CVTensor): target/ground truth labels
 
         Returns:
-            torch.Tensor: :math:`\\text{sum}(|log(x) - log(y)|^2)`
+            torch.Tensor: :math:`\\text{sum}(|\ln(\mathbf{x}) - \ln(\mathbf{y})|^2)`
         """
         err = torch.log(x.complex) - torch.log(y.complex)
         return (err.abs() ** 2).sum()
