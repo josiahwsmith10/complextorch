@@ -43,7 +43,7 @@ class GeneralizedPolarActivation(nn.Module):
             input (CVTensor): input tensor
 
         Returns:
-            CVTensor: \\texttt{activation_mag}(input.abs()) * exp(1j*\\texttt{activation_phase}(input.angle())
+            CVTensor: :math:`G_{mag}(|\mathbf{z}|) * \exp(j G_{phase}(\\text{angle}(\mathbf{z})))`
         """
         return cvF.apply_complex_polar(
             self.activation_mag, self.activation_phase, input
