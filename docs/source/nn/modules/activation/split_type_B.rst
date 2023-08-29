@@ -5,7 +5,7 @@ Split Type-B Activation Functions
 
 .. math::
 
-    G(\mathbf{z}) = G_{mag}(|\mathbf{z}|) * \exp(j G_{phase}(\\text{angle}(\mathbf{z})))
+    G(\mathbf{z}) = G_{mag}(|\mathbf{z}|) * \exp(j G_{phase}(\text{angle}(\mathbf{z})))
 
 A generalized Type-B split activation function is defined in :class:`GeneralizedPolarActivation`, which accepts two real-valued torch.nn.Module objects for :math:`G_{mag}(\cdot)` and :math:`G_{phase}(\cdot)`, respectively. 
 
