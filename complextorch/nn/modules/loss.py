@@ -101,7 +101,7 @@ class SplitL1(GeneralizedSplitLoss):
 
     .. math::
 
-        L1(x, y) = L1(\mathbf{x}_{real}, \mathbf{y}_{real}) + L1(\mathbf{x}_{imag}, \mathbf{y}_{imag})
+        L1(x, y) = \\texttt{L1}(\mathbf{x}_{real}, \mathbf{y}_{real}) + \\texttt{L1}(\mathbf{x}_{imag}, \mathbf{y}_{imag})
     """
 
     def __init__(self) -> None:
@@ -115,7 +115,7 @@ class SplitMSE(GeneralizedSplitLoss):
 
     .. math::
 
-        MSE(x, y) = MSE(\mathbf{x}_{real}, \mathbf{y}_{real}) + MSE(\mathbf{x}_{imag}, \mathbf{y}_{imag})
+        MSE(x, y) = \\texttt{MSE}(\mathbf{x}_{real}, \mathbf{y}_{real}) + \\texttt{MSE}(\mathbf{x}_{imag}, \mathbf{y}_{imag})
     """
 
     def __init__(self) -> None:
@@ -160,7 +160,7 @@ class SSIM(nn.Module):
             full (bool, optional): Compute full SSIM. Defaults to False.
 
         Returns:
-            torch.Tensor: :math:`SSIM(x, y)`
+            torch.Tensor: :math:`\\texttt{SSIM}(x, y)`
         """
         assert isinstance(self.w, torch.Tensor)
 
@@ -249,7 +249,7 @@ class PerpLossSSIM(nn.Module):
             y (CVTensor): target/ground truth label
 
         Returns:
-            torch.Tensor: :math:`PerpLossSSIM(x, y)`
+            torch.Tensor: :math:`\\texttt{PerpLossSSIM}(x, y)`
         """
         mag_input = torch.abs(x)
         mag_target = torch.abs(y)
@@ -280,7 +280,7 @@ class CVQuadError(nn.Module):
 
     .. math::
 
-        G(x, y) = 1/2 * sum(err * err.H), err = x - y
+        G(x, y) = 1/2 * \\text{sum}(err * err.H), err = x - y
 
     Based on work from the following paper:
 
@@ -302,7 +302,7 @@ class CVQuadError(nn.Module):
             y (CVTensor): target/ground truth labels
 
         Returns:
-            torch.Tensor: :math:`1/2 * sum(err * err.H), err = x - y`
+            torch.Tensor: :math:`1/2 * \\text{sum}(err * err.H), err = x - y`
         """
         return 0.5 * ((x - y).abs() ** 2).sum()
 
@@ -314,7 +314,7 @@ class CVFourthPowError(nn.Module):
 
     .. math::
 
-        G(x, y) = 1/2 * sum( (err * err.H)^2 ), err = x - y
+        G(x, y) = 1/2 * \\text{sum}( (err * err.H)^2 ), err = x - y
 
     Based on work from the following paper:
 
@@ -336,7 +336,7 @@ class CVFourthPowError(nn.Module):
             y (CVTensor): target/ground truth labels
 
         Returns:
-            torch.Tensor: :math:`1/2 * sum( (err * err.H)^2 ), err = x - y`
+            torch.Tensor: :math:`1/2 * \\text{sum}( (err * err.H)^2 ), err = x - y`
         """
         return 0.5 * ((x - y).abs() ** 4).sum()
 
@@ -347,7 +347,7 @@ class CVCauchyError(nn.Module):
 
     .. math::
 
-        G(x, y) = 1/2 * sum( (err * err.H)^2 ), err = x - y
+        G(x, y) = 1/2 * \\text{sum}( (err * err.H)^2 ), err = x - y
 
     Based on work from the following paper:
 
@@ -371,7 +371,7 @@ class CVCauchyError(nn.Module):
             y (CVTensor): target/ground truth labels
 
         Returns:
-            torch.Tensor: :math:`1/2 * sum( (err * err.H)^2 ), err = x - y`
+            torch.Tensor: :math:`1/2 * \\text{sum}( (err * err.H)^2 ), err = x - y`
         """
         return (self.c2 / 2 * torch.log(1 + ((x - y).abs() ** 2) / self.c2)).sum()
 
@@ -382,7 +382,7 @@ class CVLogCoshError(nn.Module):
 
     .. math::
 
-        G(x, y) = sum(ln(cosh(err * err.H)), err = x - y
+        G(x, y) = \\text{sum}(\ln(\cosh(err * err.H)), err = x - y
 
     Based on work from the following paper:
 
@@ -404,7 +404,7 @@ class CVLogCoshError(nn.Module):
             y (CVTensor): target/ground truth labels
 
         Returns:
-            torch.Tensor: :math:`sum(ln(cosh(err * err.H)), err = x - y`
+            torch.Tensor: :math:`\\text{sum}(\ln(\cosh(err * err.H)), err = x - y`
         """
         return torch.log(torch.cosh((x - y).abs() ** 2)).sum()
 
@@ -415,7 +415,7 @@ class CVLogError(nn.Module):
 
     .. math::
 
-        G(x, y) = sum(err * err.H), err = log(x) - log(y)
+        G(x, y) = \\text{sum}(err * err.H), err = log(x) - log(y)
 
     Based on work from the following paper:
 
@@ -437,7 +437,7 @@ class CVLogError(nn.Module):
             y (CVTensor): target/ground truth labels
 
         Returns:
-            torch.Tensor: :math:`sum(err * err.H), err = log(x) - log(y)`
+            torch.Tensor: :math:`\\text{sum}(err * err.H), err = log(x) - log(y)`
         """
         err = torch.log(x.complex) - torch.log(y.complex)
         return (err.abs() ** 2).sum()
