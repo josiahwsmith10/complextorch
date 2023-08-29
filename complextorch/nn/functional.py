@@ -19,8 +19,19 @@ def apply_complex(
     real_module: nn.Module, imag_module: nn.Module, x: CVTensor
 ) -> CVTensor:
     """
+    Apply Complex
+    -------------
+
     Naive complex computation between a complex-valued module defined by two
     real-valued modules and a complex-valued tensor (CVTensor).
+    
+    Gauss' trick is often faster and is implemented throughout this package.
+
+    Given a complex-valued tensor :math:`\mathbf{z} = \mathbf{z}_{real} + j \mathbf{z}_{imag}` and a linear function :math:`G(\cdot) = G_{real}(\cdot) + j G_{imag}(\cdot)`, implements the following operation:
+
+    .. math::
+
+        G(\mathbf{z}) = G_{real}(\mathbf{z}_{real}) - G_{imag}(\mathbf{z}_{imag}) + j(G_{real}(\mathbf{z}_{imag}) + G_{imag}(\mathbf{z}_{real}))
     """
     return CVTensor(
         real_module(x.real) - imag_module(x.imag),
@@ -29,11 +40,55 @@ def apply_complex(
 
 
 def apply_complex_split(r_fun, i_fun, x: CVTensor) -> CVTensor:
+    """
+    Apply Complex Split
+    -------------------
+
+    Applies a split function (:math:`G(\cdot) = G_{real}(\cdot) + j G_{imag}(\cdot)`) to the real and imaginary parts of the input tensor (:math:`\mathbf{z}`) separately.
+
+    Implements the following operation:
+
+    .. math::
+
+        G(\mathbf{z}) = G_{real}(\mathbf{z}_{real}) + j G_{imag}(\mathbf{z}_{imag})
+
+    Args:
+        r_fun: function to be applied to the real part of the input tensor
+        i_fun: function to be applied to the imaginary part of the input tensor
+        x (CVTensor): input tensor
+
+    Returns:
+        CVTensor: :math:`G_{real}(\mathbf{z}_{real}) + j G_{imag}(\mathbf{z}_{imag})`
+    """
     return CVTensor(r_fun(x.real), i_fun(x.imag))
 
 
 def apply_complex_polar(mag_fun, phase_fun, x: CVTensor) -> CVTensor:
+    """
+    Apply Complex Polar
+    -------------------
+
+    Applies a polar function (:math:`G(\mathbf{z}) = G_{mag}(|\mathbf{z}|) * \exp(j G_{phase}(\\text{angle}(\mathbf{z})))`) to the magnitude and phase of the input tensor (:math:`\mathbf{z}`) separately.
+
+    Implements the following operation:
+
+    .. math::
+
+        G(\mathbf{z}) = G_{mag}(|\mathbf{z}|) * \exp(j G_{phase}(\\text{angle}(\mathbf{z})))
+
+    Args:
+        mag_fun: function to be applied to the magnitude of the input tensor
+        phase_fun: function to be applied to the phase of the input tensor
+        x (CVTensor): input tensor
+
+    Returns:
+        CVTensor: :math:`G_{mag}(|\mathbf{z}|) * \exp(j G_{phase}(\\text{angle}(\mathbf{z})))`
+    """
     return from_polar(mag_fun(x.abs()), phase_fun(x.angle()))
+
+
+def gauss_multiplication(t1, t2, t3):
+    return 
 
 
 def inv_sqrtm2x2(
@@ -44,38 +99,81 @@ def inv_sqrtm2x2(
     symmetric: bool = False,
 ):
     """
-    Compute the inverse matrix square root of a 2x2 matrix: A^-1/2
+    Inverse Squareroot of 2x2 Matrix
+    --------------------------------
+
+    Compute the inverse matrix square root of a 2x2 matrix: :math:`A^{-1/2}`
+    Improves computation speed of batch and layer normalization compared with PyTorch matrix inversion.
+
     Following: https://en.wikipedia.org/wiki/Square_root_of_a_2_by_2_matrix
 
-    A = [ a b
-          c d ]
+    Given matrix :math:`\mathbf{A}` as
 
-    recall:
-    A^-1 = 1/det(A) * [  d  -b
-                        -c   a ]
+    .. math::
 
-    define:
-    delta = det(A) = ad - bc
-    tau = trace(A) = a + d
+        \mathbf{A} = \\begin{bmatrix} a & b \\\\ c & d \end{bmatrix}.
 
-    s = sqrt(delta)
-    t = sqrt(tau + 2s)
+    Recall
 
-    A^(1/2) = 1/t * [ a+s  b
-                      c    d+s ]
+    .. math::
 
-    therefore:
-    A^(-1/2) = 1/(st) * [  d+s  -b
-                          -c     a+s ]
+        \mathbf{A}^{-1} = 1/\\text{det}(\mathbf{A}) * \\begin{bmatrix} d & -b \\\\ -c & a \end{bmatrix}.
 
-    define:
-    B = A^(-1/2) = [ w x
-                     y z]
+    We define two parameters
 
-    w = 1/(st) * (d+s)
-    x = 1/(st) * (-b)
-    y = 1/(st) * (-c)
-    z = 1/(st) * (a+s)
+    .. math::
+
+        \delta &\\triangleq \\text{det}(\mathbf{A}) = ad - bc,
+
+        \\tau &\\triangleq \\text{trace}(\mathbf{A}) = a + d.
+
+    Using :math:`\delta` and :math:`\\tau`, we define two parameters to establish the relationship between :math:`\mathbf{A}` and its matrix square root :math:`\mathbf{A}^{1/2}` as
+
+    .. math::
+
+        s \\triangleq \sqrt{\delta},
+
+        t \\triangleq \\sqrt{\\tau + 2s}.
+
+    The matrix square root can be expressed as
+
+    .. math::
+
+        \mathbf{A}^{1/2} = \\frac{1}{t} \\begin{bmatrix} a+s & b \\\\ c & d+s \end{bmatrix}.
+
+    Hence, the inverse of the matrix square root can be defined as
+
+    .. math::
+
+        \mathbf{A}^{-1/2} = \\frac{1}{st} \\begin{bmatrix} d+s & -b \\\\ -c & a+s \end{bmatrix}.
+
+    Finally, defining
+
+    .. math::
+
+        \mathbf{B} \\triangleq \\begin{bmatrix} w & x \\\\ y & z \end{bmatrix} \\triangleq \mathbf{A}^{-1/2}.
+
+    Hence,
+
+    .. math::
+
+        w &= \\frac{d + s}{st},
+
+        x &= \\frac{-b}{st},
+
+        y &= \\frac{-c}{st},
+
+        z &= \\frac{a + s}{st}.
+
+    Args:
+        a (torch.Tensor): a11 element of matrix A
+        b (torch.Tensor): a12 element of matrix A
+        c (torch.Tensor): a21 element of matrix A
+        d (torch.Tensor): a22 element of matrix A
+        symmetric (bool, optional): Boolean whether or not matrix A is symmetric. Defaults to False.
+
+    Returns:
+        Tuple[torch.Tensor]: :math:`w, x, y, z` elemets of matrix B, the matrix inverse square root of matrix A
     """
 
     if symmetric:
@@ -193,7 +291,10 @@ def cv_batch_norm(
     eps: float = 1e-5,
 ) -> CVTensor:
     """
-    Applies complex-valued Batch Normalization as described in
+    Complex-Valued Batch Normalization
+    ----------------------------------
+
+    Applies complex-valued batch normalization as described in
     (Trabelsi et al., 2018) for each channel across a batch of data.
 
     Arguments
@@ -275,7 +376,11 @@ def _whiten2x2_layer_norm(
     normalized_shape: List[int],
     eps: float = 1e-5,
 ):
-    """Performs 2x2 whitening for layer normalization
+    """
+    Layer Normalization Whitening
+    -----------------------------
+
+    Performs 2x2 whitening for layer normalization.
 
     Args:
         x (torch.Tensor): Input tensor of size 2 x B x F x ...
@@ -323,7 +428,33 @@ def cv_layer_norm(
     bias: Optional[torch.Tensor] = None,
     eps: float = 1e-5,
 ) -> CVTensor:
-    """Applies complex-valued Layer Normalization."""
+    """
+    Complex-Valued Layer Normalization
+    ----------------------------------
+
+    Applies complex-valued layer normalization extending the work of
+    (Trabelsi et al., 2018) for each channel across a batch of data.
+
+    Arguments
+    ---------
+    x : cvtorch.CVTensor
+        The input complex-valued data is expected to be at least 2d, with
+        shape [B, F, ...], where `B` is the batch dimension, `F` -- the
+
+    weight : torch.tensor, default=None
+        The 2x2 weight matrix of the affine transformation of real and
+        imaginary parts post normalization. Has shape [2, 2, F] . Ignored
+        together with `bias` if explicitly `None`.
+
+    bias : torch.tensor, or None
+        The offest (bias) of the affine transformation of real and imaginary
+        parts post normalization. Has shape [2, F] . Ignored together with
+        `weight` if explicitly `None`.
+
+    eps : float, default=1e-5
+        The ridge coefficient to stabilize the estimate of the real-imaginary
+        covariance.
+    """
 
     # stack along the first axis
     x = torch.stack(x.rect, dim=0)
