@@ -24,7 +24,7 @@ def apply_complex(
 
     Naive complex computation between a complex-valued module defined by two
     real-valued modules and a complex-valued tensor (CVTensor).
-    
+
     Gauss' trick is often faster and is implemented throughout this package.
 
     Given a complex-valued tensor :math:`\mathbf{z} = \mathbf{z}_{real} + j \mathbf{z}_{imag}` and a linear function :math:`G(\cdot) = G_{real}(\cdot) + j G_{imag}(\cdot)`, implements the following operation:
@@ -85,10 +85,6 @@ def apply_complex_polar(mag_fun, phase_fun, x: CVTensor) -> CVTensor:
         CVTensor: :math:`G_{mag}(|\mathbf{z}|) * \exp(j G_{phase}(\\text{angle}(\mathbf{z})))`
     """
     return from_polar(mag_fun(x.abs()), phase_fun(x.angle()))
-
-
-def gauss_multiplication(t1, t2, t3):
-    return 
 
 
 def inv_sqrtm2x2(
