@@ -22,7 +22,7 @@ class CVSoftmax(nn.Module):
 
     .. math::
 
-        G(\mathbf{z}) = SoftMax(\mathbf{z}_{real}) + j SoftMax(\mathbf{z}_{imag})
+        G(\mathbf{z}) = \\texttt{SoftMax}(\mathbf{z}_{real}) + j \\texttt{SoftMax}(\mathbf{z}_{imag})
     """
 
     def __init__(self, dim: Optional[int] = None) -> None:
@@ -37,7 +37,7 @@ class CVSoftmax(nn.Module):
             input (CVTensor): input tensor
 
         Returns:
-            CVTensor: :math:`SoftMax(\mathbf{z}_{real}) + j SoftMax(\mathbf{z}_{imag})`
+            CVTensor: :math:`\\texttt{SoftMax}(\mathbf{z}_{real}) + j \\texttt{SoftMax}(\mathbf{z}_{imag})`
         """
         return cvF.apply_complex_split(self.softmax, self.softmax, input)
 
@@ -53,7 +53,7 @@ class PhaseSoftmax(nn.Module):
 
     .. math::
 
-        G(\mathbf{z}) = SoftMax(|\mathbf{z}|) * \mathbf{z} / |\mathbf{z}|
+        G(\mathbf{z}) = \\texttt{SoftMax}(|\mathbf{z}|) * \mathbf{z} / |\mathbf{z}|
     """
 
     def __init__(self, dim: Optional[int] = None) -> None:
@@ -68,7 +68,7 @@ class PhaseSoftmax(nn.Module):
             input (CVTensor): input tensor
 
         Returns:
-            CVTensor: :math:`SoftMax(|\mathbf{z}|) * \mathbf{z} / |\mathbf{z}|`
+            CVTensor: :math:`\\texttt{SoftMax}(|\mathbf{z}|) * \mathbf{z} / |\mathbf{z}|`
         """
         x_mag = input.abs()
         return self.softmax(x_mag) * (input / x_mag)
@@ -85,7 +85,7 @@ class MagSoftmax(nn.Module):
 
     .. math::
 
-        G(\mathbf{z}) = SoftMax(|\mathbf{z}|)
+        G(\mathbf{z}) = \\texttt{SoftMax}(|\mathbf{z}|)
     """
 
     def __init__(self, dim: Optional[int] = None) -> None:
@@ -100,7 +100,7 @@ class MagSoftmax(nn.Module):
             input (CVTensor): input tensor
 
         Returns:
-            CVTensor: :math:`SoftMax(|\mathbf{z}|)`
+            CVTensor: :math:`\\texttt{SoftMax}(|\mathbf{z}|)`
         """
         return self.softmax(input.abs())
 

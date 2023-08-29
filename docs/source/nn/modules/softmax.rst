@@ -1,5 +1,5 @@
-Complex-Valued Softmax Functions
-================================
+Softmax Functions
+=================
 
 .. automodule:: complextorch.nn.modules.softmax
     :members:

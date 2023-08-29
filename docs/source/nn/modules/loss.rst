@@ -1,5 +1,5 @@
-Complex-Valued Loss Functions
-=============================
+Loss Functions
+==============
 
 .. automodule:: complextorch.nn.modules.loss
     :members:

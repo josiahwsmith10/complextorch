@@ -1,5 +1,5 @@
-Complex-Valued Efficient Channel Attention
-==========================================
+Efficient Channel Attention
+===========================
 
 .. automodule:: complextorch.nn.modules.attention.eca
     :members:

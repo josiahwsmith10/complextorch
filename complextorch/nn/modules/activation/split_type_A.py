@@ -47,7 +47,7 @@ class GeneralizedSplitActivation(nn.Module):
             input (CVTensor): input tensor
 
         Returns:
-            CVTensor: activation_r(input.real) + 1j*activation_i(input.imag)
+            CVTensor: :math:`\\texttt{activation_r}(input.real) + j\\texttt{activation_i}(input.imag)`
         """
         return cvF.apply_complex_split(self.activation_r, self.activation_i, input)
 
@@ -107,7 +107,7 @@ class CVSplitSigmoid(GeneralizedSplitActivation):
 
     .. math::
 
-        G(\mathbf{z}) = sigmoid(\mathbf{z}_{real}) + j * sigmoid(\mathbf{z}_{imag})
+        G(\mathbf{z}) = \\text{sigmoid}(\mathbf{z}_{real}) + j \\text{sigmoid}(\mathbf{z}_{imag})
     """
 
     def __init__(self) -> None:
@@ -122,7 +122,7 @@ class CSigmoid(CVSplitSigmoid):
 
     .. math::
 
-        G(\mathbf{z}) = sigmoid(\mathbf{z}_{real}) + j * sigmoid(\mathbf{z}_{imag})
+        G(\mathbf{z}) = \\text{sigmoid}(\mathbf{z}_{real}) + j \\text{sigmoid}(\mathbf{z}_{imag})
     """
 
     pass

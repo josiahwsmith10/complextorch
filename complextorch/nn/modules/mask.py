@@ -12,9 +12,9 @@ class ComplexRatioMask(nn.Module):
     
     .. math::
 
-        G(\mathbf{z}) = sigmoid(|\mathbf{z}|) * \mathbf{z} / |\mathbf{z}|
+        G(\mathbf{z}) = \\text{sigmoid}(|\mathbf{z}|) * \mathbf{z} / |\mathbf{z}|
 
-    Retains phase and squeezes magnitude using sigmoid function.
+    Retains phase and squeezes magnitude using `sigmoid function <https://pytorch.org/docs/stable/generated/torch.nn.Sigmoid.html>`_.
 
     Based on work from the following paper:
 
@@ -35,7 +35,7 @@ class ComplexRatioMask(nn.Module):
             input (CVTensor): input tensor
 
         Returns:
-            CVTensor: :math:`sigmoid(|\mathbf{z}|) * \mathbf{z} / |\mathbf{z}|`
+            CVTensor: :math:`\\text{sigmoid}(|\mathbf{z}|) * \mathbf{z} / |\mathbf{z}|`
         """
         x_mag = input.abs()
         return x_mag.sigmoid() * (input / x_mag)

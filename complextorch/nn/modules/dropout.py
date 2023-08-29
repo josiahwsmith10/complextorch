@@ -12,6 +12,12 @@ class CVDropout(nn.Module):
     ----------------------------
 
     Applies `PyTorch Droput <https://pytorch.org/docs/stable/generated/torch.nn.Dropout.html>`_ to real and imaginary parts separately.
+
+    Implements the following operation:
+
+    .. math::
+
+        G(\mathbf{z}) = \\texttt{Dropout}(\mathbf{z}_{real}) + j \\texttt{Dropout}(\mathbf{z}_{imag})
     """
 
     def __init__(self, p: float = 0.5, inplace: bool = False) -> None:
@@ -27,6 +33,6 @@ class CVDropout(nn.Module):
             x (CVTensor): input tensor
 
         Returns:
-            CVTensor: cvdropout(x)
+            CVTensor: :math:`\\texttt{Dropout}(\mathbf{z}_{real}) + j \\texttt{Dropout}(\mathbf{z}_{imag})`
         """
         return cvF.apply_complex_split(self.dropout_r, self.dropout_i, input)
