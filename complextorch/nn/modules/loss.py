@@ -280,7 +280,7 @@ class CVQuadError(nn.Module):
 
     .. math::
 
-        G(x, y) = 1/2 * \\text{sum}(err * err.H), err = x - y
+        G(x, y) = 1/2 * \\text{sum}(|x - y|^2)
 
     Based on work from the following paper:
 
@@ -302,7 +302,7 @@ class CVQuadError(nn.Module):
             y (CVTensor): target/ground truth labels
 
         Returns:
-            torch.Tensor: :math:`1/2 * \\text{sum}(err * err.H), err = x - y`
+            torch.Tensor: :math:`1/2 * \\text{sum}(|x - y|^2)`
         """
         return 0.5 * ((x - y).abs() ** 2).sum()
 
@@ -314,7 +314,7 @@ class CVFourthPowError(nn.Module):
 
     .. math::
 
-        G(x, y) = 1/2 * \\text{sum}( (err * err.H)^2 ), err = x - y
+        G(x, y) = 1/2 * \\text{sum}(|x - y|^4)
 
     Based on work from the following paper:
 
@@ -336,7 +336,7 @@ class CVFourthPowError(nn.Module):
             y (CVTensor): target/ground truth labels
 
         Returns:
-            torch.Tensor: :math:`1/2 * \\text{sum}( (err * err.H)^2 ), err = x - y`
+            torch.Tensor: :math:`1/2 * \\text{sum}(|x - y|^4)`
         """
         return 0.5 * ((x - y).abs() ** 4).sum()
 
@@ -347,7 +347,9 @@ class CVCauchyError(nn.Module):
 
     .. math::
 
-        G(x, y) = 1/2 * \\text{sum}( (err * err.H)^2 ), err = x - y
+        G(x, y) = 1/2 * \\text{sum}( c^2 / 2 \ln(1 + |x - y|^2/c^2) )
+        
+    where :math:`c` is typically set to unity.
 
     Based on work from the following paper:
 
@@ -371,7 +373,7 @@ class CVCauchyError(nn.Module):
             y (CVTensor): target/ground truth labels
 
         Returns:
-            torch.Tensor: :math:`1/2 * \\text{sum}( (err * err.H)^2 ), err = x - y`
+            torch.Tensor: :math:`1/2 * \\text{sum}( c^2 / 2 \ln(1 + |x - y|^2/c^2) )`
         """
         return (self.c2 / 2 * torch.log(1 + ((x - y).abs() ** 2) / self.c2)).sum()
 
@@ -382,7 +384,7 @@ class CVLogCoshError(nn.Module):
 
     .. math::
 
-        G(x, y) = \\text{sum}(\ln(\cosh(err * err.H)), err = x - y
+        G(x, y) = \\text{sum}(\ln(\cosh(|x - y|^2))
 
     Based on work from the following paper:
 
@@ -404,7 +406,7 @@ class CVLogCoshError(nn.Module):
             y (CVTensor): target/ground truth labels
 
         Returns:
-            torch.Tensor: :math:`\\text{sum}(\ln(\cosh(err * err.H)), err = x - y`
+            torch.Tensor: :math:`\\text{sum}(\ln(\cosh(|x - y|^2))`
         """
         return torch.log(torch.cosh((x - y).abs() ** 2)).sum()
 
@@ -415,7 +417,7 @@ class CVLogError(nn.Module):
 
     .. math::
 
-        G(x, y) = \\text{sum}(err * err.H), err = log(x) - log(y)
+        G(x, y) = \\text{sum}(|log(x) - log(y)|^2)
 
     Based on work from the following paper:
 
@@ -437,7 +439,7 @@ class CVLogError(nn.Module):
             y (CVTensor): target/ground truth labels
 
         Returns:
-            torch.Tensor: :math:`\\text{sum}(err * err.H), err = log(x) - log(y)`
+            torch.Tensor: :math:`\\text{sum}(|log(x) - log(y)|^2)`
         """
         err = torch.log(x.complex) - torch.log(y.complex)
         return (err.abs() ** 2).sum()
