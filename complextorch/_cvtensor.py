@@ -401,8 +401,8 @@ class CVTensor:
 
 def cat(tensors, dim=0, out=None) -> CVTensor:
     """
-    concatenate
-    -----------
+    complextorch.cat
+    ----------------
 
     Same as `torch.cat() <https://pytorch.org/docs/stable/generated/torch.cat.html>`_ but for CVTensor.
     """
@@ -413,8 +413,8 @@ def cat(tensors, dim=0, out=None) -> CVTensor:
 
 def roll(x: torch.Tensor, shifts, dims=None) -> CVTensor:
     """
-    roll tensor
-    -----------
+    complextorch.roll
+    -----------------
 
     Same as `torch.roll() <https://pytorch.org/docs/stable/generated/torch.roll.html>`_ but for CVTensor.
     """
