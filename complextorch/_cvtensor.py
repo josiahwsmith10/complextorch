@@ -2,10 +2,18 @@ import torch
 import numpy as np
 from copy import deepcopy
 
-__all__ = ["CVTensor", "cat", "from_polar"]
+__all__ = ["CVTensor"]
 
 
 class CVTensor:
+    """
+    Complex-Valued Tensor
+    ---------------------
+
+    Lightweight complex-valued Rensor class.
+    Built on the `PyTorch Tensor <https://pytorch.org/docs/stable/tensors.html>`_ with many similar properties and methods.
+    """
+
     def __init__(self, r: torch.Tensor, i: torch.Tensor):
         self.real = r
         self.imag = i
@@ -392,23 +400,57 @@ class CVTensor:
 
 
 def cat(tensors, dim=0, out=None) -> CVTensor:
-    """Concatenate a list of complex tensors."""
+    """
+    concatenate
+    -----------
+
+    Same as `torch.cat() <https://pytorch.org/docs/stable/generated/torch.cat.html>`_ but for CVTensor.
+    """
     real = torch.cat([t.real for t in tensors], dim, out=out.real if out else None)
     imag = torch.cat([t.imag for t in tensors], dim, out=out.imag if out else None)
     return CVTensor(real, imag)
 
 
 def roll(x: torch.Tensor, shifts, dims=None) -> CVTensor:
-    """Same as torch.roll() but for CVTensor."""
+    """
+    roll tensor
+    -----------
+
+    Same as `torch.roll() <https://pytorch.org/docs/stable/generated/torch.roll.html>`_ but for CVTensor.
+    """
     return CVTensor(x.real.roll(shifts, dims), x.imag.roll(shifts, dims))
 
 
 def is_complex(x) -> bool:
+    """
+    is complex
+    ----------
+
+    A helper function to determine if an input object comprises complex-valued data either in the form of a CVTensor object or complex-valued `PyTorch Tensor <https://pytorch.org/docs/stable/tensors.html>`_.
+    Essentially confirms that the input object has the properties *real* and *imag*.
+
+    Args:
+        x: object to test
+
+    Returns:
+        bool: Boolean whether or not the input object is complex-valued
+    """
     return isinstance(x, (CVTensor, complex)) or (
         torch.is_complex(x) if torch.is_tensor(x) else False
     )
 
 
 def from_polar(r: torch.Tensor, phi: torch.Tensor) -> CVTensor:
-    """Create a CVTensor from polar."""
+    """
+    from polar
+    ----------
+
+    Create a CVTensor from polar formatted tensors containing the magnitude (:math:`r`) and phase (:math:`\phi`) information.
+
+    Implements the following operation:
+
+    .. math::
+
+        G(r, \phi) = r * \exp(j * \phi)
+    """
     return CVTensor(r * torch.cos(phi), r * torch.sin(phi))
