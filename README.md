@@ -1,7 +1,7 @@
 # Complex PyTorch
 Author: Josiah W. Smith, Ph.D.
 
-A lightweight complex-valued neural network package built on PyTorch
+A lightweight complex-valued neural network package built on PyTorch.
 
 This is a package built on [PyTorch](https://pytorch.org/) with the intention of implementing light-weight interfaces for common complex-valued neural network operations and architectures. 
 Notably, we include efficient implementations for linear, convolution, and attention modules in addition to activation functions and normalization layers such as batchnorm and layernorm.
