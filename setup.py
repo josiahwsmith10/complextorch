@@ -5,7 +5,7 @@ with open("README.md", "r", encoding = "utf-8") as fh:
 
 setuptools.setup(
     name = "complextorch",
-    version = "0.0.1",
+    version = "1.0.0",
     author = "Josiah W. Smith",
     author_email = "josiah.radar@gmail.com",
     description = "A lightweight complex-valued neural network package built on PyTorch",
