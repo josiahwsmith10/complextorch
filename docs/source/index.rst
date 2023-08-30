@@ -2,7 +2,7 @@ Welcome to complextorch's documentation!
 ========================================
 
 :Author:  Josiah W. Smith
-:Version: 1.0.0 of 08/30/2023
+:Version: 0.1.0 of 08/30/2023
 
 A lightweight complex-valued neural network package built on PyTorch. 
 
