@@ -12,7 +12,14 @@ Although there is an emphasis on 1-D data tensors, due to a focus on signal proc
 
 Please see [Read the Docs](https://complextorch.readthedocs.io/en/latest/index.html)
 
+## Dependencies
+
+This library requires numpy and PyTorch.[PyTorch](https://pytorch.org/get-started/locally/) should be installed to your environment using the compute platform (CPU/GPU) settings for your machine.
+
 ## Instalation:
+
+IMPORTANT:
+Prior to installation, [install PyTorch](https://pytorch.org/get-started/locally/) to your environment using your preferred method using the compute platform (CPU/GPU) settings for your machine.
 
 Using [pip](https://pypi.org/project/complextorch/)
 
