@@ -1,22 +1,3 @@
 [build-system]
 requires = ["setuptools"]
 build-backend = "setuptools.build_meta"
-
-[project]
-name = "complextorch"
-version = "0.1.0"
-authors = [
-  { name="Josiah W. Smith", email="josiah.radar@gmail.com" },
-]
-description = "A lightweight complex-valued neural network package built on PyTorch."
-readme = "README.md"
-requires-python = ">=3.7"
-classifiers = [
-    "Programming Language :: Python :: 3",
-    "License :: OSI Approved :: GNU General Public License v3 or later (GPLv3+)",
-    "Operating System :: OS Independent",
-]
-
-[project.urls]
-"Homepage" = "https://github.com/josiahwsmith10/complextorch"
-"Bug Tracker" = "https://github.com/josiahwsmith10/complextorch/issues"

@@ -24,5 +24,8 @@ setup(
         "Operating System :: OS Independent",
     ],
     package_dir = {"": "./"},
-    python_requires = ">=3.6"
+    python_requires = ">=3.6",
+    install_requires=[
+        "numpy"
+    ]
 )

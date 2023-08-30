@@ -14,7 +14,7 @@ Please see [Read the Docs](https://complextorch.readthedocs.io/en/latest/index.h
 
 ## Dependencies
 
-This library requires numpy and PyTorch.[PyTorch](https://pytorch.org/get-started/locally/) should be installed to your environment using the compute platform (CPU/GPU) settings for your machine.
+This library requires numpy and PyTorch.[PyTorch](https://pytorch.org/get-started/locally/) should be installed to your environment using the compute platform (CPU/GPU) settings for your machine. PyTorch will not be automatically installed with the installation of complextorch and MUST be installed manually by the user.
 
 ## Instalation:
 

@@ -2,7 +2,7 @@ Welcome to complextorch's documentation!
 ========================================
 
 :Author:  Josiah W. Smith
-:Version: 0.1.0 of 08/30/2023
+:Version: 0.1.1 of 08/30/2023
 
 A lightweight complex-valued neural network package built on PyTorch. 
 
@@ -16,6 +16,10 @@ Although there is an emphasis on 1-D data tensors, due to a focus on signal proc
    
    installation
    nn
+
+.. toctree::
+   :maxdepth: 1
+
    _cvtensor
    _cvrandom
    about

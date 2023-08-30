@@ -4,6 +4,7 @@ Installation
 IMPORTANT
 ---------
 Prior to installation, `install PyTorch <https://pytorch.org/get-started/locally/>`_ to your environment using your preferred method using the compute platform (CPU/GPU) settings for your machine.
+PyTorch will not be automatically installed with the installation of complextorch and MUST be installed manually by the user.
 
 
 Using `pip <https://pypi.org/project/complextorch/>`_
