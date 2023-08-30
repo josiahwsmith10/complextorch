@@ -14,7 +14,7 @@ setup(
     url="https://www.github.com/josiahwsmith10/complextorch",
     packages=find_packages(),
     project_urls = {
-        "Bug Tracker": "package issues URL",
+        "Bug Tracker": "https://github.com/josiahwsmith10/complextorch/issues",
         "Documentation": "https://complextorch.readthedocs.io/en/latest/index.html",
         "GitHub": "https://www.github.com/josiahwsmith10/complextorch",
     },
