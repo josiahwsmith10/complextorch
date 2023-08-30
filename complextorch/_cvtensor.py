@@ -126,12 +126,12 @@ class CVTensor:
         return self
 
     def __mul__(self, other):
-        """Multiplication of two complex tensors."""
+        """Multiplication of two complex tensors using Gauss' multiplication trick to reduce computational load."""
         if is_complex(other):
             t1 = self.real * other.real
             t2 = self.imag * other.imag
             t3 = (self.real + self.imag) * (other.real + other.imag)
-            CVTensor(t1 - t2, t3 - t2 - t1)
+            return CVTensor(t1 - t2, t3 - t2 - t1)
         else:
             return CVTensor(self.real * other, self.imag * other)
 
