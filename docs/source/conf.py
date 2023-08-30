@@ -9,7 +9,7 @@
 project = 'complextorch'
 copyright = '2023, Josiah W. Smith'
 author = 'Josiah W. Smith'
-release = '1.0.0'
+release = '0.1.0'
 
 # -- General configuration ---------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#general-configuration
