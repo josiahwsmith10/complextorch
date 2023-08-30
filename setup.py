@@ -5,7 +5,7 @@ with open("README.md", "r", encoding = "utf-8") as fh:
 
 setup(
     name = "complextorch",
-    version = "0.1.1",
+    version = "0.1.1", # update index.rst, conf.py, and complextorch/__init__.py
     author = "Josiah W. Smith",
     author_email = "josiah.radar@gmail.com",
     description = "A lightweight complex-valued neural network package built on PyTorch",
@@ -16,7 +16,7 @@ setup(
     project_urls = {
         "Bug Tracker": "https://github.com/josiahwsmith10/complextorch/issues",
         "Documentation": "https://complextorch.readthedocs.io/en/latest/index.html",
-        "GitHub": "https://www.github.com/josiahwsmith10/complextorch",
+        "GitHub": "https://github.com/josiahwsmith10/complextorch",
     },
     classifiers = [
         "Programming Language :: Python :: 3",
