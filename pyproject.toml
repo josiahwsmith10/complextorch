@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "complextorch"
-version = "0.0.1"
+version = "1.0.0"
 authors = [
   { name="Josiah W. Smith", email="josiah.radar@gmail.com" },
 ]
