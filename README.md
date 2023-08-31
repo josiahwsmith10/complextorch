@@ -1,4 +1,6 @@
 # Complex PyTorch
+(Available on [PyPI](https://pypi.org/project/complextorch/))
+
 Author: Josiah W. Smith, Ph.D.
 
 A lightweight complex-valued neural network package built on PyTorch.
