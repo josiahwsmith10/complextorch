@@ -11,7 +11,7 @@ __all__ = ["CVLayerNorm"]
 
 
 class CVLayerNorm(nn.Module):
-    """
+    r"""
     Complex-Valued Layer Normalization
     ----------------------------------
 

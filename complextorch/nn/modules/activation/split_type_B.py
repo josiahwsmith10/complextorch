@@ -8,7 +8,7 @@ __all__ = ["GeneralizedPolarActivation", "CVPolarTanh", "CVPolarSquash", "CVPola
 
 
 class GeneralizedPolarActivation(nn.Module):
-    """
+    r"""
     Generalized Split *Type-B* Polar Activation Function
     ----------------------------------------------------
 
@@ -18,7 +18,7 @@ class GeneralizedPolarActivation(nn.Module):
 
     .. math::
 
-        G(\mathbf{z}) = G_{mag}(|\mathbf{z}|) * \exp(j G_{phase}(\\text{angle}(\mathbf{z})))
+        G(\mathbf{z}) = G_{mag}(|\mathbf{z}|) * \exp(j G_{phase}(\text{angle}(\mathbf{z})))
 
     `Type-B` activation function is defined in the following paper:
 
@@ -37,13 +37,13 @@ class GeneralizedPolarActivation(nn.Module):
         )
 
     def forward(self, input: CVTensor) -> CVTensor:
-        """Computes the generalized *Type-B* split activation function.
+        r"""Computes the generalized *Type-B* split activation function.
 
         Args:
             input (CVTensor): input tensor
 
         Returns:
-            CVTensor: :math:`G_{mag}(|\mathbf{z}|) * \exp(j G_{phase}(\\text{angle}(\mathbf{z})))`
+            CVTensor: :math:`G_{mag}(|\mathbf{z}|) * \exp(j G_{phase}(\text{angle}(\mathbf{z})))`
         """
         return cvF.apply_complex_polar(
             self.activation_mag, self.activation_phase, input
@@ -51,7 +51,7 @@ class GeneralizedPolarActivation(nn.Module):
 
 
 class CVPolarTanh(GeneralizedPolarActivation):
-    """
+    r"""
     Complex-Valued Polar Tanh Activation Function
     ---------------------------------------------
 
@@ -59,7 +59,7 @@ class CVPolarTanh(GeneralizedPolarActivation):
 
     .. math::
 
-        G(\mathbf{z}) = \\tanh(|z|) * \exp(j \\text{angle}(\mathbf{z}))
+        G(\mathbf{z}) = \tanh(|z|) * \exp(j \text{angle}(\mathbf{z}))
 
     *Note*: phase information is unchanged
 
@@ -77,7 +77,7 @@ class CVPolarTanh(GeneralizedPolarActivation):
 
 
 class _Squash(nn.Module):
-    """
+    r"""
     Helper class to compute `squash` functionality on real-valued magnitude torch.Tensor.
 
     Implements the operation:
@@ -91,7 +91,7 @@ class _Squash(nn.Module):
         super(_Squash, self).__init__()
 
     def forward(self, input: torch.Tensor) -> torch.Tensor:
-        """Computes the squash functionality.
+        r"""Computes the squash functionality.
 
         Args:
             input (torch.Tensor): input tensor
@@ -103,7 +103,7 @@ class _Squash(nn.Module):
 
 
 class CVPolarSquash(GeneralizedPolarActivation):
-    """
+    r"""
     Complex-Valued Polar Squash Activation Function
     -----------------------------------------------
 
@@ -111,7 +111,7 @@ class CVPolarSquash(GeneralizedPolarActivation):
 
     .. math::
 
-        G(\mathbf{z}) = |\mathbf{z}|^2 / (1 + |\mathbf{z}|^2) * \exp(j \\text{angle}(\mathbf{z}))
+        G(\mathbf{z}) = |\mathbf{z}|^2 / (1 + |\mathbf{z}|^2) * \exp(j \text{angle}(\mathbf{z}))
 
     Based on work from the following paper:
 
@@ -127,7 +127,7 @@ class CVPolarSquash(GeneralizedPolarActivation):
 
 
 class _LogXPlus1(nn.Module):
-    """
+    r"""
     Helper class to compute :math:`\log(x + 1)` on real-valued magnitude torch.Tensor.
 
     Implements the operation:
@@ -141,7 +141,7 @@ class _LogXPlus1(nn.Module):
         super(_LogXPlus1, self).__init__()
 
     def forward(self, input: torch.Tensor) -> torch.Tensor:
-        """Computes the :math:`\log(x + 1)` functionality.
+        r"""Computes the :math:`\log(x + 1)` functionality.
 
         Args:
             input (torch.Tensor): input tensor
@@ -153,7 +153,7 @@ class _LogXPlus1(nn.Module):
 
 
 class CVPolarLog(GeneralizedPolarActivation):
-    """
+    r"""
     Complex-Valued Polar Squash Activation Function
     -----------------------------------------------
 
@@ -161,7 +161,7 @@ class CVPolarLog(GeneralizedPolarActivation):
 
     .. math::
 
-        G(\mathbf{z}) = \ln(|\mathbf{z}| + 1) * \exp(j \\text{angle}(\mathbf{z}))
+        G(\mathbf{z}) = \ln(|\mathbf{z}| + 1) * \exp(j \text{angle}(\mathbf{z}))
 
     Based on work from the following paper:
 

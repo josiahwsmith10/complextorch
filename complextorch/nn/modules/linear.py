@@ -8,7 +8,7 @@ __all__ = ["CVLinear"]
 
 
 class CVLinear(nn.Module):
-    """
+    r"""
     Complex-Valued Linear Layer
     ---------------------------
     
@@ -68,7 +68,7 @@ class CVLinear(nn.Module):
             return CVTensor(self.linear_r.bias, self.linear_i.bias)
 
     def forward(self, input: CVTensor) -> CVTensor:
-        """
+        r"""
         Computes multiplication 25% faster than naive method by using Gauss' multiplication trick
         """
         t1 = self.linear_r(input.real)

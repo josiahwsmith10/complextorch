@@ -9,7 +9,7 @@ __all__ = ["CVScaledDotProductAttention", "CVMultiheadAttention"]
 
 
 class CVScaledDotProductAttention(nn.Module):
-    """
+    r"""
     Complex-Valued Scaled Dot-Product Attention
     -------------------------------------------
 
@@ -21,7 +21,7 @@ class CVScaledDotProductAttention(nn.Module):
 
         G(Q, K, V) = \mathcal{S}(Q K^T / t) V
 
-    where :math:`Q, K, V` are complex-valued tensors, :math:`t` is known as the temperature typically :math:`t = \sqrt{d_attn}`, and :math:`\mathcal{S}` is the softmax function.
+    where :math:`Q, K, V` are complex-valued tensors, :math:`t` is known as the temperature typically :math:`t = \sqrt{d_{attn}}`, and :math:`\mathcal{S}` is the softmax function.
 
     For complex-values, the `traditional softmax function <https://pytorch.org/docs/stable/generated/torch.nn.Softmax.html>`_ cannot be applied, and variants must be applied.
     Included in this library are several options for :doc:`complex-valued softmax <./softmax>` and similar :doc:`masking <./mask>` functions.
@@ -42,7 +42,7 @@ class CVScaledDotProductAttention(nn.Module):
         self.softmax = SoftMaxClass(dim=-1)
 
     def forward(self, q: CVTensor, k: CVTensor, v: CVTensor) -> CVTensor:
-        """Implements the complex-valued scaled dot-product attention operation.
+        r"""Implements the complex-valued scaled dot-product attention operation.
 
         Args:
             q (CVTensor): complex-valued query tensor
@@ -60,7 +60,7 @@ class CVScaledDotProductAttention(nn.Module):
 
 
 class CVMultiheadAttention(nn.Module):
-    """
+    r"""
     Complex-Valued Multihead Attention
     ----------------------------------
 

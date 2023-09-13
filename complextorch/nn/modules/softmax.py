@@ -9,7 +9,7 @@ __all__ = ["CVSoftMax", "MagSoftMax", "PhaseSoftMax"]
 
 
 class CVSoftMax(nn.Module):
-    """
+    r"""
     Split Complex-Valued Softmax Layer
     ----------------------------------
 
@@ -22,7 +22,7 @@ class CVSoftMax(nn.Module):
 
     .. math::
 
-        G(\mathbf{z}) = \\texttt{SoftMax}(\mathbf{z}_{real}) + j \\texttt{SoftMax}(\mathbf{z}_{imag})
+        G(\mathbf{z}) = \texttt{SoftMax}(\mathbf{z}_{real}) + j \texttt{SoftMax}(\mathbf{z}_{imag})
     """
 
     def __init__(self, dim: Optional[int] = None) -> None:
@@ -31,19 +31,19 @@ class CVSoftMax(nn.Module):
         self.softmax = nn.Softmax(dim)
 
     def forward(self, input: CVTensor) -> CVTensor:
-        """Computes softmax over the real and imaginary parts of the input tensor separately
+        r"""Computes softmax over the real and imaginary parts of the input tensor separately
 
         Args:
             input (CVTensor): input tensor
 
         Returns:
-            CVTensor: :math:`\\texttt{SoftMax}(\mathbf{z}_{real}) + j \\texttt{SoftMax}(\mathbf{z}_{imag})`
+            CVTensor: :math:`\texttt{SoftMax}(\mathbf{z}_{real}) + j \texttt{SoftMax}(\mathbf{z}_{imag})`
         """
         return cvF.apply_complex_split(self.softmax, self.softmax, input)
 
 
 class PhaseSoftMax(nn.Module):
-    """
+    r"""
     Phase-Preserving Complex-Valued Softmax Layer
     ---------------------------------------------
 
@@ -53,7 +53,7 @@ class PhaseSoftMax(nn.Module):
 
     .. math::
 
-        G(\mathbf{z}) = \\texttt{SoftMax}(|\mathbf{z}|) * \mathbf{z} / |\mathbf{z}|
+        G(\mathbf{z}) = \texttt{SoftMax}(|\mathbf{z}|) * \mathbf{z} / |\mathbf{z}|
     """
 
     def __init__(self, dim: Optional[int] = None) -> None:
@@ -62,20 +62,20 @@ class PhaseSoftMax(nn.Module):
         self.softmax = nn.Softmax(dim)
 
     def forward(self, input: CVTensor) -> CVTensor:
-        """Retains phase and applies `SoftMax <https://pytorch.org/docs/stable/generated/torch.nn.Softmax.html>`_ function to magnitude.
+        r"""Retains phase and applies `SoftMax <https://pytorch.org/docs/stable/generated/torch.nn.Softmax.html>`_ function to magnitude.
 
         Args:
             input (CVTensor): input tensor
 
         Returns:
-            CVTensor: :math:`\\texttt{SoftMax}(|\mathbf{z}|) * \mathbf{z} / |\mathbf{z}|`
+            CVTensor: :math:`\texttt{SoftMax}(|\mathbf{z}|) * \mathbf{z} / |\mathbf{z}|`
         """
         x_mag = input.abs()
         return self.softmax(x_mag) * (input / x_mag)
 
 
 class MagSoftMax(nn.Module):
-    """
+    r"""
     Magnitude Softmax Layer
     -----------------------
 
@@ -85,7 +85,7 @@ class MagSoftMax(nn.Module):
 
     .. math::
 
-        G(\mathbf{z}) = \\texttt{SoftMax}(|\mathbf{z}|)
+        G(\mathbf{z}) = \texttt{SoftMax}(|\mathbf{z}|)
     """
 
     def __init__(self, dim: Optional[int] = None) -> None:
@@ -94,12 +94,12 @@ class MagSoftMax(nn.Module):
         self.softmax = nn.Softmax(dim)
 
     def forward(self, input: CVTensor) -> CVTensor:
-        """Ignores phase and applies `SoftMax <https://pytorch.org/docs/stable/generated/torch.nn.Softmax.html>`_ function to magnitude.
+        r"""Ignores phase and applies `SoftMax <https://pytorch.org/docs/stable/generated/torch.nn.Softmax.html>`_ function to magnitude.
 
         Args:
             input (CVTensor): input tensor
 
         Returns:
-            CVTensor: :math:`\\texttt{SoftMax}(|\mathbf{z}|)`
+            CVTensor: :math:`\texttt{SoftMax}(|\mathbf{z}|)`
         """
         return self.softmax(input.abs())

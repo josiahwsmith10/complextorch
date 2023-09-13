@@ -18,7 +18,7 @@ __all__ = [
 def apply_complex(
     real_module: nn.Module, imag_module: nn.Module, x: CVTensor
 ) -> CVTensor:
-    """
+    r"""
     Apply Complex
     -------------
 
@@ -40,7 +40,7 @@ def apply_complex(
 
 
 def apply_complex_split(r_fun, i_fun, x: CVTensor) -> CVTensor:
-    """
+    r"""
     Apply Complex Split
     -------------------
 
@@ -64,17 +64,17 @@ def apply_complex_split(r_fun, i_fun, x: CVTensor) -> CVTensor:
 
 
 def apply_complex_polar(mag_fun, phase_fun, x: CVTensor) -> CVTensor:
-    """
+    r"""
     Apply Complex Polar
     -------------------
 
-    Applies a polar function (:math:`G(\mathbf{z}) = G_{mag}(|\mathbf{z}|) * \exp(j G_{phase}(\\text{angle}(\mathbf{z})))`) to the magnitude and phase of the input tensor (:math:`\mathbf{z}`) separately.
+    Applies a polar function (:math:`G(\mathbf{z}) = G_{mag}(|\mathbf{z}|) * \exp(j G_{phase}(\text{angle}(\mathbf{z})))`) to the magnitude and phase of the input tensor (:math:`\mathbf{z}`) separately.
 
     Implements the following operation:
 
     .. math::
 
-        G(\mathbf{z}) = G_{mag}(|\mathbf{z}|) * \exp(j G_{phase}(\\text{angle}(\mathbf{z})))
+        G(\mathbf{z}) = G_{mag}(|\mathbf{z}|) * \exp(j G_{phase}(\text{angle}(\mathbf{z})))
 
     Args:
         mag_fun: function to be applied to the magnitude of the input tensor
@@ -82,7 +82,7 @@ def apply_complex_polar(mag_fun, phase_fun, x: CVTensor) -> CVTensor:
         x (CVTensor): input tensor
 
     Returns:
-        CVTensor: :math:`G_{mag}(|\mathbf{z}|) * \exp(j G_{phase}(\\text{angle}(\mathbf{z})))`
+        CVTensor: :math:`G_{mag}(|\mathbf{z}|) * \exp(j G_{phase}(\text{angle}(\mathbf{z})))`
     """
     return from_polar(mag_fun(x.abs()), phase_fun(x.angle()))
 
@@ -94,7 +94,7 @@ def inv_sqrtm2x2(
     d: torch.Tensor,
     symmetric: bool = False,
 ):
-    """
+    r"""
     Inverse Squareroot of 2x2 Matrix
     --------------------------------
 
@@ -107,59 +107,59 @@ def inv_sqrtm2x2(
 
     .. math::
 
-        \mathbf{A} = \\begin{bmatrix} a & b \\\\ c & d \end{bmatrix}.
+        \mathbf{A} = \begin{bmatrix} a & b \\ c & d \end{bmatrix}.
 
     Recall
 
     .. math::
 
-        \mathbf{A}^{-1} = 1/\\text{det}(\mathbf{A}) * \\begin{bmatrix} d & -b \\\\ -c & a \end{bmatrix}.
+        \mathbf{A}^{-1} = 1/\text{det}(\mathbf{A}) * \begin{bmatrix} d & -b \\ -c & a \end{bmatrix}.
 
     We define two parameters
 
     .. math::
 
-        \delta &\\triangleq \\text{det}(\mathbf{A}) = ad - bc,
+        \delta &\triangleq \text{det}(\mathbf{A}) = ad - bc,
 
-        \\tau &\\triangleq \\text{trace}(\mathbf{A}) = a + d.
+        \tau &\triangleq \text{trace}(\mathbf{A}) = a + d.
 
-    Using :math:`\delta` and :math:`\\tau`, we define two parameters to establish the relationship between :math:`\mathbf{A}` and its matrix square root :math:`\mathbf{A}^{1/2}` as
+    Using :math:`\delta` and :math:`\tau`, we define two parameters to establish the relationship between :math:`\mathbf{A}` and its matrix square root :math:`\mathbf{A}^{1/2}` as
 
     .. math::
 
-        s \\triangleq \sqrt{\delta},
+        s \triangleq \sqrt{\delta},
 
-        t \\triangleq \\sqrt{\\tau + 2s}.
+        t \triangleq \sqrt{\tau + 2s}.
 
     The matrix square root can be expressed as
 
     .. math::
 
-        \mathbf{A}^{1/2} = \\frac{1}{t} \\begin{bmatrix} a+s & b \\\\ c & d+s \end{bmatrix}.
+        \mathbf{A}^{1/2} = \frac{1}{t} \begin{bmatrix} a+s & b \\ c & d+s \end{bmatrix}.
 
     Hence, the inverse of the matrix square root can be defined as
 
     .. math::
 
-        \mathbf{A}^{-1/2} = \\frac{1}{st} \\begin{bmatrix} d+s & -b \\\\ -c & a+s \end{bmatrix}.
+        \mathbf{A}^{-1/2} = \frac{1}{st} \begin{bmatrix} d+s & -b \\ -c & a+s \end{bmatrix}.
 
     Finally, defining
 
     .. math::
 
-        \mathbf{B} \\triangleq \\begin{bmatrix} w & x \\\\ y & z \end{bmatrix} \\triangleq \mathbf{A}^{-1/2}.
+        \mathbf{B} \triangleq \begin{bmatrix} w & x \\ y & z \end{bmatrix} \triangleq \mathbf{A}^{-1/2}.
 
     Hence,
 
     .. math::
 
-        w &= \\frac{d + s}{st},
+        w &= \frac{d + s}{st},
 
-        x &= \\frac{-b}{st},
+        x &= \frac{-b}{st},
 
-        y &= \\frac{-c}{st},
+        y &= \frac{-c}{st},
 
-        z &= \\frac{a + s}{st}.
+        z &= \frac{a + s}{st}.
 
     Args:
         a (torch.Tensor): a11 element of matrix A
@@ -208,7 +208,7 @@ def _whiten2x2_batch_norm(
     momentum: float = 0.1,
     eps: float = 1e-5,
 ):
-    """Performs 2x2 whitening for batch normalization
+    r"""Performs 2x2 whitening for batch normalization
 
     Args:
         x (torch.Tensor): Input tensor of size 2 x B x F x ...
@@ -286,7 +286,7 @@ def cv_batch_norm(
     momentum: float = 0.1,
     eps: float = 1e-5,
 ) -> CVTensor:
-    """
+    r"""
     Complex-Valued Batch Normalization
     ----------------------------------
 
@@ -372,7 +372,7 @@ def _whiten2x2_layer_norm(
     normalized_shape: List[int],
     eps: float = 1e-5,
 ):
-    """
+    r"""
     Layer Normalization Whitening
     -----------------------------
 
@@ -424,7 +424,7 @@ def cv_layer_norm(
     bias: Optional[torch.Tensor] = None,
     eps: float = 1e-5,
 ) -> CVTensor:
-    """
+    r"""
     Complex-Valued Layer Normalization
     ----------------------------------
 

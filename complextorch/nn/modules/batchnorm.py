@@ -9,7 +9,7 @@ __all__ = ["CVBatchNorm1d", "CVBatchNorm2d", "CVBatchNorm3d"]
 
 
 class _CVBatchNorm(nn.Module):
-    """
+    r"""
     Complex-Valued Batch Normalization Base Class
     ---------------------------------------------
 
@@ -108,7 +108,7 @@ class _CVBatchNorm(nn.Module):
 
 
 class CVBatchNorm1d(_CVBatchNorm):
-    """
+    r"""
     1-D Complex-Valued Batch Normalization
     --------------------------------------
 
@@ -132,7 +132,7 @@ class CVBatchNorm1d(_CVBatchNorm):
 
 
 class CVBatchNorm2d(_CVBatchNorm):
-    """
+    r"""
     2-D Complex-Valued Batch Normalization
     --------------------------------------
 
@@ -156,7 +156,7 @@ class CVBatchNorm2d(_CVBatchNorm):
 
 
 class CVBatchNorm3d(_CVBatchNorm):
-    """
+    r"""
     3-D Complex-Valued Batch Normalization
     --------------------------------------
 

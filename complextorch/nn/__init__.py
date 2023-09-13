@@ -30,7 +30,9 @@ from .modules.fft import FFTBlock, IFFTBlock
 from .modules.batchnorm import CVBatchNorm1d, CVBatchNorm2d, CVBatchNorm3d
 from .modules.layernorm import CVLayerNorm
 
-from .modules.softmax import CVSoftMax, MagSoftMax, MagMinMaxNorm, PhaseSoftMax
+from .modules.softmax import CVSoftMax, MagSoftMax, PhaseSoftMax
+
+from .modules.mask import ComplexRatioMask, MagMinMaxNorm
 
 from .modules.loss import GeneralizedSplitLoss
 from .modules.loss import SplitSSIM, PerpLossSSIM, SplitL1, SplitMSE
@@ -44,8 +46,6 @@ from .modules.pooling import (
 )
 
 from .modules.fft import FFTBlock, IFFTBlock
-
-from .modules.mask import ComplexRatioMask
 
 # dependent on the above
 from .modules.attention import CVMultiheadAttention, CVScaledDotProductAttention

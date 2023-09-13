@@ -22,7 +22,7 @@ __all__ = [
 
 
 class GeneralizedSplitLoss(nn.Module):
-    """
+    r"""
     Generalized Split Loss Function
     -------------------------------
 
@@ -39,7 +39,7 @@ class GeneralizedSplitLoss(nn.Module):
         self.loss_i = loss_i
 
     def forward(self, x: CVTensor, y: CVTensor) -> torch.Tensor:
-        """Computes the real/imag split loss function.
+        r"""Computes the real/imag split loss function.
 
         Args:
             x (CVTensor): estimated label
@@ -52,7 +52,7 @@ class GeneralizedSplitLoss(nn.Module):
 
 
 class GeneralizedPolarLoss(nn.Module):
-    """
+    r"""
     Generalized Polar Loss Function
     -------------------------------
 
@@ -80,7 +80,7 @@ class GeneralizedPolarLoss(nn.Module):
         self.weight_phase = weight_phase
 
     def forward(self, x: CVTensor, y: CVTensor) -> torch.Tensor:
-        """Computes the generalized split polar loss, which computes the loss independently on the magnitude and phase of the estimated and ground truth labels.
+        r"""Computes the generalized split polar loss, which computes the loss independently on the magnitude and phase of the estimated and ground truth labels.
 
         Args:
             x (CVTensor): estimated labels
@@ -95,13 +95,13 @@ class GeneralizedPolarLoss(nn.Module):
 
 
 class SplitL1(GeneralizedSplitLoss):
-    """
+    r"""
     Split L1 Loss Function
     ----------------------
 
     .. math::
 
-        L1(\mathbf{x}, \mathbf{y}) = \\texttt{L1}(\mathbf{x}_{real}, \mathbf{y}_{real}) + \\texttt{L1}(\mathbf{x}_{imag}, \mathbf{y}_{imag})
+        L1(\mathbf{x}, \mathbf{y}) = \texttt{L1}(\mathbf{x}_{real}, \mathbf{y}_{real}) + \texttt{L1}(\mathbf{x}_{imag}, \mathbf{y}_{imag})
     """
 
     def __init__(self) -> None:
@@ -109,13 +109,13 @@ class SplitL1(GeneralizedSplitLoss):
 
 
 class SplitMSE(GeneralizedSplitLoss):
-    """
+    r"""
     Split MSE Loss Function
     -----------------------
 
     .. math::
 
-        MSE(\mathbf{x}, \mathbf{y}) = \\texttt{MSE}(\mathbf{x}_{real}, \mathbf{y}_{real}) + \\texttt{MSE}(\mathbf{x}_{imag}, \mathbf{y}_{imag})
+        MSE(\mathbf{x}, \mathbf{y}) = \texttt{MSE}(\mathbf{x}_{real}, \mathbf{y}_{real}) + \texttt{MSE}(\mathbf{x}_{imag}, \mathbf{y}_{imag})
     """
 
     def __init__(self) -> None:
@@ -123,7 +123,7 @@ class SplitMSE(GeneralizedSplitLoss):
 
 
 class SSIM(nn.Module):
-    """
+    r"""
     Traditional Real-Valued SSIM Loss Function
     ------------------------------------------
 
@@ -151,7 +151,7 @@ class SSIM(nn.Module):
         data_range: Optional[torch.Tensor] = None,
         full: bool = False,
     ) -> torch.Tensor:
-        """Computes the SSIM metric on the real-valued tensors.
+        r"""Computes the SSIM metric on the real-valued tensors.
 
         Args:
             x (torch.Tensor): estimated labels
@@ -160,7 +160,7 @@ class SSIM(nn.Module):
             full (bool, optional): Compute full SSIM. Defaults to False.
 
         Returns:
-            torch.Tensor: :math:`\\texttt{SSIM}(\mathbf{x}, \mathbf{y})`
+            torch.Tensor: :math:`\texttt{SSIM}(\mathbf{x}, \mathbf{y})`
         """
         assert isinstance(self.w, torch.Tensor)
 
@@ -195,7 +195,7 @@ class SSIM(nn.Module):
 
 
 class SplitSSIM(GeneralizedSplitLoss):
-    """
+    r"""
     Split SSIM Loss Function
     ------------------------
 
@@ -218,7 +218,7 @@ class SplitSSIM(GeneralizedSplitLoss):
 
 
 class PerpLossSSIM(nn.Module):
-    """
+    r"""
     Perpendicular SSIM Loss Function
     --------------------------------
 
@@ -242,14 +242,14 @@ class PerpLossSSIM(nn.Module):
         self.param = nn.Parameter(torch.ones(1) / 2)
 
     def forward(self, x: CVTensor, y: CVTensor) -> torch.Tensor:
-        """Computes perpendicular SSIM loss function.
+        r"""Computes perpendicular SSIM loss function.
 
         Args:
             x (CVTensor): estimated label
             y (CVTensor): target/ground truth label
 
         Returns:
-            torch.Tensor: :math:`\\texttt{PerpLossSSIM}(\mathbf{x}, \mathbf{y})`
+            torch.Tensor: :math:`\texttt{PerpLossSSIM}(\mathbf{x}, \mathbf{y})`
         """
         mag_input = torch.abs(x)
         mag_target = torch.abs(y)
@@ -274,13 +274,13 @@ class PerpLossSSIM(nn.Module):
 
 
 class CVQuadError(nn.Module):
-    """
+    r"""
     Complex-Valued Quadratic Error Function
     ---------------------------------------
 
     .. math::
 
-        G(\mathbf{x}, \mathbf{y}) = 1/2 * \\text{sum}(|\mathbf{x} - \mathbf{y}|^2)
+        G(\mathbf{x}, \mathbf{y}) = 1/2 * \text{sum}(|\mathbf{x} - \mathbf{y}|^2)
 
     Based on work from the following paper:
 
@@ -295,26 +295,26 @@ class CVQuadError(nn.Module):
         super(CVQuadError, self).__init__()
 
     def forward(self, x: CVTensor, y: CVTensor) -> torch.Tensor:
-        """Computes the complex-valued quadratic error function.
+        r"""Computes the complex-valued quadratic error function.
 
         Args:
             x (CVTensor): estimated labels
             y (CVTensor): target/ground truth labels
 
         Returns:
-            torch.Tensor: :math:`1/2 * \\text{sum}(|\mathbf{x} - \mathbf{y}|^2)`
+            torch.Tensor: :math:`1/2 * \text{sum}(|\mathbf{x} - \mathbf{y}|^2)`
         """
         return 0.5 * ((x - y).abs() ** 2).sum()
 
 
 class CVFourthPowError(nn.Module):
-    """
+    r"""
     Complex Fourth Power Error Function
     -----------------------------------
 
     .. math::
 
-        G(\mathbf{x}, \mathbf{y}) = 1/2 * \\text{sum}(|\mathbf{x} - \mathbf{y}|^4)
+        G(\mathbf{x}, \mathbf{y}) = 1/2 * \text{sum}(|\mathbf{x} - \mathbf{y}|^4)
 
     Based on work from the following paper:
 
@@ -329,25 +329,25 @@ class CVFourthPowError(nn.Module):
         super(CVFourthPowError, self).__init__()
 
     def forward(self, x: CVTensor, y: CVTensor) -> torch.Tensor:
-        """Computes the complex-valued fourth power error function.
+        r"""Computes the complex-valued fourth power error function.
 
         Args:
             x (CVTensor): estimated labels
             y (CVTensor): target/ground truth labels
 
         Returns:
-            torch.Tensor: :math:`1/2 * \\text{sum}(|\mathbf{x} - \mathbf{y}|^4)`
+            torch.Tensor: :math:`1/2 * \text{sum}(|\mathbf{x} - \mathbf{y}|^4)`
         """
         return 0.5 * ((x - y).abs() ** 4).sum()
 
 
 class CVCauchyError(nn.Module):
-    """
+    r"""
     Complex-Valued Cauchy Error Function CVCauchyError.
 
     .. math::
 
-        G(\mathbf{x}, \mathbf{y}) = 1/2 * \\text{sum}( c^2 / 2 \ln(1 + |\mathbf{x} - \mathbf{y}|^2/c^2) )
+        G(\mathbf{x}, \mathbf{y}) = 1/2 * \text{sum}( c^2 / 2 \ln(1 + |\mathbf{x} - \mathbf{y}|^2/c^2) )
         
     where :math:`c` is typically set to unity.
 
@@ -366,25 +366,25 @@ class CVCauchyError(nn.Module):
         self.c2 = c**2
 
     def forward(self, x: CVTensor, y: CVTensor) -> torch.Tensor:
-        """Computes the complex-valued Cauchy error function.
+        r"""Computes the complex-valued Cauchy error function.
 
         Args:
             x (CVTensor): estimated labels
             y (CVTensor): target/ground truth labels
 
         Returns:
-            torch.Tensor: :math:`1/2 * \\text{sum}( c^2 / 2 \ln(1 + |\mathbf{x} - \mathbf{y}|^2/c^2) )`
+            torch.Tensor: :math:`1/2 * \text{sum}( c^2 / 2 \ln(1 + |\mathbf{x} - \mathbf{y}|^2/c^2) )`
         """
         return (self.c2 / 2 * torch.log(1 + ((x - y).abs() ** 2) / self.c2)).sum()
 
 
 class CVLogCoshError(nn.Module):
-    """
+    r"""
     Complex-Valued Log-Cosh Error Function CVLogCoshError.
 
     .. math::
 
-        G(\mathbf{x}, \mathbf{y}) = \\text{sum}(\ln(\cosh(|\mathbf{x} - \mathbf{y}|^2))
+        G(\mathbf{x}, \mathbf{y}) = \text{sum}(\ln(\cosh(|\mathbf{x} - \mathbf{y}|^2))
 
     Based on work from the following paper:
 
@@ -399,25 +399,25 @@ class CVLogCoshError(nn.Module):
         super(CVLogCoshError, self).__init__()
 
     def forward(self, x: CVTensor, y: CVTensor) -> torch.Tensor:
-        """Computes the complex-valued log-cosh error function.
+        r"""Computes the complex-valued log-cosh error function.
 
         Args:
             x (CVTensor): estimated labels
             y (CVTensor): target/ground truth labels
 
         Returns:
-            torch.Tensor: :math:`\\text{sum}(\ln(\cosh(|\mathbf{x} - \mathbf{y}|^2))`
+            torch.Tensor: :math:`\text{sum}(\ln(\cosh(|\mathbf{x} - \mathbf{y}|^2))`
         """
         return torch.log(torch.cosh((x - y).abs() ** 2)).sum()
 
 
 class CVLogError(nn.Module):
-    """
+    r"""
     Complex-Valued Log Error Function CVLogError.
 
     .. math::
 
-        G(\mathbf{x}, \mathbf{y}) = \\text{sum}(|\ln(\mathbf{x}) - \ln(\mathbf{y})|^2)
+        G(\mathbf{x}, \mathbf{y}) = \text{sum}(|\ln(\mathbf{x}) - \ln(\mathbf{y})|^2)
 
     Based on work from the following paper:
 
@@ -432,14 +432,14 @@ class CVLogError(nn.Module):
         super(CVLogError, self).__init__()
 
     def forward(self, x: CVTensor, y: CVTensor) -> torch.Tensor:
-        """Computes the complex-valued log error function.
+        r"""Computes the complex-valued log error function.
 
         Args:
             x (CVTensor): estimated labels
             y (CVTensor): target/ground truth labels
 
         Returns:
-            torch.Tensor: :math:`\\text{sum}(|\ln(\mathbf{x}) - \ln(\mathbf{y})|^2)`
+            torch.Tensor: :math:`\text{sum}(|\ln(\mathbf{x}) - \ln(\mathbf{y})|^2)`
         """
         err = torch.log(x.complex) - torch.log(y.complex)
         return (err.abs() ** 2).sum()

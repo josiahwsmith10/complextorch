@@ -6,7 +6,7 @@ __all__ = ["CVSplitReLU", "CReLU", "CPReLU"]
 
 
 class CVSplitReLU(GeneralizedSplitActivation):
-    """
+    r"""
     Split Complex-Valued Rectified Linear Unit
     ------------------------------------------
 
@@ -14,7 +14,7 @@ class CVSplitReLU(GeneralizedSplitActivation):
 
     .. math::
 
-        G(\mathbf{z}) = \\texttt{ReLU}(\mathbf{z}_{real}) + j \\texttt{ReLU}(\mathbf{z}_{imag})
+        G(\mathbf{z}) = \texttt{ReLU}(\mathbf{z}_{real}) + j \texttt{ReLU}(\mathbf{z}_{imag})
 
     Based on work from the following paper:
 
@@ -30,7 +30,7 @@ class CVSplitReLU(GeneralizedSplitActivation):
 
 
 class CReLU(CVSplitReLU):
-    """
+    r"""
     Split Complex-Valued Rectified Linear Unit
     ------------------------------------------
 
@@ -38,7 +38,7 @@ class CReLU(CVSplitReLU):
 
     .. math::
 
-        G(\mathbf{z}) = \\texttt{ReLU}(\mathbf{z}_{real}) + j \\texttt{ReLU}(\mathbf{z}_{imag})
+        G(\mathbf{z}) = \texttt{ReLU}(\mathbf{z}_{real}) + j \texttt{ReLU}(\mathbf{z}_{imag})
 
     Alias for :class:`CVSplitReLU`. The nomenclature CReLU is used only in certain literature to denote the split complex-valued rectified linear unit.
     """
@@ -47,7 +47,7 @@ class CReLU(CVSplitReLU):
 
 
 class CPReLU(GeneralizedSplitActivation):
-    """
+    r"""
     Split Complex-Valued Parametric Rectified Linear Unit
     -----------------------------------------------------
 
@@ -57,7 +57,7 @@ class CPReLU(GeneralizedSplitActivation):
 
     .. math::
 
-        G(\mathbf{z}) = \\texttt{PReLU}(\mathbf{z}_{real}) + j \\texttt{PReLU}(\mathbf{z}_{imag})
+        G(\mathbf{z}) = \texttt{PReLU}(\mathbf{z}_{real}) + j \texttt{PReLU}(\mathbf{z}_{imag})
 
     Based on work from the following paper:
 

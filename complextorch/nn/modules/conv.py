@@ -19,7 +19,7 @@ __all__ = [
 
 
 class SlowCVConv1d(nn.Module):
-    """
+    r"""
     Slow Complex-Valued 1-D Convolution
     -----------------------------------
 
@@ -54,7 +54,7 @@ class SlowCVConv1d(nn.Module):
         )
 
     def forward(self, input: CVTensor) -> CVTensor:
-        """Computes 1-D complex-valued convolution using PyTorch.
+        r"""Computes 1-D complex-valued convolution using PyTorch.
 
         Args:
             input (CVTensor): input tensor
@@ -67,7 +67,7 @@ class SlowCVConv1d(nn.Module):
 
 
 class _CVConv(nn.Module):
-    """
+    r"""
     CVTensor-based Complex-Valued Convolution
     -----------------------------------------
     """
@@ -157,7 +157,7 @@ class _CVConv(nn.Module):
         return CVTensor(self.conv_r.bias, self.conv_i.bias)
 
     def forward(self, input: CVTensor) -> CVTensor:
-        """
+        r"""
         Computes convolution 25% faster than naive method by using Gauss' multiplication trick
         """
         t1 = self.conv_r(input.real)
@@ -177,7 +177,7 @@ class _CVConv(nn.Module):
 
 
 class CVConv1d(_CVConv):
-    """
+    r"""
     1-D Complex-Valued Convolution
     ------------------------------
 
@@ -240,7 +240,7 @@ class CVConv1d(_CVConv):
 
 
 class CVConv2d(_CVConv):
-    """
+    r"""
     2-D Complex-Valued Convolution
     ------------------------------
 
@@ -303,7 +303,7 @@ class CVConv2d(_CVConv):
 
 
 class CVConv3d(_CVConv):
-    """
+    r"""
     3-D Complex-Valued Convolution
     ------------------------------
 
@@ -366,7 +366,7 @@ class CVConv3d(_CVConv):
 
 
 class _CVConvTranspose(nn.Module):
-    """
+    r"""
     CVTensor-based Complex-Valued Transposed Convolution
     ----------------------------------------------------
     """
@@ -461,7 +461,7 @@ class _CVConvTranspose(nn.Module):
         return CVTensor(self.convt_r.bias, self.convt_i.bias)
 
     def forward(self, input: CVTensor) -> CVTensor:
-        """
+        r"""
         Computes convolution 25% faster than naive method by using Gauss' multiplication trick
         """
         t1 = self.convt_r(input.real)
@@ -483,7 +483,7 @@ class _CVConvTranspose(nn.Module):
 
 
 class CVConvTranpose1d(_CVConvTranspose):
-    """
+    r"""
     1-D Complex-Valued Transposed Convolution
     -----------------------------------------
 
@@ -549,7 +549,7 @@ class CVConvTranpose1d(_CVConvTranspose):
 
 
 class CVConvTranpose2d(_CVConvTranspose):
-    """
+    r"""
     2-D Complex-Valued Transposed Convolution
     -----------------------------------------
 
@@ -615,7 +615,7 @@ class CVConvTranpose2d(_CVConvTranspose):
 
 
 class CVConvTranpose3d(_CVConvTranspose):
-    """
+    r"""
     3-D Complex-Valued Transposed Convolution
     -----------------------------------------
 

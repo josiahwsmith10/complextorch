@@ -11,7 +11,7 @@ __all__ = [
 
 
 class _CVMaskedChannelAttention(nn.Module):
-    """
+    r"""
     Complex-Valued Masked Channel Attention Base Module
     ---------------------------------------------------
     """
@@ -50,7 +50,7 @@ class _CVMaskedChannelAttention(nn.Module):
 
 
 class CVMaskedChannelAttention1d(_CVMaskedChannelAttention):
-    """
+    r"""
     1-D Complex-Valued Masked Channel Attention Module
     --------------------------------------------------
 
@@ -97,7 +97,7 @@ class CVMaskedChannelAttention1d(_CVMaskedChannelAttention):
 
 
 class CVMaskedChannelAttention2d(_CVMaskedChannelAttention):
-    """
+    r"""
     2-D Complex-Valued Masked Channel Attention Module
     --------------------------------------------------
 
@@ -144,7 +144,7 @@ class CVMaskedChannelAttention2d(_CVMaskedChannelAttention):
 
 
 class CVMaskedChannelAttention3d(_CVMaskedChannelAttention):
-    """
+    r"""
     3-D Complex-Valued Masked Channel Attention Module
     --------------------------------------------------
 

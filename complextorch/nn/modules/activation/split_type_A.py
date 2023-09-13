@@ -14,7 +14,7 @@ __all__ = [
 
 
 class GeneralizedSplitActivation(nn.Module):
-    """
+    r"""
     Generalized Split *Type-A* Activation Function
     ----------------------------------------------
 
@@ -41,19 +41,19 @@ class GeneralizedSplitActivation(nn.Module):
         self.activation_i = activation_i
 
     def forward(self, input: CVTensor) -> CVTensor:
-        """Computes the generalized *Type-A* split activation function.
+        r"""Computes the generalized *Type-A* split activation function.
 
         Args:
             input (CVTensor): input tensor
 
         Returns:
-            CVTensor: :math:`\\texttt{activation_r}(input.real) + j\\texttt{activation_i}(input.imag)`
+            CVTensor: :math:`\texttt{activation_r}(input.real) + j\texttt{activation_i}(input.imag)`
         """
         return cvF.apply_complex_split(self.activation_r, self.activation_i, input)
 
 
 class CVSplitTanh(GeneralizedSplitActivation):
-    """
+    r"""
     Split Complex-Valued Hyperbolic Tangent
     ---------------------------------------
 
@@ -61,7 +61,7 @@ class CVSplitTanh(GeneralizedSplitActivation):
 
     .. math::
 
-       G(\mathbf{z}) = \\tanh(\mathbf{z}_{real}) + j \\tanh(\mathbf{z}_{imag})
+       G(\mathbf{z}) = \tanh(\mathbf{z}_{real}) + j \tanh(\mathbf{z}_{imag})
 
     Based on work from the following paper:
 
@@ -77,14 +77,14 @@ class CVSplitTanh(GeneralizedSplitActivation):
 
 
 class CTanh(CVSplitTanh):
-    """
+    r"""
     Alias for the :class:`CVSplitTanh`
 
     Implements the operation:
 
     .. math::
 
-       G(\mathbf{z}) = \\tanh(\mathbf{z}_{real}) + j \\tanh(\mathbf{z}_{imag})
+       G(\mathbf{z}) = \tanh(\mathbf{z}_{real}) + j \tanh(\mathbf{z}_{imag})
 
     Based on work from the following paper:
 
@@ -99,7 +99,7 @@ class CTanh(CVSplitTanh):
 
 
 class CVSplitSigmoid(GeneralizedSplitActivation):
-    """
+    r"""
     Split Complex-Valued Sigmoid
     ----------------------------
 
@@ -107,7 +107,7 @@ class CVSplitSigmoid(GeneralizedSplitActivation):
 
     .. math::
 
-        G(\mathbf{z}) = \\text{sigmoid}(\mathbf{z}_{real}) + j \\text{sigmoid}(\mathbf{z}_{imag})
+        G(\mathbf{z}) = \text{sigmoid}(\mathbf{z}_{real}) + j \text{sigmoid}(\mathbf{z}_{imag})
     """
 
     def __init__(self) -> None:
@@ -115,21 +115,21 @@ class CVSplitSigmoid(GeneralizedSplitActivation):
 
 
 class CSigmoid(CVSplitSigmoid):
-    """
+    r"""
     Alias for the :class:`CVSplitSigmoid`
 
     Implements the operation:
 
     .. math::
 
-        G(\mathbf{z}) = \\text{sigmoid}(\mathbf{z}_{real}) + j \\text{sigmoid}(\mathbf{z}_{imag})
+        G(\mathbf{z}) = \text{sigmoid}(\mathbf{z}_{real}) + j \text{sigmoid}(\mathbf{z}_{imag})
     """
 
     pass
 
 
 class CVSplitAbs(nn.Module):
-    """
+    r"""
     Split Absolute Value Activation Function.
 
     Implements the operation:
@@ -151,7 +151,7 @@ class CVSplitAbs(nn.Module):
         super(CVSplitAbs, self).__init__()
 
     def forward(self, input: CVTensor) -> CVTensor:
-        """Computes the Type-A split abs() activation function.
+        r"""Computes the Type-A split abs() activation function.
 
         Args:
             input (CVTensor): input tensor

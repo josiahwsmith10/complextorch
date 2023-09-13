@@ -8,13 +8,13 @@ __all__ = ["ComplexRatioMask", "MagMinMaxNorm"]
 
 
 class ComplexRatioMask(nn.Module):
-    """
+    r"""
     Complex Ratio Mask
     ------------------
 
     .. math::
 
-        G(\mathbf{z}) = \\text{sigmoid}(|\mathbf{z}|) * \mathbf{z} / |\mathbf{z}|
+        G(\mathbf{z}) = \text{sigmoid}(|\mathbf{z}|) * \mathbf{z} / |\mathbf{z}|
 
     Retains phase and squeezes magnitude using `sigmoid function <https://pytorch.org/docs/stable/generated/torch.nn.Sigmoid.html>`_.
 
@@ -31,20 +31,20 @@ class ComplexRatioMask(nn.Module):
         super(ComplexRatioMask, self).__init__()
 
     def forward(self, input: CVTensor) -> CVTensor:
-        """Computes complex ratio mask on complex-valued input tensor.
+        r"""Computes complex ratio mask on complex-valued input tensor.
 
         Args:
             input (CVTensor): input tensor
 
         Returns:
-            CVTensor: :math:`\\text{sigmoid}(|\mathbf{z}|) * \mathbf{z} / |\mathbf{z}|`
+            CVTensor: :math:`\text{sigmoid}(|\mathbf{z}|) * \mathbf{z} / |\mathbf{z}|`
         """
         x_mag = input.abs()
         return x_mag.sigmoid() * (input / x_mag)
 
 
 class MagMinMaxNorm(nn.Module):
-    """
+    r"""
     Magnitude Min-Max Normalization Layer
     -------------------------------------
 
@@ -54,7 +54,7 @@ class MagMinMaxNorm(nn.Module):
 
     .. math::
 
-        G(\mathbf{z}) = \\frac{\mathbf{z} - \mathbf{z}_{min}}{\mathbf{z}_{max} - \mathbf{z}_{min}}
+        G(\mathbf{z}) = \frac{\mathbf{z} - \mathbf{z}_{min}}{\mathbf{z}_{max} - \mathbf{z}_{min}}
     """
 
     def __init__(self, dim: Optional[int] = None) -> None:
@@ -63,13 +63,13 @@ class MagMinMaxNorm(nn.Module):
         self.dim = dim
 
     def forward(self, input: CVTensor) -> CVTensor:
-        """Applies the *min-max norm* to the input tensor yielding an output whose magnitude is normalized between 0 and 1 over the specified dimension while phase information remains unchanged.
+        r"""Applies the *min-max norm* to the input tensor yielding an output whose magnitude is normalized between 0 and 1 over the specified dimension while phase information remains unchanged.
 
         Args:
             input (CVTensor): input tensor
 
         Returns:
-            CVTensor: :math:`\\frac{\mathbf{z} - \mathbf{z}_{min}}{\mathbf{z}_{max} - \mathbf{z}_{min}}`
+            CVTensor: :math:`\frac{\mathbf{z} - \mathbf{z}_{min}}{\mathbf{z}_{max} - \mathbf{z}_{min}}`
         """
         x_mag = input.abs()
         x_min = x_mag.min(self.dim, keepdim=True)[0]

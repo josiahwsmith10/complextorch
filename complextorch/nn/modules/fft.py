@@ -6,7 +6,7 @@ __all__ = ["FFTBlock", "IFFTBlock"]
 
 
 class FFTBlock(nn.Module):
-    """
+    r"""
     FFT Block
     ---------
 
@@ -23,7 +23,7 @@ class FFTBlock(nn.Module):
         self.norm = norm
 
     def forward(self, input: CVTensor) -> CVTensor:
-        """Performs forward fast Fourier transform (FFT) on the input tensor.
+        r"""Performs forward fast Fourier transform (FFT) on the input tensor.
 
         Args:
             input (CVTensor): input tensor
@@ -35,7 +35,7 @@ class FFTBlock(nn.Module):
 
 
 class IFFTBlock(nn.Module):
-    """
+    r"""
     IFFT Block
     ----------
 
@@ -52,7 +52,7 @@ class IFFTBlock(nn.Module):
         self.norm = norm
 
     def forward(self, input: CVTensor) -> CVTensor:
-        """Performs inverse fast Fourier transform (FFT) on the input tensor.
+        r"""Performs inverse fast Fourier transform (FFT) on the input tensor.
 
         Args:
             input (CVTensor): input tensor

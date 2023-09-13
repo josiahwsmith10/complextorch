@@ -12,7 +12,7 @@ __all__ = [
 
 
 class _CVEfficientChannelAttention(nn.Module):
-    """
+    r"""
     Complex-Valued Efficient Channel Attention Base Class
     -----------------------------------------------------
 
@@ -20,9 +20,9 @@ class _CVEfficientChannelAttention(nn.Module):
 
     .. math::
 
-        G(\mathbf{z}) = \\text{sigmoid}(\\text{conv}(\\text{GP}(\mathbf{z}))) \odot \mathbf{z}
+        G(\mathbf{z}) = \text{sigmoid}(\text{conv}(\text{GP}(\mathbf{z}))) \odot \mathbf{z}
 
-    where :math:`\\text{GP}(\cdot)` is the complex-valued global :doc:`pooling <../pooling>` operator.
+    where :math:`\text{GP}(\cdot)` is the complex-valued global :doc:`pooling <../pooling>` operator.
     """
 
     def __init__(self, channels: int, b: int = 1, gamma: int = 2) -> None:
@@ -65,7 +65,7 @@ class _CVEfficientChannelAttention(nn.Module):
 
 
 class CVEfficientChannelAttention1d(_CVEfficientChannelAttention):
-    """
+    r"""
     1-D Complex-Valued Efficient Channel Attention
     ----------------------------------------------
 
@@ -73,9 +73,9 @@ class CVEfficientChannelAttention1d(_CVEfficientChannelAttention):
 
     .. math::
 
-        G(\mathbf{z}) = \\text{sigmoid}(\\text{conv}(\\text{GP}(\mathbf{z}))) \odot \mathbf{z}
+        G(\mathbf{z}) = \text{sigmoid}(\text{conv}(\text{GP}(\mathbf{z}))) \odot \mathbf{z}
 
-    where :math:`\\text{GP}(\cdot)` is the complex-valued global :doc:`pooling <../pooling>` operator.
+    where :math:`\text{GP}(\cdot)` is the complex-valued global :doc:`pooling <../pooling>` operator.
 
     Based on work from the following paper:
 
@@ -94,7 +94,7 @@ class CVEfficientChannelAttention1d(_CVEfficientChannelAttention):
 
 
 class CVEfficientChannelAttention2d(_CVEfficientChannelAttention):
-    """
+    r"""
     2-D Complex-Valued Efficient Channel Attention
     ----------------------------------------------
 
@@ -102,9 +102,9 @@ class CVEfficientChannelAttention2d(_CVEfficientChannelAttention):
 
     .. math::
 
-        G(\mathbf{z}) = \\text{sigmoid}(\\text{conv}(\\text{GP}(\mathbf{z}))) \odot \mathbf{z}
+        G(\mathbf{z}) = \text{sigmoid}(\text{conv}(\text{GP}(\mathbf{z}))) \odot \mathbf{z}
 
-    where :math:`\\text{GP}(\cdot)` is the complex-valued global :doc:`pooling <../pooling>` operator.
+    where :math:`\text{GP}(\cdot)` is the complex-valued global :doc:`pooling <../pooling>` operator.
 
     Based on work from the following paper:
 
@@ -123,7 +123,7 @@ class CVEfficientChannelAttention2d(_CVEfficientChannelAttention):
 
 
 class CVEfficientChannelAttention3d(_CVEfficientChannelAttention):
-    """
+    r"""
     3-D Complex-Valued Efficient Channel Attention
     ----------------------------------------------
 
@@ -131,9 +131,9 @@ class CVEfficientChannelAttention3d(_CVEfficientChannelAttention):
 
     .. math::
 
-        G(\mathbf{z}) = \\text{sigmoid}(\\text{conv}(\\text{GP}(\mathbf{z}))) \odot \mathbf{z}
+        G(\mathbf{z}) = \text{sigmoid}(\text{conv}(\text{GP}(\mathbf{z}))) \odot \mathbf{z}
 
-    where :math:`\\text{GP}(\cdot)` is the complex-valued global :doc:`pooling <../pooling>` operator.
+    where :math:`\text{GP}(\cdot)` is the complex-valued global :doc:`pooling <../pooling>` operator.
 
     Based on work from the following paper:
 

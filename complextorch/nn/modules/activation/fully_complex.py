@@ -7,7 +7,7 @@ __all__ = ["CVSigmoid", "modReLU", "zReLU", "CVCardiod", "CVSigLog"]
 
 
 class CVSigmoid(nn.Module):
-    """
+    r"""
     Complex-Valued Sigmoid Activation Function
     ------------------------------------------
 
@@ -17,7 +17,7 @@ class CVSigmoid(nn.Module):
 
     .. math::
 
-        G(\mathbf{z}) = \\frac{1}{1 + \exp{(\mathbf{z})}}
+        G(\mathbf{z}) = \frac{1}{1 + \exp{(\mathbf{z})}}
 
     Based on work from the following paper:
 
@@ -32,20 +32,20 @@ class CVSigmoid(nn.Module):
         super(CVSigmoid, self).__init__()
 
     def forward(self, input: CVTensor) -> CVTensor:
-        """Computes the complex-valued sigmoid activation function.
+        r"""Computes the complex-valued sigmoid activation function.
 
         Args:
             input (CVTensor): input tensor
 
         Returns:
-            CVTensor: :math:`\\frac{1}{1 + \exp{(\mathbf{z})}}`
+            CVTensor: :math:`\frac{1}{1 + \exp{(\mathbf{z})}}`
         """
         out = 1 / (1 + torch.exp(input.complex))
         return CVTensor(out.real, out.imag)
 
 
 class modReLU(nn.Module):
-    """
+    r"""
     modulus Rectified Linear Unit
     -----------------------------
 
@@ -53,7 +53,7 @@ class modReLU(nn.Module):
 
     .. math::
 
-        G(x) = \\texttt{ReLU}(|\mathbf{z}| + b) * \mathbf{z} / |\mathbf{z}| = \\texttt{ReLU}(|\mathbf{z}| + b) * \exp(j \\text{angle}(\mathbf{z}))
+        G(x) = \texttt{ReLU}(|\mathbf{z}| + b) * \mathbf{z} / |\mathbf{z}| = \texttt{ReLU}(|\mathbf{z}| + b) * \exp(j \text{angle}(\mathbf{z}))
 
     Notice that :math:`|\mathbf{z}|` (:math:`\mathbf{z}`.abs()) is always positive, so if :math:`b > 0`  then :math:`|\mathbf{z}| + b > = 0` always.
     In order to have any non-linearity effect, :math:`b` must be smaller than :math:`0` (:math:`b < 0`).
@@ -84,20 +84,20 @@ class modReLU(nn.Module):
         self.bias = bias
 
     def forward(self, input: CVTensor) -> CVTensor:
-        """Computes the modReLU complex-valued activation function.
+        r"""Computes the modReLU complex-valued activation function.
 
         Args:
             input (CVTensor): input tensor
 
         Returns:
-            CVTensor: :math:`\\texttt{ReLU}(|\mathbf{z}| + b) * \mathbf{z} / |\mathbf{z}| = \\texttt{ReLU}(|\mathbf{z}| + b) * \exp(j \\text{angle}(\mathbf{z}))`
+            CVTensor: :math:`\texttt{ReLU}(|\mathbf{z}| + b) * \mathbf{z} / |\mathbf{z}| = \texttt{ReLU}(|\mathbf{z}| + b) * \exp(j \text{angle}(\mathbf{z}))`
         """
         out = self.relu(input.abs() + self.bias) * torch.exp(1j * input.angle())
         return CVTensor(out.real, out.imag)
 
 
 class zReLU(nn.Module):
-    """
+    r"""
     Guberman ReLU
     -------------
 
@@ -105,7 +105,7 @@ class zReLU(nn.Module):
 
     .. math::
 
-        G(\mathbf{z}) = \mathbf{z} \quad \\text{if} \quad 0 < \mathbf{z} < \pi/2 \quad \\text{else} \quad 0
+        G(\mathbf{z}) = \mathbf{z} \quad \text{if} \quad 0 < \mathbf{z} < \pi/2 \quad \text{else} \quad 0
 
     Based on work from the following papers:
 
@@ -133,13 +133,13 @@ class zReLU(nn.Module):
         super(zReLU, self).__init__()
 
     def forward(self, input: CVTensor) -> CVTensor:
-        """Computes the complex-valued Guberman ReLU.
+        r"""Computes the complex-valued Guberman ReLU.
 
         Args:
             input (CVTensor): input tensor
 
         Returns:
-            CVTensor: :math:`\mathbf{z} \quad \\text{if} \quad 0 < \mathbf{z} < \pi/2 \quad \\text{else} \quad 0`
+            CVTensor: :math:`\mathbf{z} \quad \text{if} \quad 0 < \mathbf{z} < \pi/2 \quad \text{else} \quad 0`
         """
         x_angle = input.angle()
         mask = (0 <= x_angle) & (x_angle <= torch.pi / 2)
@@ -148,7 +148,7 @@ class zReLU(nn.Module):
 
 
 class CVCardiod(nn.Module):
-    """
+    r"""
     Cardiod Activation Function
     ---------------------------
 
@@ -156,7 +156,7 @@ class CVCardiod(nn.Module):
 
     .. math::
 
-        G(z) = 1/2 * (1 + \\text{cos}(\\text{angle}(\mathbf{z}))) * \mathbf{z}
+        G(z) = 1/2 * (1 + \text{cos}(\text{angle}(\mathbf{z}))) * \mathbf{z}
 
     Based on work from the following papers:
 
@@ -178,26 +178,26 @@ class CVCardiod(nn.Module):
         super(CVCardiod, self).__init__()
 
     def forward(self, input: CVTensor) -> CVTensor:
-        """Computes the complex-valued cardioid activation function.
+        r"""Computes the complex-valued cardioid activation function.
 
         Args:
             input (CVTensor): input tensor
 
         Returns:
-            CVTensor: :math:`1/2 * (1 + \\text{cos}(\\text{angle}(\mathbf{z}))) * \mathbf{z}`
+            CVTensor: :math:`1/2 * (1 + \text{cos}(\text{angle}(\mathbf{z}))) * \mathbf{z}`
         """
         return 0.5 * (1 + torch.cos(input.angle())) * input
 
 
 class CVSigLog(nn.Module):
-    """
+    r"""
     CVSigLog Activation Function.
 
     Implements the operation:
 
     .. math::
 
-        G(\mathbf{z}) = \\frac{\mathbf{z}}{(c + 1/r * |\mathbf{z}|)}
+        G(\mathbf{z}) = \frac{\mathbf{z}}{(c + 1/r * |\mathbf{z}|)}
 
     Based on work from the following paper:
 
@@ -215,12 +215,12 @@ class CVSigLog(nn.Module):
         self.r = r
 
     def forward(self, input: CVTensor) -> CVTensor:
-        """Computes the complex-valued SigLog activation function.
+        r"""Computes the complex-valued SigLog activation function.
 
         Args:
             input (CVTensor): input tensor
 
         Returns:
-            CVTensor: :math:`\\frac{\mathbf{z}}{(c + 1/r * |\mathbf{z}|)}`
+            CVTensor: :math:`\frac{\mathbf{z}}{(c + 1/r * |\mathbf{z}|)}`
         """
         return input / (self.c + input.abs() / self.r)

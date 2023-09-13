@@ -7,7 +7,7 @@ __all__ = ["CVDropout"]
 
 
 class CVDropout(nn.Module):
-    """
+    r"""
     Complex-Valued Dropout Layer
     ----------------------------
 
@@ -17,7 +17,7 @@ class CVDropout(nn.Module):
 
     .. math::
 
-        G(\mathbf{z}) = \\texttt{Dropout}(\mathbf{z}_{real}) + j \\texttt{Dropout}(\mathbf{z}_{imag})
+        G(\mathbf{z}) = \texttt{Dropout}(\mathbf{z}_{real}) + j \texttt{Dropout}(\mathbf{z}_{imag})
     """
 
     def __init__(self, p: float = 0.5, inplace: bool = False) -> None:
@@ -27,12 +27,12 @@ class CVDropout(nn.Module):
         self.dropout_i = nn.Dropout(p, inplace)
 
     def forward(self, input: CVTensor) -> CVTensor:
-        """Performs complex-valued dropout on the input tensor
+        r"""Performs complex-valued dropout on the input tensor
 
         Args:
             x (CVTensor): input tensor
 
         Returns:
-            CVTensor: :math:`\\texttt{Dropout}(\mathbf{z}_{real}) + j \\texttt{Dropout}(\mathbf{z}_{imag})`
+            CVTensor: :math:`\texttt{Dropout}(\mathbf{z}_{real}) + j \texttt{Dropout}(\mathbf{z}_{imag})`
         """
         return cvF.apply_complex_split(self.dropout_r, self.dropout_i, input)

@@ -11,7 +11,7 @@ __all__ = ["wFMConv1d", "wFMConv2d"]
 
 
 def _normalize_weights_squared(weights: torch.Tensor) -> torch.Tensor:
-    """Normalizes the square of input tensor (weights) such that the sum of the output is 1.
+    r"""Normalizes the square of input tensor (weights) such that the sum of the output is 1.
     Follows the function `weightNormalize1` from https://github.com/xingyifei2016/RotLieNet/blob/master/layers.py.
 
     Args:
@@ -24,7 +24,7 @@ def _normalize_weights_squared(weights: torch.Tensor) -> torch.Tensor:
 
 
 def _normalize_weights(weights: torch.Tensor) -> torch.Tensor:
-    """Normalizes the input tensor by the sum of its square.
+    r"""Normalizes the input tensor by the sum of its square.
     Follows the function `weightNormalize2` from https://github.com/xingyifei2016/RotLieNet/blob/master/layers.py.
 
     Args:
@@ -37,7 +37,7 @@ def _normalize_weights(weights: torch.Tensor) -> torch.Tensor:
 
 
 def _normalize_rows(weights: torch.Tensor) -> torch.Tensor:
-    """Normalizes the square of input tensor by each row such that the sum of each row of the output is 1.
+    r"""Normalizes the square of input tensor by each row such that the sum of each row of the output is 1.
     Follows the function `weightNormalize` from https://github.com/xingyifei2016/RotLieNet/blob/master/layers.py.
 
     Args:
@@ -50,7 +50,7 @@ def _normalize_rows(weights: torch.Tensor) -> torch.Tensor:
 
 
 class _wFMConv2dHelper(nn.Module):
-    """
+    r"""
     Helper Class for wFMConv2d
     --------------------------
     """
@@ -167,7 +167,7 @@ class _wFMConv2dHelper(nn.Module):
 
 
 class wFMConv2d(nn.Module):
-    """
+    r"""
     2-D Weighted Frechet Mean Convolution Layer
     -------------------------------------------
 
@@ -247,7 +247,7 @@ class wFMConv2d(nn.Module):
         )
 
     def forward(self, input: CVTensor) -> CVTensor:
-        """Computes the 2-D weighted Frechet mean (wFM) convolution.
+        r"""Computes the 2-D weighted Frechet mean (wFM) convolution.
 
         Args:
             input (CVTensor): input tensor
@@ -323,7 +323,7 @@ class wFMConv2d(nn.Module):
 
 
 class wFMConv1d(nn.Module):
-    """
+    r"""
     1-D Weighted Frechet Mean Convolution Layer
     -------------------------------------------
 
@@ -386,7 +386,7 @@ class wFMConv1d(nn.Module):
         self.wFM_conv = self.conv1d.wFM_conv
 
     def forward(self, input: CVTensor) -> CVTensor:
-        """Computes the 1-D weighted Frechet mean (wFM) convolution. See :class:`wFMConv2d` for more implementation details as :class:`wFMConv1d` is a wrapper around :class:`wFMConv2d`.
+        r"""Computes the 1-D weighted Frechet mean (wFM) convolution. See :class:`wFMConv2d` for more implementation details as :class:`wFMConv1d` is a wrapper around :class:`wFMConv2d`.
 
         Args:
             input (CVTensor): input tensor
