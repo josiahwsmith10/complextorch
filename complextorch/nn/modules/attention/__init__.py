@@ -19,7 +19,7 @@ class CVScaledDotProductAttention(nn.Module):
 
     .. math::
 
-        G(Q, K, V) = \mathcal{S}(Q K^T / t) V
+        \text{Attention}(Q, K, V) = \mathcal{S}(Q K^T / t) V
 
     where :math:`Q, K, V` are complex-valued tensors, :math:`t` is known as the temperature typically :math:`t = \sqrt{d_{attn}}`, and :math:`\mathcal{S}` is the softmax function.
 

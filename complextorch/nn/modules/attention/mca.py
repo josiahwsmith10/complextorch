@@ -12,8 +12,17 @@ __all__ = [
 
 class _CVMaskedChannelAttention(nn.Module):
     r"""
-    Complex-Valued Masked Channel Attention Base Module
-    ---------------------------------------------------
+    Complex-Valued Masked Channel Attention (MCA) Base Module
+    ---------------------------------------------------------
+    
+    Implements the operation:
+
+    .. math::
+
+        \texttt{CV-MCA}(\mathbf{z}) = \mathcal{M}(H_\text{ConvUp}(\mathcal{A}(H_\text{ConvDown}(\mathbf{z})))) \odot \mathbf{z},
+
+    where :math:`\mathcal{M}(\cdot)` is the masking function (by default, ComplexRatioMask is used) and :math:`H_\text{ConvUp}(\cdot)` and :math:`H_\text{ConvDown}(\cdot)` are N-D convolution layers with kernel sizes of 1 that reduce the channel dimension by a factor :math:`r`.
+
     """
 
     def __init__(
@@ -51,10 +60,18 @@ class _CVMaskedChannelAttention(nn.Module):
 
 class CVMaskedChannelAttention1d(_CVMaskedChannelAttention):
     r"""
-    1-D Complex-Valued Masked Channel Attention Module
-    --------------------------------------------------
+    1-D Complex-Valued Masked Channel Attention (MCA) Module
+    --------------------------------------------------------
 
     Generalized for arbitrary masking function (see :doc:`mask <../mask>` for implemented masking functions)
+    
+    Implements the operation:
+
+    .. math::
+
+        \texttt{CV-MCA}(\mathbf{z}) = \mathcal{M}(H_\text{ConvUp}(\mathcal{A}(H_\text{ConvDown}(\mathbf{z})))) \odot \mathbf{z},
+
+    where :math:`\mathcal{M}(\cdot)` is the masking function (by default, ComplexRatioMask is used) and :math:`H_\text{ConvUp}(\cdot)` and :math:`H_\text{ConvDown}(\cdot)` are 1-D convolution layers with kernel sizes of 1 that reduce the channel dimension by a factor :math:`r`.
 
     Based on work from the following paper:
 
@@ -98,8 +115,16 @@ class CVMaskedChannelAttention1d(_CVMaskedChannelAttention):
 
 class CVMaskedChannelAttention2d(_CVMaskedChannelAttention):
     r"""
-    2-D Complex-Valued Masked Channel Attention Module
-    --------------------------------------------------
+    2-D Complex-Valued Masked Channel Attention (MCA) Module
+    --------------------------------------------------------
+    
+    Implements the operation:
+
+    .. math::
+
+        \texttt{CV-MCA}(\mathbf{z}) = \mathcal{M}(H_\text{ConvUp}(\mathcal{A}(H_\text{ConvDown}(\mathbf{z})))) \odot \mathbf{z},
+
+    where :math:`\mathcal{M}(\cdot)` is the masking function (by default, ComplexRatioMask is used) and :math:`H_\text{ConvUp}(\cdot)` and :math:`H_\text{ConvDown}(\cdot)` are 2-D convolution layers with kernel sizes of 1 that reduce the channel dimension by a factor :math:`r`.
 
     Generalized for arbitrary masking function (see :doc:`mask <../mask>` for implemented masking functions)
 
@@ -145,10 +170,19 @@ class CVMaskedChannelAttention2d(_CVMaskedChannelAttention):
 
 class CVMaskedChannelAttention3d(_CVMaskedChannelAttention):
     r"""
-    3-D Complex-Valued Masked Channel Attention Module
-    --------------------------------------------------
+    3-D Complex-Valued Masked Channel Attention (MCA) Module
+    --------------------------------------------------------
 
     Generalized for arbitrary masking function (see :doc:`mask <../mask>` for implemented masking functions)
+    
+    Implements the operation:
+
+    .. math::
+
+        \texttt{CV-MCA}(\mathbf{z}) = \mathcal{M}(H_\text{ConvUp}(\mathcal{A}(H_\text{ConvDown}(\mathbf{z})))) \odot \mathbf{z},
+
+    where :math:`\mathcal{M}(\cdot)` is the masking function (by default, ComplexRatioMask is used) and :math:`H_\text{ConvUp}(\cdot)` and :math:`H_\text{ConvDown}(\cdot)` are 3-D convolution layers with kernel sizes of 1 that reduce the channel dimension by a factor :math:`r`.
+
 
     Based on work from the following paper:
 

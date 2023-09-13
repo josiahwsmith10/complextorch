@@ -32,7 +32,7 @@ from .modules.layernorm import CVLayerNorm
 
 from .modules.softmax import CVSoftMax, MagSoftMax, PhaseSoftMax
 
-from .modules.mask import ComplexRatioMask, MagMinMaxNorm
+from .modules.mask import ComplexRatioMask, PhaseSigmoid, MagMinMaxNorm
 
 from .modules.loss import GeneralizedSplitLoss
 from .modules.loss import SplitSSIM, PerpLossSSIM, SplitL1, SplitMSE
@@ -54,7 +54,7 @@ from .modules.attention.eca import (
     CVEfficientChannelAttention2d,
     CVEfficientChannelAttention3d,
 )
-from .modules.attention.masked_attention import (
+from .modules.attention.mca import (
     CVMaskedChannelAttention1d,
     CVMaskedChannelAttention2d,
     CVMaskedChannelAttention3d,

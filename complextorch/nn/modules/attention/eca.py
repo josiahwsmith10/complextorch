@@ -20,17 +20,25 @@ class _CVEfficientChannelAttention(nn.Module):
 
     .. math::
 
-        G(\mathbf{z}) = \text{sigmoid}(\text{conv}(\text{GP}(\mathbf{z}))) \odot \mathbf{z}
+        \texttt{CV-ECA}(\mathbf{z}) = \mathcal{M}(\text{conv}(H_\texttt{CVAdaptiveAvgPoolNd}(\mathbf{z}))) \odot \mathbf{z},
 
-    where :math:`\text{GP}(\cdot)` is the complex-valued global :doc:`pooling <../pooling>` operator.
+    where :math:`\mathcal{M}(\cdot)` is the masking function (by default, ComplexRatioMask is used) and :math:`H_\texttt{CVAdaptiveAvgPoolNd}(\cdot)` is the complex-valued global :doc:`pooling <../pooling>` operator.
     """
 
-    def __init__(self, channels: int, b: int = 1, gamma: int = 2) -> None:
+    def __init__(
+        self,
+        channels: int,
+        MaskingClass: nn.Module,
+        AvgPoolClass: nn.Module,
+        b: int = 1,
+        gamma: int = 2,
+    ) -> None:
         super(_CVEfficientChannelAttention, self).__init__()
         self.channels = channels
         self.b = b
         self.gamma = gamma
-        self.sigmoid = cvnn.CSigmoid()
+        self.avg_pool = AvgPoolClass(1)
+        self.mask = MaskingClass()
         self.conv = cvnn.CVConv1d(
             in_channels=1,
             out_channels=1,
@@ -38,9 +46,6 @@ class _CVEfficientChannelAttention(nn.Module):
             padding=(self.kernel_size() - 1) // 2,
             bias=False,
         )
-
-        # Placeholders
-        self.avg_pool = None
 
     def kernel_size(self) -> int:
         k = int(abs((np.log2(self.channels) / self.gamma) + self.b / self.gamma))
@@ -59,7 +64,7 @@ class _CVEfficientChannelAttention(nn.Module):
         y = y.transpose(-1, -2).view(batch_size, channels, *one_vec)
 
         # Multi-scale information fusion
-        y = self.sigmoid(y)
+        y = self.mask(y)
 
         return input * y
 
@@ -73,9 +78,9 @@ class CVEfficientChannelAttention1d(_CVEfficientChannelAttention):
 
     .. math::
 
-        G(\mathbf{z}) = \text{sigmoid}(\text{conv}(\text{GP}(\mathbf{z}))) \odot \mathbf{z}
+        \texttt{CV-ECA}(\mathbf{z}) = \mathcal{M}(\text{conv}(H_\texttt{CVAdaptiveAvgPool1d}(\mathbf{z}))) \odot \mathbf{z},
 
-    where :math:`\text{GP}(\cdot)` is the complex-valued global :doc:`pooling <../pooling>` operator.
+    where :math:`\mathcal{M}(\cdot)` is the masking function (by default, ComplexRatioMask is used) and :math:`H_\texttt{CVAdaptiveAvgPoolNd}(\cdot)` is the complex-valued global :doc:`pooling <../pooling>` operator.
 
     Based on work from the following paper:
 
@@ -86,11 +91,20 @@ class CVEfficientChannelAttention1d(_CVEfficientChannelAttention):
             - https://openaccess.thecvf.com/content_CVPR_2020/papers/Wang_ECA-Net_Efficient_Channel_Attention_for_Deep_Convolutional_Neural_Networks_CVPR_2020_paper.pdf
     """
 
-    def __init__(self, channels: int, b: int = 1, gamma: int = 2) -> None:
+    def __init__(
+        self,
+        channels: int,
+        MaskingClass: nn.Module = cvnn.ComplexRatioMask,
+        b: int = 1,
+        gamma: int = 2,
+    ) -> None:
         super(CVEfficientChannelAttention1d, self).__init__(
-            channels=channels, b=b, gamma=gamma
+            channels=channels,
+            MaskingClass=MaskingClass,
+            AvgPoolClass=cvnn.CVAdaptiveAvgPool1d,
+            b=b,
+            gamma=gamma,
         )
-        self.avg_pool = cvnn.CVAdaptiveAvgPool1d(1)
 
 
 class CVEfficientChannelAttention2d(_CVEfficientChannelAttention):
@@ -102,9 +116,9 @@ class CVEfficientChannelAttention2d(_CVEfficientChannelAttention):
 
     .. math::
 
-        G(\mathbf{z}) = \text{sigmoid}(\text{conv}(\text{GP}(\mathbf{z}))) \odot \mathbf{z}
+        \texttt{CV-ECA}(\mathbf{z}) = \mathcal{M}(\text{conv}(H_\texttt{CVAdaptiveAvgPool2d}(\mathbf{z}))) \odot \mathbf{z},
 
-    where :math:`\text{GP}(\cdot)` is the complex-valued global :doc:`pooling <../pooling>` operator.
+    where :math:`\mathcal{M}(\cdot)` is the masking function (by default, ComplexRatioMask is used) and :math:`H_\texttt{CVAdaptiveAvgPoolNd}(\cdot)` is the complex-valued global :doc:`pooling <../pooling>` operator.
 
     Based on work from the following paper:
 
@@ -115,11 +129,20 @@ class CVEfficientChannelAttention2d(_CVEfficientChannelAttention):
             - https://openaccess.thecvf.com/content_CVPR_2020/papers/Wang_ECA-Net_Efficient_Channel_Attention_for_Deep_Convolutional_Neural_Networks_CVPR_2020_paper.pdf
     """
 
-    def __init__(self, channels: int, b: int = 1, gamma: int = 2) -> None:
+    def __init__(
+        self,
+        channels: int,
+        MaskingClass: nn.Module = cvnn.ComplexRatioMask,
+        b: int = 1,
+        gamma: int = 2,
+    ) -> None:
         super(CVEfficientChannelAttention2d, self).__init__(
-            channels=channels, b=b, gamma=gamma
+            channels=channels,
+            MaskingClass=MaskingClass,
+            AvgPoolClass=cvnn.CVAdaptiveAvgPool2d,
+            b=b,
+            gamma=gamma,
         )
-        self.avg_pool = cvnn.CVAdaptiveAvgPool2d(1)
 
 
 class CVEfficientChannelAttention3d(_CVEfficientChannelAttention):
@@ -131,9 +154,9 @@ class CVEfficientChannelAttention3d(_CVEfficientChannelAttention):
 
     .. math::
 
-        G(\mathbf{z}) = \text{sigmoid}(\text{conv}(\text{GP}(\mathbf{z}))) \odot \mathbf{z}
+        \texttt{CV-ECA}(\mathbf{z}) = \mathcal{M}(\text{conv}(H_\texttt{CVAdaptiveAvgPool3d}(\mathbf{z}))) \odot \mathbf{z},
 
-    where :math:`\text{GP}(\cdot)` is the complex-valued global :doc:`pooling <../pooling>` operator.
+    where :math:`\mathcal{M}(\cdot)` is the masking function (by default, ComplexRatioMask is used) and :math:`H_\texttt{CVAdaptiveAvgPoolNd}(\cdot)` is the complex-valued global :doc:`pooling <../pooling>` operator.
 
     Based on work from the following paper:
 
@@ -144,8 +167,17 @@ class CVEfficientChannelAttention3d(_CVEfficientChannelAttention):
             - https://openaccess.thecvf.com/content_CVPR_2020/papers/Wang_ECA-Net_Efficient_Channel_Attention_for_Deep_Convolutional_Neural_Networks_CVPR_2020_paper.pdf
     """
 
-    def __init__(self, channels: int, b: int = 1, gamma: int = 2) -> None:
+    def __init__(
+        self,
+        channels: int,
+        MaskingClass: nn.Module = cvnn.ComplexRatioMask,
+        b: int = 1,
+        gamma: int = 2,
+    ) -> None:
         super(CVEfficientChannelAttention3d, self).__init__(
-            channels=channels, b=b, gamma=gamma
+            channels=channels,
+            MaskingClass=MaskingClass,
+            AvgPoolClass=cvnn.CVAdaptiveAvgPool3d,
+            b=b,
+            gamma=gamma,
         )
-        self.avg_pool = cvnn.CVAdaptiveAvgPool3d(1)

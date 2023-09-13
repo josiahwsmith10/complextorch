@@ -53,7 +53,7 @@ class PhaseSoftMax(nn.Module):
 
     .. math::
 
-        G(\mathbf{z}) = \texttt{SoftMax}(|\mathbf{z}|) * \mathbf{z} / |\mathbf{z}|
+        G(\mathbf{z}) = \texttt{SoftMax}(|\mathbf{z}|) \odot \mathbf{z} / |\mathbf{z}|
     """
 
     def __init__(self, dim: Optional[int] = None) -> None:
@@ -68,7 +68,7 @@ class PhaseSoftMax(nn.Module):
             input (CVTensor): input tensor
 
         Returns:
-            CVTensor: :math:`\texttt{SoftMax}(|\mathbf{z}|) * \mathbf{z} / |\mathbf{z}|`
+            CVTensor: :math:`\texttt{SoftMax}(|\mathbf{z}|) \odot \mathbf{z} / |\mathbf{z}|`
         """
         x_mag = input.abs()
         return self.softmax(x_mag) * (input / x_mag)

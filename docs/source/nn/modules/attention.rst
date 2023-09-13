@@ -11,4 +11,4 @@ Here, we include complex-valued variants of several attention-based techniques.
     :maxdepth: 2
 
     attention/eca
-    attention/masked_attention
+    attention/mca

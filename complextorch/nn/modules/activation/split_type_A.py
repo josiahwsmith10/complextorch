@@ -24,7 +24,9 @@ class GeneralizedSplitActivation(nn.Module):
 
     .. math::
 
-        G(\mathbf{z}) = G_{real}(\mathbf{z}_{real}) + j G_{imag}(\mathbf{z}_{imag})
+        G(\mathbf{z}) = G_\mathbb{R}(\mathbf{x}) + j G_\mathbb{I}(\mathbf{y}),
+
+    where :math:`\mathbf{z} = \mathbf{x} + j\mathbf{y}`.
 
     *Type-A* nomenclature is defined in the following paper:
 
@@ -61,7 +63,7 @@ class CVSplitTanh(GeneralizedSplitActivation):
 
     .. math::
 
-       G(\mathbf{z}) = \tanh(\mathbf{z}_{real}) + j \tanh(\mathbf{z}_{imag})
+       G(\mathbf{z}) = \tanh(\mathbf{x}) + j \tanh(\mathbf{y})
 
     Based on work from the following paper:
 
@@ -84,7 +86,7 @@ class CTanh(CVSplitTanh):
 
     .. math::
 
-       G(\mathbf{z}) = \tanh(\mathbf{z}_{real}) + j \tanh(\mathbf{z}_{imag})
+       G(\mathbf{z}) = \tanh(\mathbf{x}) + j \tanh(\mathbf{y})
 
     Based on work from the following paper:
 
@@ -107,7 +109,7 @@ class CVSplitSigmoid(GeneralizedSplitActivation):
 
     .. math::
 
-        G(\mathbf{z}) = \text{sigmoid}(\mathbf{z}_{real}) + j \text{sigmoid}(\mathbf{z}_{imag})
+        G(\mathbf{z}) = \text{sigmoid}(\mathbf{x}) + j \text{sigmoid}(\mathbf{y})
     """
 
     def __init__(self) -> None:
@@ -122,7 +124,7 @@ class CSigmoid(CVSplitSigmoid):
 
     .. math::
 
-        G(\mathbf{z}) = \text{sigmoid}(\mathbf{z}_{real}) + j \text{sigmoid}(\mathbf{z}_{imag})
+        G(\mathbf{z}) = \text{sigmoid}(\mathbf{x}) + j \text{sigmoid}(\mathbf{y})
     """
 
     pass
@@ -136,7 +138,7 @@ class CVSplitAbs(nn.Module):
 
     .. math::
 
-        G(\mathbf{z}) = |\mathbf{z}_{real}| + j |\mathbf{z}_{imag}|
+        G(\mathbf{z}) = |\mathbf{x}| + j |\mathbf{y}|
 
     Based on work from the following paper:
 
@@ -157,6 +159,6 @@ class CVSplitAbs(nn.Module):
             input (CVTensor): input tensor
 
         Returns:
-            CVTensor: :math:`|\mathbf{z}_{real}| + j |\mathbf{z}_{imag}|`
+            CVTensor: :math:`|\mathbf{x}| + j |\mathbf{y}|`
         """
         return CVTensor(input.real.abs(), input.imag.abs())

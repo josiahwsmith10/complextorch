@@ -18,7 +18,7 @@ class GeneralizedPolarActivation(nn.Module):
 
     .. math::
 
-        G(\mathbf{z}) = G_{mag}(|\mathbf{z}|) * \exp(j G_{phase}(\text{angle}(\mathbf{z})))
+        G(\mathbf{z}) = G_{||}(|\mathbf{z}|) * \exp(j G_\angle(\angle\mathbf{z}))
 
     `Type-B` activation function is defined in the following paper:
 
@@ -43,7 +43,7 @@ class GeneralizedPolarActivation(nn.Module):
             input (CVTensor): input tensor
 
         Returns:
-            CVTensor: :math:`G_{mag}(|\mathbf{z}|) * \exp(j G_{phase}(\text{angle}(\mathbf{z})))`
+            CVTensor: :math:`G_{||}(|\mathbf{z}|) * \exp(j G_\angle(\angle\mathbf{z}))`
         """
         return cvF.apply_complex_polar(
             self.activation_mag, self.activation_phase, input
@@ -59,7 +59,7 @@ class CVPolarTanh(GeneralizedPolarActivation):
 
     .. math::
 
-        G(\mathbf{z}) = \tanh(|z|) * \exp(j \text{angle}(\mathbf{z}))
+        G(\mathbf{z}) = \tanh(|z|) \odot \exp(j \angle\mathbf{z})
 
     *Note*: phase information is unchanged
 
@@ -111,7 +111,7 @@ class CVPolarSquash(GeneralizedPolarActivation):
 
     .. math::
 
-        G(\mathbf{z}) = |\mathbf{z}|^2 / (1 + |\mathbf{z}|^2) * \exp(j \text{angle}(\mathbf{z}))
+        G(\mathbf{z}) = \frac{|\mathbf{z}|^2}{(1 + |\mathbf{z}|^2)} \odot \exp(j \angle\mathbf{z})
 
     Based on work from the following paper:
 
@@ -161,7 +161,7 @@ class CVPolarLog(GeneralizedPolarActivation):
 
     .. math::
 
-        G(\mathbf{z}) = \ln(|\mathbf{z}| + 1) * \exp(j \text{angle}(\mathbf{z}))
+        G(\mathbf{z}) = \ln(|\mathbf{z}| + 1) \odot \exp(j \angle\mathbf{z})
 
     Based on work from the following paper:
 

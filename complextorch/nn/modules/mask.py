@@ -4,7 +4,7 @@ import torch.nn as nn
 
 from ... import CVTensor
 
-__all__ = ["ComplexRatioMask", "MagMinMaxNorm"]
+__all__ = ["ComplexRatioMask", "PhaseSigmoid", "MagMinMaxNorm"]
 
 
 class ComplexRatioMask(nn.Module):
@@ -14,7 +14,7 @@ class ComplexRatioMask(nn.Module):
 
     .. math::
 
-        G(\mathbf{z}) = \text{sigmoid}(|\mathbf{z}|) * \mathbf{z} / |\mathbf{z}|
+        \texttt{ComplexRatioMask}(\mathbf{z}) = \texttt{Sigmoid}(|\mathbf{z}|) \odot \frac{\mathbf{z}}{|\mathbf{z}|}
 
     Retains phase and squeezes magnitude using `sigmoid function <https://pytorch.org/docs/stable/generated/torch.nn.Sigmoid.html>`_.
 
@@ -43,6 +43,29 @@ class ComplexRatioMask(nn.Module):
         return x_mag.sigmoid() * (input / x_mag)
 
 
+class PhaseSigmoid(nn.Module):
+    r"""
+    Phase-Preserving Complex-Valued Sigmoid Layer
+    ---------------------------------------------
+
+    .. math::
+
+        \texttt{ComplexRatioMask}(\mathbf{z}) = \texttt{Sigmoid}(|\mathbf{z}|) \odot \frac{\mathbf{z}}{|\mathbf{z}|}
+
+    Retains phase and squeezes magnitude using `sigmoid function <https://pytorch.org/docs/stable/generated/torch.nn.Sigmoid.html>`_.
+
+    Based on work from the following paper:
+
+        **HW Cho, S Choi, YR Cho, and J Kim: Complex-Valued Channel Attention and Application in Ego-Velocity Estimation With Automotive Radar**
+
+            - See [23]
+
+            - https://ieeexplore.ieee.org/abstract/document/9335579
+    """
+
+    pass
+
+
 class MagMinMaxNorm(nn.Module):
     r"""
     Magnitude Min-Max Normalization Layer
@@ -54,7 +77,7 @@ class MagMinMaxNorm(nn.Module):
 
     .. math::
 
-        G(\mathbf{z}) = \frac{\mathbf{z} - \mathbf{z}_{min}}{\mathbf{z}_{max} - \mathbf{z}_{min}}
+        \texttt{MagMinMaxNorm}(\mathbf{z}) = \frac{\mathbf{z} - \mathbf{z}_{min}}{\mathbf{z}_{max} - \mathbf{z}_{min}}
     """
 
     def __init__(self, dim: Optional[int] = None) -> None:

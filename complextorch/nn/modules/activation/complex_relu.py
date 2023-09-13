@@ -14,7 +14,7 @@ class CVSplitReLU(GeneralizedSplitActivation):
 
     .. math::
 
-        G(\mathbf{z}) = \texttt{ReLU}(\mathbf{z}_{real}) + j \texttt{ReLU}(\mathbf{z}_{imag})
+        G(\mathbf{z}) = \texttt{ReLU}(\mathbf{x}) + j \texttt{ReLU}(\mathbf{y})
 
     Based on work from the following paper:
 
@@ -38,7 +38,7 @@ class CReLU(CVSplitReLU):
 
     .. math::
 
-        G(\mathbf{z}) = \texttt{ReLU}(\mathbf{z}_{real}) + j \texttt{ReLU}(\mathbf{z}_{imag})
+        G(\mathbf{z}) = \texttt{ReLU}(\mathbf{x}) + j \texttt{ReLU}(\mathbf{y})
 
     Alias for :class:`CVSplitReLU`. The nomenclature CReLU is used only in certain literature to denote the split complex-valued rectified linear unit.
     """
@@ -57,7 +57,7 @@ class CPReLU(GeneralizedSplitActivation):
 
     .. math::
 
-        G(\mathbf{z}) = \texttt{PReLU}(\mathbf{z}_{real}) + j \texttt{PReLU}(\mathbf{z}_{imag})
+        G(\mathbf{z}) = \texttt{PReLU}(\mathbf{x}) + j \texttt{PReLU}(\mathbf{y})
 
     Based on work from the following paper:
 
