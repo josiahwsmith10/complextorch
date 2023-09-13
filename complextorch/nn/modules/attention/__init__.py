@@ -33,7 +33,7 @@ class CVScaledDotProductAttention(nn.Module):
         self,
         temperature: float,
         attn_dropout: float = 0.1,
-        SoftMaxClass: nn.Module = cvnn.CVSoftmax,
+        SoftMaxClass: nn.Module = cvnn.CVSoftMax,
     ) -> None:
         super(CVScaledDotProductAttention, self).__init__()
 
@@ -76,7 +76,7 @@ class CVMultiheadAttention(nn.Module):
         d_k: int,
         d_v: int,
         dropout: float = 0.1,
-        SoftMaxClass: nn.Module = cvnn.CVSoftmax,
+        SoftMaxClass: nn.Module = cvnn.CVSoftMax,
     ) -> None:
         super(CVMultiheadAttention, self).__init__()
 

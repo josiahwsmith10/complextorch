@@ -5,10 +5,10 @@ import torch.nn as nn
 from ... import CVTensor
 from .. import functional as cvF
 
-__all__ = ["CVSoftmax", "MagSoftmax", "MagMinMaxNorm"]
+__all__ = ["CVSoftMax", "MagSoftMax", "PhaseSoftMax"]
 
 
-class CVSoftmax(nn.Module):
+class CVSoftMax(nn.Module):
     """
     Split Complex-Valued Softmax Layer
     ----------------------------------
@@ -26,7 +26,7 @@ class CVSoftmax(nn.Module):
     """
 
     def __init__(self, dim: Optional[int] = None) -> None:
-        super(CVSoftmax, self).__init__()
+        super(CVSoftMax, self).__init__()
 
         self.softmax = nn.Softmax(dim)
 
@@ -42,7 +42,7 @@ class CVSoftmax(nn.Module):
         return cvF.apply_complex_split(self.softmax, self.softmax, input)
 
 
-class PhaseSoftmax(nn.Module):
+class PhaseSoftMax(nn.Module):
     """
     Phase-Preserving Complex-Valued Softmax Layer
     ---------------------------------------------
@@ -57,7 +57,7 @@ class PhaseSoftmax(nn.Module):
     """
 
     def __init__(self, dim: Optional[int] = None) -> None:
-        super(PhaseSoftmax, self).__init__()
+        super(PhaseSoftMax, self).__init__()
 
         self.softmax = nn.Softmax(dim)
 
@@ -74,7 +74,7 @@ class PhaseSoftmax(nn.Module):
         return self.softmax(x_mag) * (input / x_mag)
 
 
-class MagSoftmax(nn.Module):
+class MagSoftMax(nn.Module):
     """
     Magnitude Softmax Layer
     -----------------------
@@ -89,7 +89,7 @@ class MagSoftmax(nn.Module):
     """
 
     def __init__(self, dim: Optional[int] = None) -> None:
-        super(MagSoftmax, self).__init__()
+        super(MagSoftMax, self).__init__()
 
         self.softmax = nn.Softmax(dim)
 
@@ -103,38 +103,3 @@ class MagSoftmax(nn.Module):
             CVTensor: :math:`\\texttt{SoftMax}(|\mathbf{z}|)`
         """
         return self.softmax(input.abs())
-
-
-class MagMinMaxNorm(nn.Module):
-    """
-    Magnitude Min-Max Normalization Layer
-    -------------------------------------
-
-    Applies the *min-max norm* to the input tensor yielding an output whose magnitude is normalized between 0 and 1 over the specified dimension while phase information remains unchanged.
-
-    Implements the following operation:
-
-    .. math::
-
-        G(\mathbf{z}) = \\frac{\mathbf{z} - \mathbf{z}_{min}}{\mathbf{z}_{max} - \mathbf{z}_{min}}
-    """
-
-    def __init__(self, dim: Optional[int] = None) -> None:
-        super(MagMinMaxNorm, self).__init__()
-
-        self.dim = dim
-
-    def forward(self, input: CVTensor) -> CVTensor:
-        """Applies the *min-max norm* to the input tensor yielding an output whose magnitude is normalized between 0 and 1 over the specified dimension while phase information remains unchanged.
-
-        Args:
-            input (CVTensor): input tensor
-
-        Returns:
-            CVTensor: :math:`\\frac{\mathbf{z} - \mathbf{z}_{min}}{\mathbf{z}_{max} - \mathbf{z}_{min}}`
-        """
-        x_mag = input.abs()
-        x_min = x_mag.min(self.dim, keepdim=True)[0]
-        x_max = x_mag.max(self.dim, keepdim=True)[0]
-        out = (input - x_min) / (x_max - x_min)
-        return CVTensor(out.real, out.imag)
