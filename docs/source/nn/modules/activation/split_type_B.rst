@@ -1,4 +1,4 @@
-Split Type-B Activation Functions
+Polar Type-B Activation Functions
 =================================
 
 *Type-B* activation functions consist of two real-valued functions, :math:`G_{||}(\cdot)` and :math:`G_\angle(\cdot)`, which are applied to the magnitude (modulus) and phase (angle, argument) of the input tensor, respectively, as 

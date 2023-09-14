@@ -19,7 +19,7 @@ class CVAdaptiveAvgPool1d(nn.AdaptiveAvgPool1d):
     
     .. math::
     
-        G(\mathbf{z}) = \texttt{AdaptiveAvgPool1d}(\mathbf{z}_{real}) + j \texttt{AdaptiveAvgPool1d}(\mathbf{z}_{imag})
+        G(\mathbf{z}) = \texttt{AdaptiveAvgPool1d}(\mathbf{x}) + j \texttt{AdaptiveAvgPool1d}(\mathbf{y})
     """
     def __init__(self, output_size: Union[int, Tuple[int]]) -> None:
         super().__init__(output_size)
@@ -31,7 +31,7 @@ class CVAdaptiveAvgPool1d(nn.AdaptiveAvgPool1d):
             input (CVTensor): input tensor
 
         Returns:
-            CVTensor: :math:`\texttt{AdaptiveAvgPool1d}(\mathbf{z}_{real}) + j \texttt{AdaptiveAvgPool1d}(\mathbf{z}_{imag})`
+            CVTensor: :math:`\texttt{AdaptiveAvgPool1d}(\mathbf{x}) + j \texttt{AdaptiveAvgPool1d}(\mathbf{y})`
         """
         return cvF.apply_complex_split(super().forward, super().forward, input)
 
@@ -47,7 +47,7 @@ class CVAdaptiveAvgPool2d(nn.AdaptiveAvgPool2d):
     
     .. math::
     
-        G(\mathbf{z}) = \texttt{AdaptiveAvgPool2d}(\mathbf{z}_{real}) + j \texttt{AdaptiveAvgPool2d}(\mathbf{z}_{imag})
+        G(\mathbf{z}) = \texttt{AdaptiveAvgPool2d}(\mathbf{x}) + j \texttt{AdaptiveAvgPool2d}(\mathbf{y})
     """
     def __init__(self, output_size) -> None:
         super().__init__(output_size)
@@ -59,7 +59,7 @@ class CVAdaptiveAvgPool2d(nn.AdaptiveAvgPool2d):
             input (CVTensor): input tensor
 
         Returns:
-            CVTensor: :math:`\texttt{AdaptiveAvgPool2d}(\mathbf{z}_{real}) + j \texttt{AdaptiveAvgPool2d}(\mathbf{z}_{imag})`
+            CVTensor: :math:`\texttt{AdaptiveAvgPool2d}(\mathbf{x}) + j \texttt{AdaptiveAvgPool2d}(\mathbf{y})`
         """
         return cvF.apply_complex_split(super().forward, super().forward, input)
 
@@ -75,7 +75,7 @@ class CVAdaptiveAvgPool3d(nn.AdaptiveAvgPool3d):
     
     .. math::
     
-        G(\mathbf{z}) = \texttt{AdaptiveAvgPool3d}(\mathbf{z}_{real}) + j \texttt{AdaptiveAvgPool3d}(\mathbf{z}_{imag})
+        G(\mathbf{z}) = \texttt{AdaptiveAvgPool3d}(\mathbf{x}) + j \texttt{AdaptiveAvgPool3d}(\mathbf{y})
     """
     def __init__(self, output_size) -> None:
         super().__init__(output_size)
@@ -87,6 +87,6 @@ class CVAdaptiveAvgPool3d(nn.AdaptiveAvgPool3d):
             input (CVTensor): input tensor
 
         Returns:
-            CVTensor: :math:`\texttt{AdaptiveAvgPool3d}(\mathbf{z}_{real}) + j \texttt{AdaptiveAvgPool3d}(\mathbf{z}_{imag})`
+            CVTensor: :math:`\texttt{AdaptiveAvgPool3d}(\mathbf{x}) + j \texttt{AdaptiveAvgPool3d}(\mathbf{y})`
         """
         return cvF.apply_complex_split(super().forward, super().forward, input)

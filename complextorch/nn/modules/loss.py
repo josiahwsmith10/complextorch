@@ -30,7 +30,7 @@ class GeneralizedSplitLoss(nn.Module):
 
     .. math::
 
-        G(\mathbf{x}, \mathbf{y}) = G_{real}(\mathbf{x}_{real}, \mathbf{y}_{real}) + G_{imag}(\mathbf{x}_{imag}, \mathbf{y}_{imag})
+        \mathcal{L}(\mathbf{x}, \mathbf{y}) = \mathcal{L}_\mathbb{R}(\mathbf{x}_\mathbb{R}, \mathbf{y}_\mathbb{R}) + \mathcal{L}_\mathbb{I}(\mathbf{x}_\mathbb{I}, \mathbf{y}_\mathbb{I})
     """
 
     def __init__(self, loss_r: nn.Module, loss_i: nn.Module) -> None:
@@ -46,7 +46,7 @@ class GeneralizedSplitLoss(nn.Module):
             y (CVTensor): target/ground truth label
 
         Returns:
-            torch.Tensor: :math:`G_{real}(\mathbf{x}_{real}, \mathbf{y}_{real}) + G_{imag}(\mathbf{x}_{imag}, \mathbf{y}_{imag})`
+            torch.Tensor: :math:`\mathcal{L}_\mathbb{R}(\mathbf{x}_\mathbb{R}, \mathbf{y}_\mathbb{R}) + \mathcal{L}_\mathbb{I}(\mathbf{x}_\mathbb{I}, \mathbf{y}_\mathbb{I})`
         """
         return self.loss_r(x.real, y.real) + self.loss_i(x.imag, y.imag)
 
@@ -60,9 +60,9 @@ class GeneralizedPolarLoss(nn.Module):
 
     .. math::
 
-        G(\mathbf{x}, \mathbf{y}) = w_{mag} * G_{mag}(|\mathbf{x}|, |\mathbf{y}|) + w_{phase} * G_{phase}(angle(\mathbf{x}), angle(\mathbf{y}))
+        \mathcal{L}(\mathbf{x}, \mathbf{y}) = w_{||} \mathcal{L}_{||}(|\mathbf{x}|, |\mathbf{y}|) + w_\angle \mathcal{L}_\angle(\angle\mathbf{x}, \angle\mathbf{y})
 
-    where :math:`w_{mag}` and :math:`w_{phase}` are scalar weights for the magnitiude and phase metrics, respectively.
+    where :math:`w_{||}` and :math:`w_\angle` are scalar weights for the magnitiude and phase metrics, respectively.
     """
 
     def __init__(
@@ -87,7 +87,7 @@ class GeneralizedPolarLoss(nn.Module):
             y (CVTensor): target/ground truth labels
 
         Returns:
-            torch.Tensor: w_{mag} * G_{mag}(|\mathbf{x}|, |\mathbf{y}|) + w_{phase} * G_{phase}(angle(\mathbf{x}), angle(\mathbf{y}))
+            torch.Tensor: w_{||} \mathcal{L}_{||}(|\mathbf{x}|, |\mathbf{y}|) + w_\angle \mathcal{L}_\angle(\angle\mathbf{x}, \angle\mathbf{y})
         """
         l_mag = self.weight_mag * self.loss_mag(x.abs(), y.abs())
         l_phase = self.weight_phase * self.loss_phase(x.angle(), y.angle())
@@ -101,7 +101,7 @@ class SplitL1(GeneralizedSplitLoss):
 
     .. math::
 
-        L1(\mathbf{x}, \mathbf{y}) = \texttt{L1}(\mathbf{x}_{real}, \mathbf{y}_{real}) + \texttt{L1}(\mathbf{x}_{imag}, \mathbf{y}_{imag})
+        L1(\mathbf{x}, \mathbf{y}) = \texttt{L1}(\mathbf{x}_\mathbb{R}, \mathbf{y}_\mathbb{R}) + \texttt{L1}(\mathbf{x}_\mathbb{I}, \mathbf{y}_\mathbb{I})
     """
 
     def __init__(self) -> None:
@@ -115,7 +115,7 @@ class SplitMSE(GeneralizedSplitLoss):
 
     .. math::
 
-        MSE(\mathbf{x}, \mathbf{y}) = \texttt{MSE}(\mathbf{x}_{real}, \mathbf{y}_{real}) + \texttt{MSE}(\mathbf{x}_{imag}, \mathbf{y}_{imag})
+        MSE(\mathbf{x}, \mathbf{y}) = \texttt{MSE}(\mathbf{x}_\mathbb{R}, \mathbf{y}_\mathbb{R}) + \texttt{MSE}(\mathbf{x}_\mathbb{I}, \mathbf{y}_\mathbb{I})
     """
 
     def __init__(self) -> None:
@@ -280,7 +280,7 @@ class CVQuadError(nn.Module):
 
     .. math::
 
-        G(\mathbf{x}, \mathbf{y}) = 1/2 * \text{sum}(|\mathbf{x} - \mathbf{y}|^2)
+        \mathcal{L}(\mathbf{x}, \mathbf{y}) = \frac{1}{2}\text{sum}(|\mathbf{x} - \mathbf{y}|^2)
 
     Based on work from the following paper:
 
@@ -302,7 +302,7 @@ class CVQuadError(nn.Module):
             y (CVTensor): target/ground truth labels
 
         Returns:
-            torch.Tensor: :math:`1/2 * \text{sum}(|\mathbf{x} - \mathbf{y}|^2)`
+            torch.Tensor: :math:`\frac{1}{2}\text{sum}(|\mathbf{x} - \mathbf{y}|^2)`
         """
         return 0.5 * ((x - y).abs() ** 2).sum()
 
@@ -314,7 +314,7 @@ class CVFourthPowError(nn.Module):
 
     .. math::
 
-        G(\mathbf{x}, \mathbf{y}) = 1/2 * \text{sum}(|\mathbf{x} - \mathbf{y}|^4)
+        \mathcal{L}(\mathbf{x}, \mathbf{y}) = \frac{1}{2}\text{sum}(|\mathbf{x} - \mathbf{y}|^4)
 
     Based on work from the following paper:
 
@@ -336,7 +336,7 @@ class CVFourthPowError(nn.Module):
             y (CVTensor): target/ground truth labels
 
         Returns:
-            torch.Tensor: :math:`1/2 * \text{sum}(|\mathbf{x} - \mathbf{y}|^4)`
+            torch.Tensor: :math:`\frac{1}{2}\text{sum}(|\mathbf{x} - \mathbf{y}|^4)`
         """
         return 0.5 * ((x - y).abs() ** 4).sum()
 
@@ -347,7 +347,7 @@ class CVCauchyError(nn.Module):
 
     .. math::
 
-        G(\mathbf{x}, \mathbf{y}) = 1/2 * \text{sum}( c^2 / 2 \ln(1 + |\mathbf{x} - \mathbf{y}|^2/c^2) )
+        \mathcal{L}(\mathbf{x}, \mathbf{y}) = \frac{1}{2}\text{sum}( c^2 / 2 \ln(1 + |\mathbf{x} - \mathbf{y}|^2/c^2) )
         
     where :math:`c` is typically set to unity.
 
@@ -373,7 +373,7 @@ class CVCauchyError(nn.Module):
             y (CVTensor): target/ground truth labels
 
         Returns:
-            torch.Tensor: :math:`1/2 * \text{sum}( c^2 / 2 \ln(1 + |\mathbf{x} - \mathbf{y}|^2/c^2) )`
+            torch.Tensor: :math:`\frac{1}{2}\text{sum}( c^2 / 2 \ln(1 + |\mathbf{x} - \mathbf{y}|^2/c^2) )`
         """
         return (self.c2 / 2 * torch.log(1 + ((x - y).abs() ** 2) / self.c2)).sum()
 
@@ -384,7 +384,7 @@ class CVLogCoshError(nn.Module):
 
     .. math::
 
-        G(\mathbf{x}, \mathbf{y}) = \text{sum}(\ln(\cosh(|\mathbf{x} - \mathbf{y}|^2))
+        \mathcal{L}(\mathbf{x}, \mathbf{y}) = \text{sum}(\ln(\cosh(|\mathbf{x} - \mathbf{y}|^2))
 
     Based on work from the following paper:
 
@@ -417,7 +417,7 @@ class CVLogError(nn.Module):
 
     .. math::
 
-        G(\mathbf{x}, \mathbf{y}) = \text{sum}(|\ln(\mathbf{x}) - \ln(\mathbf{y})|^2)
+        \mathcal{L}(\mathbf{x}, \mathbf{y}) = \text{sum}(|\ln(\mathbf{x}) - \ln(\mathbf{y})|^2)
 
     Based on work from the following paper:
 

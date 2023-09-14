@@ -3,7 +3,7 @@ import torch.nn as nn
 
 from .... import CVTensor
 
-__all__ = ["CVSigmoid", "modReLU", "zReLU", "CVCardiod", "CVSigLog"]
+__all__ = ["CVSigmoid", "zReLU", "CVCardiod", "CVSigLog"]
 
 
 class CVSigmoid(nn.Module):
@@ -17,7 +17,7 @@ class CVSigmoid(nn.Module):
 
     .. math::
 
-        G(\mathbf{z}) = \frac{1}{1 + \exp{(\mathbf{z})}}
+        G(\mathbf{z}) = \frac{1}{1 + \exp{(\mathbf{z})}}.
 
     Based on work from the following paper:
 
@@ -44,58 +44,6 @@ class CVSigmoid(nn.Module):
         return CVTensor(out.real, out.imag)
 
 
-class modReLU(nn.Module):
-    r"""
-    modulus Rectified Linear Unit
-    -----------------------------
-
-    Implements the operation:
-
-    .. math::
-
-        G(x) = \texttt{ReLU}(|\mathbf{z}| + b) * \mathbf{z} / |\mathbf{z}| = \texttt{ReLU}(|\mathbf{z}| + b) * \exp(j \text{angle}(\mathbf{z}))
-
-    Notice that :math:`|\mathbf{z}|` (:math:`\mathbf{z}`.abs()) is always positive, so if :math:`b > 0`  then :math:`|\mathbf{z}| + b > = 0` always.
-    In order to have any non-linearity effect, :math:`b` must be smaller than :math:`0` (:math:`b < 0`).
-
-    Based on work from the following papers:
-
-        **Martin Arjovsky, Amar Shah, and Yoshua Bengio. Unitary evolution recurrent neural networks.**
-
-            - Eq. (8)
-
-            - https://arxiv.org/abs/1511.06464
-
-
-
-        **J. A. Barrachina, C. Ren, G. Vieillard, C. Morisseau, and J.-P. Ovarlez. Theory and Implementation of Complex-Valued Neural Networks.**
-
-            - Eq. (36)
-
-            - https://arxiv.org/abs/2302.08286
-    """
-
-    def __init__(self, bias: float = 0.0) -> None:
-        super(modReLU, self).__init__()
-
-        assert bias < 0, "bias must be smaller than 0 to have a non-linearity effect"
-
-        self.relu = nn.ReLU()
-        self.bias = bias
-
-    def forward(self, input: CVTensor) -> CVTensor:
-        r"""Computes the modReLU complex-valued activation function.
-
-        Args:
-            input (CVTensor): input tensor
-
-        Returns:
-            CVTensor: :math:`\texttt{ReLU}(|\mathbf{z}| + b) * \mathbf{z} / |\mathbf{z}| = \texttt{ReLU}(|\mathbf{z}| + b) * \exp(j \text{angle}(\mathbf{z}))`
-        """
-        out = self.relu(input.abs() + self.bias) * torch.exp(1j * input.angle())
-        return CVTensor(out.real, out.imag)
-
-
 class zReLU(nn.Module):
     r"""
     Guberman ReLU
@@ -105,7 +53,7 @@ class zReLU(nn.Module):
 
     .. math::
 
-        G(\mathbf{z}) = \mathbf{z} \quad \text{if} \quad 0 < \mathbf{z} < \pi/2 \quad \text{else} \quad 0
+        G(\mathbf{z}) = \begin{cases} \mathbf{z} \quad \text{if} \quad \angle\mathbf{z} \in [0, \pi/2] \\ 0 \quad \text{else} \end{cases}
 
     Based on work from the following papers:
 
@@ -139,7 +87,7 @@ class zReLU(nn.Module):
             input (CVTensor): input tensor
 
         Returns:
-            CVTensor: :math:`\mathbf{z} \quad \text{if} \quad 0 < \mathbf{z} < \pi/2 \quad \text{else} \quad 0`
+            CVTensor: :math:`\begin{cases} \mathbf{z} \quad \text{if} \quad \angle\mathbf{z} \in [0, \pi/2] \\ 0 \quad \text{else} \end{cases}`
         """
         x_angle = input.angle()
         mask = (0 <= x_angle) & (x_angle <= torch.pi / 2)
@@ -156,7 +104,7 @@ class CVCardiod(nn.Module):
 
     .. math::
 
-        G(z) = 1/2 * (1 + \text{cos}(\text{angle}(\mathbf{z}))) * \mathbf{z}
+        G(z) = \frac{1}{2} (1 + \text{cos}(\angle\mathbf{z})) \odot \mathbf{z}
 
     Based on work from the following papers:
 
@@ -184,7 +132,7 @@ class CVCardiod(nn.Module):
             input (CVTensor): input tensor
 
         Returns:
-            CVTensor: :math:`1/2 * (1 + \text{cos}(\text{angle}(\mathbf{z}))) * \mathbf{z}`
+            CVTensor: :math:`\frac{1}{2} (1 + \text{cos}(\angle\mathbf{z})) \odot \mathbf{z}`
         """
         return 0.5 * (1 + torch.cos(input.angle())) * input
 

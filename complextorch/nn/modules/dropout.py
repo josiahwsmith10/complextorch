@@ -17,7 +17,7 @@ class CVDropout(nn.Module):
 
     .. math::
 
-        G(\mathbf{z}) = \texttt{Dropout}(\mathbf{z}_{real}) + j \texttt{Dropout}(\mathbf{z}_{imag})
+        G(\mathbf{z}) = \texttt{Dropout}(\mathbf{x}) + j \texttt{Dropout}(\mathbf{y})
     """
 
     def __init__(self, p: float = 0.5, inplace: bool = False) -> None:
@@ -33,6 +33,6 @@ class CVDropout(nn.Module):
             x (CVTensor): input tensor
 
         Returns:
-            CVTensor: :math:`\texttt{Dropout}(\mathbf{z}_{real}) + j \texttt{Dropout}(\mathbf{z}_{imag})`
+            CVTensor: :math:`\texttt{Dropout}(\mathbf{x}) + j \texttt{Dropout}(\mathbf{y})`
         """
         return cvF.apply_complex_split(self.dropout_r, self.dropout_i, input)

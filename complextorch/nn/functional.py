@@ -27,11 +27,11 @@ def apply_complex(
 
     Gauss' trick is often faster and is implemented throughout this package.
 
-    Given a complex-valued tensor :math:`\mathbf{z} = \mathbf{z}_{real} + j \mathbf{z}_{imag}` and a linear function :math:`G(\cdot) = G_{real}(\cdot) + j G_{imag}(\cdot)`, implements the following operation:
+    Given a complex-valued tensor :math:`\mathbf{z} = \mathbf{x} + j \mathbf{y}` and a linear function :math:`G(\cdot) = G_\mathbb{R}(\cdot) + j G_\mathbb{I}(\cdot)`, implements the following operation:
 
     .. math::
 
-        G(\mathbf{z}) = G_{real}(\mathbf{z}_{real}) - G_{imag}(\mathbf{z}_{imag}) + j(G_{real}(\mathbf{z}_{imag}) + G_{imag}(\mathbf{z}_{real}))
+        G(\mathbf{z}) = G_\mathbb{R}(\mathbf{x}) - G_\mathbb{I}(\mathbf{y}) + j(G_\mathbb{R}(\mathbf{y}) + G_\mathbb{I}(\mathbf{x}))
     """
     return CVTensor(
         real_module(x.real) - imag_module(x.imag),
@@ -44,13 +44,13 @@ def apply_complex_split(r_fun, i_fun, x: CVTensor) -> CVTensor:
     Apply Complex Split
     -------------------
 
-    Applies a split function (:math:`G(\cdot) = G_{real}(\cdot) + j G_{imag}(\cdot)`) to the real and imaginary parts of the input tensor (:math:`\mathbf{z}`) separately.
+    Applies a split function (:math:`G(\cdot) = G_\mathbb{R}(\cdot) + j G_\mathbb{I}(\cdot)`) to the real and imaginary parts of the input tensor (:math:`\mathbf{z}`) separately.
 
     Implements the following operation:
 
     .. math::
 
-        G(\mathbf{z}) = G_{real}(\mathbf{z}_{real}) + j G_{imag}(\mathbf{z}_{imag})
+        G(\mathbf{z}) = G_\mathbb{R}(\mathbf{x}) + j G_\mathbb{I}(\mathbf{y})
 
     Args:
         r_fun: function to be applied to the real part of the input tensor
@@ -58,7 +58,7 @@ def apply_complex_split(r_fun, i_fun, x: CVTensor) -> CVTensor:
         x (CVTensor): input tensor
 
     Returns:
-        CVTensor: :math:`G_{real}(\mathbf{z}_{real}) + j G_{imag}(\mathbf{z}_{imag})`
+        CVTensor: :math:`G_\mathbb{R}(\mathbf{x}) + j G_\mathbb{I}(\mathbf{y})`
     """
     return CVTensor(r_fun(x.real), i_fun(x.imag))
 
@@ -68,13 +68,13 @@ def apply_complex_polar(mag_fun, phase_fun, x: CVTensor) -> CVTensor:
     Apply Complex Polar
     -------------------
 
-    Applies a polar function (:math:`G(\mathbf{z}) = G_{mag}(|\mathbf{z}|) * \exp(j G_{phase}(\text{angle}(\mathbf{z})))`) to the magnitude and phase of the input tensor (:math:`\mathbf{z}`) separately.
+    Applies a polar function (:math:`G(\mathbf{z}) = G_{||}(|\mathbf{z}|) \odot \exp(j G_\angle(\angle\mathbf{z}))`) to the magnitude and phase of the input tensor (:math:`\mathbf{z}`) separately.
 
     Implements the following operation:
 
     .. math::
 
-        G(\mathbf{z}) = G_{mag}(|\mathbf{z}|) * \exp(j G_{phase}(\text{angle}(\mathbf{z})))
+        G(\mathbf{z}) = G_{||}(|\mathbf{z}|) \odot \exp(j G_\angle(\angle\mathbf{z}))
 
     Args:
         mag_fun: function to be applied to the magnitude of the input tensor
@@ -82,9 +82,14 @@ def apply_complex_polar(mag_fun, phase_fun, x: CVTensor) -> CVTensor:
         x (CVTensor): input tensor
 
     Returns:
-        CVTensor: :math:`G_{mag}(|\mathbf{z}|) * \exp(j G_{phase}(\text{angle}(\mathbf{z})))`
+        CVTensor: :math:`G_{||}(|\mathbf{z}|) \odot \exp(j G_\angle(\angle\mathbf{z}))`
     """
-    return from_polar(mag_fun(x.abs()), phase_fun(x.angle()))
+    if phase_fun is None:
+        # Assumes no function will be computed on phase (improves computational efficiency)
+        x_mag = x.abs()
+        return (mag_fun(x_mag) / x_mag) * x
+    else:
+        return from_polar(mag_fun(x.abs()), phase_fun(x.angle()))
 
 
 def inv_sqrtm2x2(
@@ -113,7 +118,7 @@ def inv_sqrtm2x2(
 
     .. math::
 
-        \mathbf{A}^{-1} = 1/\text{det}(\mathbf{A}) * \begin{bmatrix} d & -b \\ -c & a \end{bmatrix}.
+        \mathbf{A}^{-1} = \frac{1}{\text{det}(\mathbf{A})} \begin{bmatrix} d & -b \\ -c & a \end{bmatrix}.
 
     We define two parameters
 
