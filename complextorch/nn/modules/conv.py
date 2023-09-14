@@ -495,20 +495,20 @@ class CVConvTranpose1d(_CVConvTranspose):
 
     .. math::
 
-        G(\mathbf{z}) = convT(\mathbf{z}_\mathbb{R}, \mathbf{W}_\mathbb{R}, \mathbf{b}_\mathbb{R})) - convT(\mathbf{z}_\mathbb{I}, \mathbf{W}_\mathbb{I}, \mathbf{b}_\mathbb{I}))
-        + j(convT(\mathbf{z}_\mathbb{R}, \mathbf{W}_\mathbb{I}, \mathbf{b}_\mathbb{I})) + convT(\mathbf{z}_\mathbb{I}, \mathbf{W}_\mathbb{R}, \mathbf{b}_\mathbb{R})))
+        G(\mathbf{z}) = \text{conv}_T(\mathbf{z}_\mathbb{R}, \mathbf{W}_\mathbb{R}, \mathbf{b}_\mathbb{R})) - \text{conv}_T(\mathbf{z}_\mathbb{I}, \mathbf{W}_\mathbb{I}, \mathbf{b}_\mathbb{I}))
+        + j(\text{conv}_T(\mathbf{z}_\mathbb{R}, \mathbf{W}_\mathbb{I}, \mathbf{b}_\mathbb{I})) + \text{conv}_T(\mathbf{z}_\mathbb{I}, \mathbf{W}_\mathbb{R}, \mathbf{b}_\mathbb{R})))
 
-    where :math:`\mathbf{W}` and :math:`\mathbf{b}` are the complex-valued weight and bias tensors, respectively, and :math:`convT(\cdot)` is the transposed conovlution operator.
+    where :math:`\mathbf{W}` and :math:`\mathbf{b}` are the complex-valued weight and bias tensors, respectively, and :math:`\text{conv}_T(\cdot)` is the transposed conovlution operator.
 
     By comparison, using Gauss' trick, the complex-vauled convolution can be implemented as:
 
     .. math::
 
-        t1 =& convT(\mathbf{z}_\mathbb{R}, \mathbf{W}_\mathbb{R}, \mathbf{b}_\mathbb{R}))
+        t1 =& \text{conv}_T(\mathbf{z}_\mathbb{R}, \mathbf{W}_\mathbb{R}, \mathbf{b}_\mathbb{R}))
 
-        t2 =& convT(\mathbf{z}_\mathbb{I}, \mathbf{W}_\mathbb{I}, \mathbf{b}_\mathbb{I}))
+        t2 =& \text{conv}_T(\mathbf{z}_\mathbb{I}, \mathbf{W}_\mathbb{I}, \mathbf{b}_\mathbb{I}))
 
-        t3 =& convT(\mathbf{z}_\mathbb{R} + \mathbf{z}_\mathbb{I}, \mathbf{W}_\mathbb{R} + \mathbf{W}_\mathbb{I}, \mathbf{b}_\mathbb{R} + \mathbf{b}_\mathbb{I}))
+        t3 =& \text{conv}_T(\mathbf{z}_\mathbb{R} + \mathbf{z}_\mathbb{I}, \mathbf{W}_\mathbb{R} + \mathbf{W}_\mathbb{I}, \mathbf{b}_\mathbb{R} + \mathbf{b}_\mathbb{I}))
 
         G(\mathbf{z}) =& t1 - t2 + j(t3 - t2 - t1)
 
@@ -561,20 +561,20 @@ class CVConvTranpose2d(_CVConvTranspose):
 
     .. math::
 
-        G(\mathbf{z}) = convT(\mathbf{z}_\mathbb{R}, \mathbf{W}_\mathbb{R}, \mathbf{b}_\mathbb{R})) - convT(\mathbf{z}_\mathbb{I}, \mathbf{W}_\mathbb{I}, \mathbf{b}_\mathbb{I}))
-        + j(convT(\mathbf{z}_\mathbb{R}, \mathbf{W}_\mathbb{I}, \mathbf{b}_\mathbb{I})) + convT(\mathbf{z}_\mathbb{I}, \mathbf{W}_\mathbb{R}, \mathbf{b}_\mathbb{R})))
+        G(\mathbf{z}) = \text{conv}_T(\mathbf{z}_\mathbb{R}, \mathbf{W}_\mathbb{R}, \mathbf{b}_\mathbb{R})) - \text{conv}_T(\mathbf{z}_\mathbb{I}, \mathbf{W}_\mathbb{I}, \mathbf{b}_\mathbb{I}))
+        + j(\text{conv}_T(\mathbf{z}_\mathbb{R}, \mathbf{W}_\mathbb{I}, \mathbf{b}_\mathbb{I})) + \text{conv}_T(\mathbf{z}_\mathbb{I}, \mathbf{W}_\mathbb{R}, \mathbf{b}_\mathbb{R})))
 
-    where :math:`\mathbf{W}` and :math:`\mathbf{b}` are the complex-valued weight and bias tensors, respectively, and :math:`convT(\cdot)` is the transposed conovlution operator.
+    where :math:`\mathbf{W}` and :math:`\mathbf{b}` are the complex-valued weight and bias tensors, respectively, and :math:`\text{conv}_T(\cdot)` is the transposed conovlution operator.
 
     By comparison, using Gauss' trick, the complex-vauled convolution can be implemented as:
 
     .. math::
 
-        t1 =& convT(\mathbf{z}_\mathbb{R}, \mathbf{W}_\mathbb{R}, \mathbf{b}_\mathbb{R}))
+        t1 =& \text{conv}_T(\mathbf{z}_\mathbb{R}, \mathbf{W}_\mathbb{R}, \mathbf{b}_\mathbb{R}))
 
-        t2 =& convT(\mathbf{z}_\mathbb{I}, \mathbf{W}_\mathbb{I}, \mathbf{b}_\mathbb{I}))
+        t2 =& \text{conv}_T(\mathbf{z}_\mathbb{I}, \mathbf{W}_\mathbb{I}, \mathbf{b}_\mathbb{I}))
 
-        t3 =& convT(\mathbf{z}_\mathbb{R} + \mathbf{z}_\mathbb{I}, \mathbf{W}_\mathbb{R} + \mathbf{W}_\mathbb{I}, \mathbf{b}_\mathbb{R} + \mathbf{b}_\mathbb{I}))
+        t3 =& \text{conv}_T(\mathbf{z}_\mathbb{R} + \mathbf{z}_\mathbb{I}, \mathbf{W}_\mathbb{R} + \mathbf{W}_\mathbb{I}, \mathbf{b}_\mathbb{R} + \mathbf{b}_\mathbb{I}))
 
         G(\mathbf{z}) =& t1 - t2 + j(t3 - t2 - t1)
 
@@ -627,20 +627,20 @@ class CVConvTranpose3d(_CVConvTranspose):
 
     .. math::
 
-        G(\mathbf{z}) = convT(\mathbf{z}_\mathbb{R}, \mathbf{W}_\mathbb{R}, \mathbf{b}_\mathbb{R})) - convT(\mathbf{z}_\mathbb{I}, \mathbf{W}_\mathbb{I}, \mathbf{b}_\mathbb{I}))
-        + j(convT(\mathbf{z}_\mathbb{R}, \mathbf{W}_\mathbb{I}, \mathbf{b}_\mathbb{I})) + convT(\mathbf{z}_\mathbb{I}, \mathbf{W}_\mathbb{R}, \mathbf{b}_\mathbb{R})))
+        G(\mathbf{z}) = \text{conv}_T(\mathbf{z}_\mathbb{R}, \mathbf{W}_\mathbb{R}, \mathbf{b}_\mathbb{R})) - \text{conv}_T(\mathbf{z}_\mathbb{I}, \mathbf{W}_\mathbb{I}, \mathbf{b}_\mathbb{I}))
+        + j(\text{conv}_T(\mathbf{z}_\mathbb{R}, \mathbf{W}_\mathbb{I}, \mathbf{b}_\mathbb{I})) + \text{conv}_T(\mathbf{z}_\mathbb{I}, \mathbf{W}_\mathbb{R}, \mathbf{b}_\mathbb{R})))
 
-    where :math:`\mathbf{W}` and :math:`\mathbf{b}` are the complex-valued weight and bias tensors, respectively, and :math:`convT(\cdot)` is the transposed conovlution operator.
+    where :math:`\mathbf{W}` and :math:`\mathbf{b}` are the complex-valued weight and bias tensors, respectively, and :math:`\text{conv}_T(\cdot)` is the transposed conovlution operator.
 
     By comparison, using Gauss' trick, the complex-vauled convolution can be implemented as:
 
     .. math::
 
-        t1 =& convT(\mathbf{z}_\mathbb{R}, \mathbf{W}_\mathbb{R}, \mathbf{b}_\mathbb{R}))
+        t1 =& \text{conv}_T(\mathbf{z}_\mathbb{R}, \mathbf{W}_\mathbb{R}, \mathbf{b}_\mathbb{R}))
 
-        t2 =& convT(\mathbf{z}_\mathbb{I}, \mathbf{W}_\mathbb{I}, \mathbf{b}_\mathbb{I}))
+        t2 =& \text{conv}_T(\mathbf{z}_\mathbb{I}, \mathbf{W}_\mathbb{I}, \mathbf{b}_\mathbb{I}))
 
-        t3 =& convT(\mathbf{z}_\mathbb{R} + \mathbf{z}_\mathbb{I}, \mathbf{W}_\mathbb{R} + \mathbf{W}_\mathbb{I}, \mathbf{b}_\mathbb{R} + \mathbf{b}_\mathbb{I}))
+        t3 =& \text{conv}_T(\mathbf{z}_\mathbb{R} + \mathbf{z}_\mathbb{I}, \mathbf{W}_\mathbb{R} + \mathbf{W}_\mathbb{I}, \mathbf{b}_\mathbb{R} + \mathbf{b}_\mathbb{I}))
 
         G(\mathbf{z}) =& t1 - t2 + j(t3 - t2 - t1)
 
