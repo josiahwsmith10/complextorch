@@ -19,7 +19,9 @@ class CVAdaptiveAvgPool1d(nn.AdaptiveAvgPool1d):
     
     .. math::
     
-        G(\mathbf{z}) = \texttt{AdaptiveAvgPool1d}(\mathbf{x}) + j \texttt{AdaptiveAvgPool1d}(\mathbf{y})
+        G(\mathbf{z}) = \texttt{AdaptiveAvgPool1d}(\mathbf{x}) + j \texttt{AdaptiveAvgPool1d}(\mathbf{y}),
+        
+    where :math:`\mathbf{z} = \mathbf{x} + j\mathbf{y}`
     """
     def __init__(self, output_size: Union[int, Tuple[int]]) -> None:
         super().__init__(output_size)
@@ -47,7 +49,9 @@ class CVAdaptiveAvgPool2d(nn.AdaptiveAvgPool2d):
     
     .. math::
     
-        G(\mathbf{z}) = \texttt{AdaptiveAvgPool2d}(\mathbf{x}) + j \texttt{AdaptiveAvgPool2d}(\mathbf{y})
+        G(\mathbf{z}) = \texttt{AdaptiveAvgPool2d}(\mathbf{x}) + j \texttt{AdaptiveAvgPool2d}(\mathbf{y}),
+        
+    where :math:`\mathbf{z} = \mathbf{x} + j\mathbf{y}`
     """
     def __init__(self, output_size) -> None:
         super().__init__(output_size)
@@ -75,7 +79,9 @@ class CVAdaptiveAvgPool3d(nn.AdaptiveAvgPool3d):
     
     .. math::
     
-        G(\mathbf{z}) = \texttt{AdaptiveAvgPool3d}(\mathbf{x}) + j \texttt{AdaptiveAvgPool3d}(\mathbf{y})
+        G(\mathbf{z}) = \texttt{AdaptiveAvgPool3d}(\mathbf{x}) + j \texttt{AdaptiveAvgPool3d}(\mathbf{y}),
+        
+    where :math:`\mathbf{z} = \mathbf{x} + j\mathbf{y}`
     """
     def __init__(self, output_size) -> None:
         super().__init__(output_size)

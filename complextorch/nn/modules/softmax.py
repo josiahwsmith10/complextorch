@@ -22,7 +22,9 @@ class CVSoftMax(nn.Module):
 
     .. math::
 
-        G(\mathbf{z}) = \texttt{SoftMax}(\mathbf{z}_{real}) + j \texttt{SoftMax}(\mathbf{z}_{imag})
+        G(\mathbf{z}) = \texttt{SoftMax}(\mathbf{x}) + j \texttt{SoftMax}(\mathbf{y}),
+        
+    where :math:`\mathbf{z} = \mathbf{x} + j\mathbf{y}`
     """
 
     def __init__(self, dim: Optional[int] = None) -> None:
@@ -37,7 +39,7 @@ class CVSoftMax(nn.Module):
             input (CVTensor): input tensor
 
         Returns:
-            CVTensor: :math:`\texttt{SoftMax}(\mathbf{z}_{real}) + j \texttt{SoftMax}(\mathbf{z}_{imag})`
+            CVTensor: :math:`\texttt{SoftMax}(\mathbf{x}) + j \texttt{SoftMax}(\mathbf{y})`
         """
         return cvF.apply_complex_split(self.softmax, self.softmax, input)
 

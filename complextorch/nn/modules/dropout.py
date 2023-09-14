@@ -17,7 +17,9 @@ class CVDropout(nn.Module):
 
     .. math::
 
-        G(\mathbf{z}) = \texttt{Dropout}(\mathbf{x}) + j \texttt{Dropout}(\mathbf{y})
+        G(\mathbf{z}) = \texttt{Dropout}(\mathbf{x}) + j \texttt{Dropout}(\mathbf{y}),
+        
+    where :math:`\mathbf{z} = \mathbf{x} + j\mathbf{y}`
     """
 
     def __init__(self, p: float = 0.5, inplace: bool = False) -> None:

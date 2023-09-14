@@ -189,19 +189,19 @@ class CVConv1d(_CVConv):
 
     .. math::
 
-        G(\mathbf{z}) = conv(\mathbf{z}_{real}, \mathbf{W}_{real}, \mathbf{b}_{real})) - conv(\mathbf{z}_{imag}, \mathbf{W}_{imag}, \mathbf{b}_{imag})) + j(conv(\mathbf{z}_{real}, \mathbf{W}_{imag}, \mathbf{b}_{imag})) + conv(\mathbf{z}_{imag}, \mathbf{W}_{real}, \mathbf{b}_{real})))
+        G(\mathbf{z}) = \text{conv}(\mathbf{z}_\mathbb{R}, \mathbf{W}_\mathbb{R}, \mathbf{b}_\mathbb{R})) - \text{conv}(\mathbf{z}_\mathbb{I}, \mathbf{W}_\mathbb{I}, \mathbf{b}_\mathbb{I})) + j(\text{conv}(\mathbf{z}_\mathbb{R}, \mathbf{W}_\mathbb{I}, \mathbf{b}_\mathbb{I})) + \text{conv}(\mathbf{z}_\mathbb{I}, \mathbf{W}_\mathbb{R}, \mathbf{b}_\mathbb{R})))
 
-    where :math:`\mathbf{W}` and :math:`\mathbf{b}` are the complex-valued weight and bias tensors, respectively, and :math:`conv(\cdot)` is the conovlution operator.
+    where :math:`\mathbf{W}` and :math:`\mathbf{b}` are the complex-valued weight and bias tensors, respectively, and :math:`\text{conv}(\cdot)` is the conovlution operator.
 
     By comparison, using Gauss' trick, the complex-vauled convolution can be implemented as:
 
     .. math::
 
-        t1 =& conv(\mathbf{z}_{real}, \mathbf{W}_{real}, \mathbf{b}_{real}))
+        t1 =& \text{conv}(\mathbf{z}_\mathbb{R}, \mathbf{W}_\mathbb{R}, \mathbf{b}_\mathbb{R}))
 
-        t2 =& conv(\mathbf{z}_{imag}, \mathbf{W}_{imag}, \mathbf{b}_{imag}))
+        t2 =& \text{conv}(\mathbf{z}_\mathbb{I}, \mathbf{W}_\mathbb{I}, \mathbf{b}_\mathbb{I}))
 
-        t3 =& conv(\mathbf{z}_{real} + \mathbf{z}_{imag}, \mathbf{W}_{real} + \mathbf{W}_{imag}, \mathbf{b}_{real} + \mathbf{b}_{imag}))
+        t3 =& \text{conv}(\mathbf{z}_\mathbb{R} + \mathbf{z}_\mathbb{I}, \mathbf{W}_\mathbb{R} + \mathbf{W}_\mathbb{I}, \mathbf{b}_\mathbb{R} + \mathbf{b}_\mathbb{I}))
 
         G(\mathbf{z}) =& t1 - t2 + j(t3 - t2 - t1)
 
@@ -252,19 +252,19 @@ class CVConv2d(_CVConv):
 
     .. math::
 
-        G(\mathbf{z}) = conv(\mathbf{z}_{real}, \mathbf{W}_{real}, \mathbf{b}_{real})) - conv(\mathbf{z}_{imag}, \mathbf{W}_{imag}, \mathbf{b}_{imag})) + j(conv(\mathbf{z}_{real}, \mathbf{W}_{imag}, \mathbf{b}_{imag})) + conv(\mathbf{z}_{imag}, \mathbf{W}_{real}, \mathbf{b}_{real})))
+        G(\mathbf{z}) = \text{conv}(\mathbf{z}_\mathbb{R}, \mathbf{W}_\mathbb{R}, \mathbf{b}_\mathbb{R})) - \text{conv}(\mathbf{z}_\mathbb{I}, \mathbf{W}_\mathbb{I}, \mathbf{b}_\mathbb{I})) + j(\text{conv}(\mathbf{z}_\mathbb{R}, \mathbf{W}_\mathbb{I}, \mathbf{b}_\mathbb{I})) + \text{conv}(\mathbf{z}_\mathbb{I}, \mathbf{W}_\mathbb{R}, \mathbf{b}_\mathbb{R})))
 
-    where :math:`\mathbf{W}` and :math:`\mathbf{b}` are the complex-valued weight and bias tensors, respectively, and :math:`conv(\cdot)` is the conovlution operator.
+    where :math:`\mathbf{W}` and :math:`\mathbf{b}` are the complex-valued weight and bias tensors, respectively, and :math:`\text{conv}(\cdot)` is the conovlution operator.
 
     By comparison, using Gauss' trick, the complex-vauled convolution can be implemented as:
 
     .. math::
 
-        t1 =& conv(\mathbf{z}_{real}, \mathbf{W}_{real}, \mathbf{b}_{real}))
+        t1 =& \text{conv}(\mathbf{z}_\mathbb{R}, \mathbf{W}_\mathbb{R}, \mathbf{b}_\mathbb{R}))
 
-        t2 =& conv(\mathbf{z}_{imag}, \mathbf{W}_{imag}, \mathbf{b}_{imag}))
+        t2 =& \text{conv}(\mathbf{z}_\mathbb{I}, \mathbf{W}_\mathbb{I}, \mathbf{b}_\mathbb{I}))
 
-        t3 =& conv(\mathbf{z}_{real} + \mathbf{z}_{imag}, \mathbf{W}_{real} + \mathbf{W}_{imag}, \mathbf{b}_{real} + \mathbf{b}_{imag}))
+        t3 =& \text{conv}(\mathbf{z}_\mathbb{R} + \mathbf{z}_\mathbb{I}, \mathbf{W}_\mathbb{R} + \mathbf{W}_\mathbb{I}, \mathbf{b}_\mathbb{R} + \mathbf{b}_\mathbb{I}))
 
         G(\mathbf{z}) =& t1 - t2 + j(t3 - t2 - t1)
 
@@ -315,19 +315,19 @@ class CVConv3d(_CVConv):
 
     .. math::
 
-        G(\mathbf{z}) = conv(\mathbf{z}_{real}, \mathbf{W}_{real}, \mathbf{b}_{real})) - conv(\mathbf{z}_{imag}, \mathbf{W}_{imag}, \mathbf{b}_{imag})) + j(conv(\mathbf{z}_{real}, \mathbf{W}_{imag}, \mathbf{b}_{imag})) + conv(\mathbf{z}_{imag}, \mathbf{W}_{real}, \mathbf{b}_{real})))
+        G(\mathbf{z}) = \text{conv}(\mathbf{z}_\mathbb{R}, \mathbf{W}_\mathbb{R}, \mathbf{b}_\mathbb{R})) - \text{conv}(\mathbf{z}_\mathbb{I}, \mathbf{W}_\mathbb{I}, \mathbf{b}_\mathbb{I})) + j(\text{conv}(\mathbf{z}_\mathbb{R}, \mathbf{W}_\mathbb{I}, \mathbf{b}_\mathbb{I})) + \text{conv}(\mathbf{z}_\mathbb{I}, \mathbf{W}_\mathbb{R}, \mathbf{b}_\mathbb{R})))
 
-    where :math:`\mathbf{W}` and :math:`\mathbf{b}` are the complex-valued weight and bias tensors, respectively, and :math:`conv(\cdot)` is the conovlution operator.
+    where :math:`\mathbf{W}` and :math:`\mathbf{b}` are the complex-valued weight and bias tensors, respectively, and :math:`\text{conv}(\cdot)` is the conovlution operator.
 
     By comparison, using Gauss' trick, the complex-vauled convolution can be implemented as:
 
     .. math::
 
-        t1 =& conv(\mathbf{z}_{real}, \mathbf{W}_{real}, \mathbf{b}_{real}))
+        t1 =& \text{conv}(\mathbf{z}_\mathbb{R}, \mathbf{W}_\mathbb{R}, \mathbf{b}_\mathbb{R}))
 
-        t2 =& conv(\mathbf{z}_{imag}, \mathbf{W}_{imag}, \mathbf{b}_{imag}))
+        t2 =& \text{conv}(\mathbf{z}_\mathbb{I}, \mathbf{W}_\mathbb{I}, \mathbf{b}_\mathbb{I}))
 
-        t3 =& conv(\mathbf{z}_{real} + \mathbf{z}_{imag}, \mathbf{W}_{real} + \mathbf{W}_{imag}, \mathbf{b}_{real} + \mathbf{b}_{imag}))
+        t3 =& \text{conv}(\mathbf{z}_\mathbb{R} + \mathbf{z}_\mathbb{I}, \mathbf{W}_\mathbb{R} + \mathbf{W}_\mathbb{I}, \mathbf{b}_\mathbb{R} + \mathbf{b}_\mathbb{I}))
 
         G(\mathbf{z}) =& t1 - t2 + j(t3 - t2 - t1)
 
@@ -495,8 +495,8 @@ class CVConvTranpose1d(_CVConvTranspose):
 
     .. math::
 
-        G(\mathbf{z}) = convT(\mathbf{z}_{real}, \mathbf{W}_{real}, \mathbf{b}_{real})) - convT(\mathbf{z}_{imag}, \mathbf{W}_{imag}, \mathbf{b}_{imag}))
-        + j(convT(\mathbf{z}_{real}, \mathbf{W}_{imag}, \mathbf{b}_{imag})) + convT(\mathbf{z}_{imag}, \mathbf{W}_{real}, \mathbf{b}_{real})))
+        G(\mathbf{z}) = convT(\mathbf{z}_\mathbb{R}, \mathbf{W}_\mathbb{R}, \mathbf{b}_\mathbb{R})) - convT(\mathbf{z}_\mathbb{I}, \mathbf{W}_\mathbb{I}, \mathbf{b}_\mathbb{I}))
+        + j(convT(\mathbf{z}_\mathbb{R}, \mathbf{W}_\mathbb{I}, \mathbf{b}_\mathbb{I})) + convT(\mathbf{z}_\mathbb{I}, \mathbf{W}_\mathbb{R}, \mathbf{b}_\mathbb{R})))
 
     where :math:`\mathbf{W}` and :math:`\mathbf{b}` are the complex-valued weight and bias tensors, respectively, and :math:`convT(\cdot)` is the transposed conovlution operator.
 
@@ -504,11 +504,11 @@ class CVConvTranpose1d(_CVConvTranspose):
 
     .. math::
 
-        t1 =& convT(\mathbf{z}_{real}, \mathbf{W}_{real}, \mathbf{b}_{real}))
+        t1 =& convT(\mathbf{z}_\mathbb{R}, \mathbf{W}_\mathbb{R}, \mathbf{b}_\mathbb{R}))
 
-        t2 =& convT(\mathbf{z}_{imag}, \mathbf{W}_{imag}, \mathbf{b}_{imag}))
+        t2 =& convT(\mathbf{z}_\mathbb{I}, \mathbf{W}_\mathbb{I}, \mathbf{b}_\mathbb{I}))
 
-        t3 =& convT(\mathbf{z}_{real} + \mathbf{z}_{imag}, \mathbf{W}_{real} + \mathbf{W}_{imag}, \mathbf{b}_{real} + \mathbf{b}_{imag}))
+        t3 =& convT(\mathbf{z}_\mathbb{R} + \mathbf{z}_\mathbb{I}, \mathbf{W}_\mathbb{R} + \mathbf{W}_\mathbb{I}, \mathbf{b}_\mathbb{R} + \mathbf{b}_\mathbb{I}))
 
         G(\mathbf{z}) =& t1 - t2 + j(t3 - t2 - t1)
 
@@ -561,8 +561,8 @@ class CVConvTranpose2d(_CVConvTranspose):
 
     .. math::
 
-        G(\mathbf{z}) = convT(\mathbf{z}_{real}, \mathbf{W}_{real}, \mathbf{b}_{real})) - convT(\mathbf{z}_{imag}, \mathbf{W}_{imag}, \mathbf{b}_{imag}))
-        + j(convT(\mathbf{z}_{real}, \mathbf{W}_{imag}, \mathbf{b}_{imag})) + convT(\mathbf{z}_{imag}, \mathbf{W}_{real}, \mathbf{b}_{real})))
+        G(\mathbf{z}) = convT(\mathbf{z}_\mathbb{R}, \mathbf{W}_\mathbb{R}, \mathbf{b}_\mathbb{R})) - convT(\mathbf{z}_\mathbb{I}, \mathbf{W}_\mathbb{I}, \mathbf{b}_\mathbb{I}))
+        + j(convT(\mathbf{z}_\mathbb{R}, \mathbf{W}_\mathbb{I}, \mathbf{b}_\mathbb{I})) + convT(\mathbf{z}_\mathbb{I}, \mathbf{W}_\mathbb{R}, \mathbf{b}_\mathbb{R})))
 
     where :math:`\mathbf{W}` and :math:`\mathbf{b}` are the complex-valued weight and bias tensors, respectively, and :math:`convT(\cdot)` is the transposed conovlution operator.
 
@@ -570,11 +570,11 @@ class CVConvTranpose2d(_CVConvTranspose):
 
     .. math::
 
-        t1 =& convT(\mathbf{z}_{real}, \mathbf{W}_{real}, \mathbf{b}_{real}))
+        t1 =& convT(\mathbf{z}_\mathbb{R}, \mathbf{W}_\mathbb{R}, \mathbf{b}_\mathbb{R}))
 
-        t2 =& convT(\mathbf{z}_{imag}, \mathbf{W}_{imag}, \mathbf{b}_{imag}))
+        t2 =& convT(\mathbf{z}_\mathbb{I}, \mathbf{W}_\mathbb{I}, \mathbf{b}_\mathbb{I}))
 
-        t3 =& convT(\mathbf{z}_{real} + \mathbf{z}_{imag}, \mathbf{W}_{real} + \mathbf{W}_{imag}, \mathbf{b}_{real} + \mathbf{b}_{imag}))
+        t3 =& convT(\mathbf{z}_\mathbb{R} + \mathbf{z}_\mathbb{I}, \mathbf{W}_\mathbb{R} + \mathbf{W}_\mathbb{I}, \mathbf{b}_\mathbb{R} + \mathbf{b}_\mathbb{I}))
 
         G(\mathbf{z}) =& t1 - t2 + j(t3 - t2 - t1)
 
@@ -627,8 +627,8 @@ class CVConvTranpose3d(_CVConvTranspose):
 
     .. math::
 
-        G(\mathbf{z}) = convT(\mathbf{z}_{real}, \mathbf{W}_{real}, \mathbf{b}_{real})) - convT(\mathbf{z}_{imag}, \mathbf{W}_{imag}, \mathbf{b}_{imag}))
-        + j(convT(\mathbf{z}_{real}, \mathbf{W}_{imag}, \mathbf{b}_{imag})) + convT(\mathbf{z}_{imag}, \mathbf{W}_{real}, \mathbf{b}_{real})))
+        G(\mathbf{z}) = convT(\mathbf{z}_\mathbb{R}, \mathbf{W}_\mathbb{R}, \mathbf{b}_\mathbb{R})) - convT(\mathbf{z}_\mathbb{I}, \mathbf{W}_\mathbb{I}, \mathbf{b}_\mathbb{I}))
+        + j(convT(\mathbf{z}_\mathbb{R}, \mathbf{W}_\mathbb{I}, \mathbf{b}_\mathbb{I})) + convT(\mathbf{z}_\mathbb{I}, \mathbf{W}_\mathbb{R}, \mathbf{b}_\mathbb{R})))
 
     where :math:`\mathbf{W}` and :math:`\mathbf{b}` are the complex-valued weight and bias tensors, respectively, and :math:`convT(\cdot)` is the transposed conovlution operator.
 
@@ -636,11 +636,11 @@ class CVConvTranpose3d(_CVConvTranspose):
 
     .. math::
 
-        t1 =& convT(\mathbf{z}_{real}, \mathbf{W}_{real}, \mathbf{b}_{real}))
+        t1 =& convT(\mathbf{z}_\mathbb{R}, \mathbf{W}_\mathbb{R}, \mathbf{b}_\mathbb{R}))
 
-        t2 =& convT(\mathbf{z}_{imag}, \mathbf{W}_{imag}, \mathbf{b}_{imag}))
+        t2 =& convT(\mathbf{z}_\mathbb{I}, \mathbf{W}_\mathbb{I}, \mathbf{b}_\mathbb{I}))
 
-        t3 =& convT(\mathbf{z}_{real} + \mathbf{z}_{imag}, \mathbf{W}_{real} + \mathbf{W}_{imag}, \mathbf{b}_{real} + \mathbf{b}_{imag}))
+        t3 =& convT(\mathbf{z}_\mathbb{R} + \mathbf{z}_\mathbb{I}, \mathbf{W}_\mathbb{R} + \mathbf{W}_\mathbb{I}, \mathbf{b}_\mathbb{R} + \mathbf{b}_\mathbb{I}))
 
         G(\mathbf{z}) =& t1 - t2 + j(t3 - t2 - t1)
 

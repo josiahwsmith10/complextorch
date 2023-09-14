@@ -10,7 +10,7 @@ For more information see: https://pypi.org/project/complextorch or https://githu
 
 __author__ = "Josiah W. Smith"
 
-__version__ = "0.1.4"
+__version__ = "1.0.0"
 
 __all__ = ["CVTensor", "cat", "roll", "from_polar", "nn", "randn"]
 
