@@ -1,5 +1,5 @@
 from .complex_relu import CVSplitReLU, CReLU, CPReLU
-from .fully_complex import CVSigmoid, modReLU, zReLU, CVCardiod, CVSigLog
+from .fully_complex import CVSigmoid, zReLU, CVCardiod, CVSigLog
 from .split_type_A import (
     GeneralizedSplitActivation,
     CVSplitTanh,
@@ -13,4 +13,5 @@ from .split_type_B import (
     CVPolarTanh,
     CVPolarSquash,
     CVPolarLog,
+    modReLU
 )

@@ -1,5 +1,5 @@
 from .modules.activation import CVSplitReLU, CReLU, CPReLU
-from .modules.activation import CVSigmoid, modReLU, zReLU, CVCardiod, CVSigLog
+from .modules.activation import CVSigmoid, zReLU, CVCardiod, CVSigLog
 from .modules.activation import (
     GeneralizedSplitActivation,
     CVSplitTanh,
@@ -13,6 +13,7 @@ from .modules.activation import (
     CVPolarTanh,
     CVPolarSquash,
     CVPolarLog,
+    modReLU
 )
 
 from .modules.conv import SlowCVConv1d
