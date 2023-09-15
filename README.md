@@ -12,7 +12,7 @@ Although there is an emphasis on 1-D data tensors, due to a focus on signal proc
 
 ## Documentation
 
-Please see [Read the Docs](https://complextorch.readthedocs.io/en/latest/index.html)
+Please see [Read the Docs](https://complextorch.readthedocs.io/en/latest/index.html) or our [arXiv](https://github.com/josiahwsmith10/complextorch) paper, which is also located at ```docs/complextorch_paper.pdf```.
 
 ## Dependencies
 
