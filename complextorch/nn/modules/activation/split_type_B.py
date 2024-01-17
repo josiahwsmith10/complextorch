@@ -210,7 +210,7 @@ class _modReLU(nn.Module):
         return torch.relu(input + self.bias)
 
 
-class modReLU(nn.Module):
+class modReLU(GeneralizedPolarActivation):
     r"""
     modulus Rectified Linear Unit
     -----------------------------
