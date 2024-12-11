@@ -32,6 +32,7 @@ From the source:
 ```
 git clone https://github.com/josiahwsmith10/complextorch.git
 cd complextorch
+pip install -r requirements.txt
 pip install . --use-pep517
 ```
 
