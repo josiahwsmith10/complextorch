@@ -1,3 +1,5 @@
+![complextorch](https://img.shields.io/badge/complextorch-black?style=for-the-badge)
+
 # Complex PyTorch
 (Available on [PyPI](https://pypi.org/project/complextorch/))
 
