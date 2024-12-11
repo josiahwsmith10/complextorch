@@ -1,4 +1,7 @@
-![complextorch](https://img.shields.io/badge/complextorch-black?style=for-the-badge)
+<h1 align="center">ComplexTorch</h1>
+<p align="center">
+  <img src="https://img.shields.io/badge/complextorch-black?style=for-the-badge">
+</p>
 
 # Complex PyTorch
 (Available on [PyPI](https://pypi.org/project/complextorch/))
