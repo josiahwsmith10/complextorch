@@ -1,11 +1,11 @@
 <h1 align="center">ComplexTorch</h1>
 <p align="center">
   <img src="https://img.shields.io/badge/complextorch-black?style=for-the-badge">
-  [![GitHub Repo stars](https://img.shields.io/github/stars/complextorch)](https://github.com/josiahwsmith10/complextorch/stargazers)
+  
 </p>
 <h3>
 
-[Homepage](https://github.com/josiahwsmith10/complextorch) | [Documentation](https://complextorch.readthedocs.io/en/latest/)
+[Homepage](https://github.com/josiahwsmith10/complextorch) | [Documentation](https://complextorch.readthedocs.io/en/latest/) [![GitHub Repo stars](https://img.shields.io/github/stars/complextorch)](https://github.com/josiahwsmith10/complextorch/stargazers)
 
 </h3>
 
