@@ -1,7 +1,7 @@
 <h1 align="center">ComplexTorch</h1>
 <p align="center">
   <img src="https://img.shields.io/badge/complextorch-black?style=for-the-badge">
-  [![GitHub Repo stars](https://img.shields.io/github/stars/tinygrad/tinygrad)](https://github.com/tinygrad/tinygrad/stargazers)
+  [![GitHub Repo stars](https://img.shields.io/github/stars/complextorch)](https://github.com/josiahwsmith10/complextorch/stargazers)
 </p>
 <h3>
 
