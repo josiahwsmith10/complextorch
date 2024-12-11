@@ -31,7 +31,7 @@ pip install complextorch
 From the source:
 ```
 git clone https://github.com/josiahwsmith10/complextorch.git
-cd complex torch
+cd complextorch
 pip install . --use-pep517
 ```
 
