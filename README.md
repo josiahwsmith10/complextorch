@@ -2,7 +2,11 @@
 <p align="center">
   <img src="https://img.shields.io/badge/complextorch-black?style=for-the-badge">
 </p>
+<h3>
 
+[Homepage](https://github.com/josiahwsmith10/complextorch) | [Documentation](https://complextorch.readthedocs.io/en/latest/)
+
+</h3>
 # Complex PyTorch
 (Available on [PyPI](https://pypi.org/project/complextorch/))
 
