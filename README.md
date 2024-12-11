@@ -5,7 +5,7 @@
 </p>
 <h3>
 
-[Homepage](https://github.com/josiahwsmith10/complextorch) | [Documentation](https://complextorch.readthedocs.io/en/latest/) [![GitHub Repo stars](https://img.shields.io/github/stars/complextorch)](https://github.com/josiahwsmith10/complextorch/stargazers)
+[Homepage](https://github.com/josiahwsmith10/complextorch) | [Documentation](https://complextorch.readthedocs.io/en/latest/)
 
 </h3>
 
