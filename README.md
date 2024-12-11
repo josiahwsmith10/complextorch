@@ -1,3 +1,14 @@
+<h1 align="center">ComplexTorch</h1>
+<p align="center">
+  <img src="https://img.shields.io/badge/complextorch-black?style=for-the-badge">
+  
+</p>
+<h3>
+
+[Homepage](https://github.com/josiahwsmith10/complextorch) | [Documentation](https://complextorch.readthedocs.io/en/latest/)
+
+</h3>
+
 # Complex PyTorch
 (Available on [PyPI](https://pypi.org/project/complextorch/))
 
@@ -18,7 +29,7 @@ Please see [Read the Docs](https://complextorch.readthedocs.io/en/latest/index.h
 
 This library requires numpy and PyTorch.[PyTorch](https://pytorch.org/get-started/locally/) should be installed to your environment using the compute platform (CPU/GPU) settings for your machine. PyTorch will not be automatically installed with the installation of complextorch and MUST be installed manually by the user.
 
-## Instalation:
+## Installation:
 
 IMPORTANT:
 Prior to installation, [install PyTorch](https://pytorch.org/get-started/locally/) to your environment using your preferred method using the compute platform (CPU/GPU) settings for your machine.
@@ -27,6 +38,13 @@ Using [pip](https://pypi.org/project/complextorch/)
 
 ```
 pip install complextorch
+```
+From the source:
+```
+git clone https://github.com/josiahwsmith10/complextorch.git
+cd complextorch
+pip install -r requirements.txt
+pip install . --use-pep517
 ```
 
 ## Basic Usage
