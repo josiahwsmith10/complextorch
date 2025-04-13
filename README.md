@@ -21,7 +21,7 @@ Notably, we include efficient implementations for linear, convolution, and atten
 
 Although there is an emphasis on 1-D data tensors, due to a focus on signal processing, communications, and radar data, many of the routines are implemented for 2-D and 3-D data as well.
 
-### Version 1.1.2 Release Notes:
+### Version 1.1.3 Release Notes:
 - Methods have been renamed to reflect identical names in PyTorch, e.g., `complextorch.nn.CVConv1d` was renamed to `complextorch.nn.Conv1d`. This change was implemented for quick conversion from PyTorch to `complextorch`. 
 - Use of `torch.Tensor` is now recommended over `complextorch.CVTensor`. Previous speed advantages of `complextorch.CVTensor` are no longer present if using a version of PyTorch newer than 2.1.0. 
 - Similarly, previous implementations of `complextorch.nn.Conv1d` (for 1-D, 2-D, 3-D, and transposed convolution) and `complextorch.nn.Lienar` have been renamed with the prefix `Slow` as PyTorch's native convolution and linear operators now outperform that of `complextorch`. Now, `complextorch.nn.Conv1d`, for example, uses `torch.nn.Conv1d` with `dtype=torch.float` for maximum efficiency. 
