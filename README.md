@@ -55,7 +55,7 @@ pip install . --use-pep517
 ## Basic Usage
 
 ``` python
-import complextorch as cvtorch
+import complextorch as cT
 
-x = cvtorch.randn(64, 5, 7)
+x = cT.randn(64, 5, 7)
 ```
