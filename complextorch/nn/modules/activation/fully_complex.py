@@ -1,8 +1,6 @@
 import torch
 import torch.nn as nn
 
-from .... import CVTensor
-
 __all__ = ["CVSigmoid", "zReLU", "CVCardiod", "CVSigLog"]
 
 
@@ -31,17 +29,17 @@ class CVSigmoid(nn.Module):
     def __init__(self) -> None:
         super(CVSigmoid, self).__init__()
 
-    def forward(self, input: CVTensor) -> CVTensor:
+    def forward(self, input: torch.Tensor) -> torch.Tensor:
         r"""Computes the complex-valued sigmoid activation function.
 
         Args:
-            input (CVTensor): input tensor
+            input (torch.Tensor): input tensor
 
         Returns:
-            CVTensor: :math:`\frac{1}{1 + \exp{(\mathbf{z})}}`
+            torch.Tensor: :math:`\frac{1}{1 + \exp{(\mathbf{z})}}`
         """
         out = 1 / (1 + torch.exp(input.complex))
-        return CVTensor(out.real, out.imag)
+        return torch.complex(out.real, out.imag)
 
 
 class zReLU(nn.Module):
@@ -80,19 +78,19 @@ class zReLU(nn.Module):
     def __init__(self) -> None:
         super(zReLU, self).__init__()
 
-    def forward(self, input: CVTensor) -> CVTensor:
+    def forward(self, input: torch.Tensor) -> torch.Tensor:
         r"""Computes the complex-valued Guberman ReLU.
 
         Args:
-            input (CVTensor): input tensor
+            input (torch.Tensor): input tensor
 
         Returns:
-            CVTensor: :math:`\begin{cases} \mathbf{z} \quad \text{if} \quad \angle\mathbf{z} \in [0, \pi/2] \\ 0 \quad \text{else} \end{cases}`
+            torch.Tensor: :math:`\begin{cases} \mathbf{z} \quad \text{if} \quad \angle\mathbf{z} \in [0, \pi/2] \\ 0 \quad \text{else} \end{cases}`
         """
         x_angle = input.angle()
         mask = (0 <= x_angle) & (x_angle <= torch.pi / 2)
         out = input * mask
-        return CVTensor(out.real, out.imag)
+        return torch.complex(out.real, out.imag)
 
 
 class CVCardiod(nn.Module):
@@ -125,14 +123,14 @@ class CVCardiod(nn.Module):
     def __init__(self) -> None:
         super(CVCardiod, self).__init__()
 
-    def forward(self, input: CVTensor) -> CVTensor:
+    def forward(self, input: torch.Tensor) -> torch.Tensor:
         r"""Computes the complex-valued cardioid activation function.
 
         Args:
-            input (CVTensor): input tensor
+            input (torch.Tensor): input tensor
 
         Returns:
-            CVTensor: :math:`\frac{1}{2} (1 + \text{cos}(\angle\mathbf{z})) \odot \mathbf{z}`
+            torch.Tensor: :math:`\frac{1}{2} (1 + \text{cos}(\angle\mathbf{z})) \odot \mathbf{z}`
         """
         return 0.5 * (1 + torch.cos(input.angle())) * input
 
@@ -162,13 +160,13 @@ class CVSigLog(nn.Module):
         self.c = c
         self.r = r
 
-    def forward(self, input: CVTensor) -> CVTensor:
+    def forward(self, input: torch.Tensor) -> torch.Tensor:
         r"""Computes the complex-valued SigLog activation function.
 
         Args:
-            input (CVTensor): input tensor
+            input (torch.Tensor): input tensor
 
         Returns:
-            CVTensor: :math:`\frac{\mathbf{z}}{(c + 1/r * |\mathbf{z}|)}`
+            torch.Tensor: :math:`\frac{\mathbf{z}}{(c + 1/r * |\mathbf{z}|)}`
         """
         return input / (self.c + input.abs() / self.r)

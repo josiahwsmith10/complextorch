@@ -1,20 +1,20 @@
+import torch
 import torch.nn as nn
 
-from .... import CVTensor
 from .... import nn as cvnn
 
 __all__ = [
-    "CVMaskedChannelAttention1d",
-    "CVMaskedChannelAttention2d",
-    "CVMaskedChannelAttention3d",
+    "MaskedChannelAttention1d",
+    "MaskedChannelAttention2d",
+    "MaskedChannelAttention3d",
 ]
 
 
-class _CVMaskedChannelAttention(nn.Module):
+class _MaskedChannelAttention(nn.Module):
     r"""
     Complex-Valued Masked Channel Attention (MCA) Base Module
     ---------------------------------------------------------
-    
+
     Implements the operation:
 
     .. math::
@@ -32,7 +32,7 @@ class _CVMaskedChannelAttention(nn.Module):
         MaskingClass: nn.Module = cvnn.ComplexRatioMask,
         act: nn.Module = cvnn.CReLU,
     ) -> None:
-        super(_CVMaskedChannelAttention, self).__init__()
+        super(_MaskedChannelAttention, self).__init__()
         self.channels = channels
         self.reduction_factor = reduction_factor
         self.MaskingClass = MaskingClass()
@@ -48,7 +48,7 @@ class _CVMaskedChannelAttention(nn.Module):
         self.conv_down = None
         self.conv_up = None
 
-    def forward(self, input: CVTensor) -> CVTensor:
+    def forward(self, input: torch.Tensor) -> torch.Tensor:
         # Get attention values
         attn = self.conv_up(self.act(self.conv_down(self.avg_pool(input))))
 
@@ -58,13 +58,13 @@ class _CVMaskedChannelAttention(nn.Module):
         return input * mask
 
 
-class CVMaskedChannelAttention1d(_CVMaskedChannelAttention):
+class MaskedChannelAttention1d(_MaskedChannelAttention):
     r"""
     1-D Complex-Valued Masked Channel Attention (MCA) Module
     --------------------------------------------------------
 
     Generalized for arbitrary masking function (see :doc:`mask <../mask>` for implemented masking functions)
-    
+
     Implements the operation:
 
     .. math::
@@ -89,23 +89,23 @@ class CVMaskedChannelAttention1d(_CVMaskedChannelAttention):
         MaskingClass: nn.Module = cvnn.ComplexRatioMask,
         act: nn.Module = cvnn.CReLU,
     ) -> None:
-        super(CVMaskedChannelAttention1d, self).__init__(
+        super(MaskedChannelAttention1d, self).__init__(
             channels=channels,
             reduction_factor=reduction_factor,
             MaskingClass=MaskingClass,
             act=act,
         )
 
-        self.avg_pool = cvnn.CVAdaptiveAvgPool1d(1)
+        self.avg_pool = cvnn.AdaptiveAvgPool1d(1)
 
-        self.conv_down = cvnn.CVConv1d(
+        self.conv_down = cvnn.SlowConv1d(
             in_channels=channels,
             out_channels=self.reduced_channels,
             kernel_size=1,
             bias=False,
         )
 
-        self.conv_up = cvnn.CVConv1d(
+        self.conv_up = cvnn.SlowConv1d(
             in_channels=self.reduced_channels,
             out_channels=channels,
             kernel_size=1,
@@ -113,11 +113,11 @@ class CVMaskedChannelAttention1d(_CVMaskedChannelAttention):
         )
 
 
-class CVMaskedChannelAttention2d(_CVMaskedChannelAttention):
+class MaskedChannelAttention2d(_MaskedChannelAttention):
     r"""
     2-D Complex-Valued Masked Channel Attention (MCA) Module
     --------------------------------------------------------
-    
+
     Implements the operation:
 
     .. math::
@@ -144,23 +144,23 @@ class CVMaskedChannelAttention2d(_CVMaskedChannelAttention):
         MaskingClass: nn.Module = cvnn.ComplexRatioMask,
         act: nn.Module = cvnn.CReLU,
     ) -> None:
-        super(CVMaskedChannelAttention2d, self).__init__(
+        super(MaskedChannelAttention2d, self).__init__(
             channels=channels,
             reduction_factor=reduction_factor,
             MaskingClass=MaskingClass,
             act=act,
         )
 
-        self.avg_pool = cvnn.CVAdaptiveAvgPool2d(1)
+        self.avg_pool = cvnn.AdaptiveAvgPool2d(1)
 
-        self.conv_down = cvnn.CVConv2d(
+        self.conv_down = cvnn.SlowConv2d(
             in_channels=channels,
             out_channels=self.reduced_channels,
             kernel_size=1,
             bias=False,
         )
 
-        self.conv_up = cvnn.CVConv2d(
+        self.conv_up = cvnn.SlowConv2d(
             in_channels=self.reduced_channels,
             out_channels=channels,
             kernel_size=1,
@@ -168,13 +168,13 @@ class CVMaskedChannelAttention2d(_CVMaskedChannelAttention):
         )
 
 
-class CVMaskedChannelAttention3d(_CVMaskedChannelAttention):
+class MaskedChannelAttention3d(_MaskedChannelAttention):
     r"""
     3-D Complex-Valued Masked Channel Attention (MCA) Module
     --------------------------------------------------------
 
     Generalized for arbitrary masking function (see :doc:`mask <../mask>` for implemented masking functions)
-    
+
     Implements the operation:
 
     .. math::
@@ -200,23 +200,23 @@ class CVMaskedChannelAttention3d(_CVMaskedChannelAttention):
         MaskingClass: nn.Module = cvnn.ComplexRatioMask,
         act: nn.Module = cvnn.CReLU,
     ) -> None:
-        super(CVMaskedChannelAttention3d, self).__init__(
+        super(MaskedChannelAttention3d, self).__init__(
             channels=channels,
             reduction_factor=reduction_factor,
             MaskingClass=MaskingClass,
             act=act,
         )
 
-        self.avg_pool = cvnn.CVAdaptiveAvgPool3d(1)
+        self.avg_pool = cvnn.AdaptiveAvgPool3d(1)
 
-        self.conv_down = cvnn.CVConv3d(
+        self.conv_down = cvnn.SlowConv3d(
             in_channels=channels,
             out_channels=self.reduced_channels,
             kernel_size=1,
             bias=False,
         )
 
-        self.conv_up = cvnn.CVConv3d(
+        self.conv_up = cvnn.SlowConv3d(
             in_channels=self.reduced_channels,
             out_channels=channels,
             kernel_size=1,

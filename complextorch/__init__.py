@@ -3,14 +3,14 @@ complextorch
 ------------
 Author: Josiah W. Smith
 
-A lightweight complex-valued neural network package built on PyTorch. 
+A lightweight complex-valued neural network package built on PyTorch.
 
 For more information see: https://pypi.org/project/complextorch or https://github.com/josiahwsmith10/complextorch
 """
 
 __author__ = "Josiah W. Smith"
 
-__version__ = "1.0.0"
+__version__ = "1.1.0"
 
 __all__ = ["CVTensor", "cat", "roll", "from_polar", "nn", "randn"]
 

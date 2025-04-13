@@ -13,23 +13,23 @@ from .modules.activation import (
     CVPolarTanh,
     CVPolarSquash,
     CVPolarLog,
-    modReLU
+    modReLU,
 )
 
-from .modules.conv import SlowCVConv1d
-from .modules.conv import CVConv1d, CVConv2d, CVConv3d
-from .modules.conv import CVConvTranpose1d, CVConvTranpose2d, CVConvTranpose3d
+from .modules.conv import Conv1d, Conv2d, Conv3d
+from .modules.conv import SlowConv1d, SlowConv2d, SlowConv3d
+from .modules.conv import SlowConvTranspose1d, SlowConvTranspose2d, SlowConvTranspose3d
 
 from .modules.manifold import wFMConv1d, wFMConv2d
 
-from .modules.dropout import CVDropout
+from .modules.dropout import Dropout
 
-from .modules.linear import CVLinear
+from .modules.linear import Linear, SlowLinear
 
 from .modules.fft import FFTBlock, IFFTBlock
 
-from .modules.batchnorm import CVBatchNorm1d, CVBatchNorm2d, CVBatchNorm3d
-from .modules.layernorm import CVLayerNorm
+from .modules.batchnorm import BatchNorm1d, BatchNorm2d, BatchNorm3d
+from .modules.layernorm import LayerNorm
 
 from .modules.softmax import CVSoftMax, MagSoftMax, PhaseSoftMax
 
@@ -41,22 +41,20 @@ from .modules.loss import CVQuadError, CVFourthPowError, CVCauchyError, CVLogCos
 from .modules.loss import CVLogError
 
 from .modules.pooling import (
-    CVAdaptiveAvgPool1d,
-    CVAdaptiveAvgPool2d,
-    CVAdaptiveAvgPool3d,
+    AdaptiveAvgPool1d,
+    AdaptiveAvgPool2d,
+    AdaptiveAvgPool3d,
 )
-
-from .modules.fft import FFTBlock, IFFTBlock
 
 # dependent on the above
-from .modules.attention import CVMultiheadAttention, CVScaledDotProductAttention
+from .modules.attention import MultiheadAttention, ScaledDotProductAttention
 from .modules.attention.eca import (
-    CVEfficientChannelAttention1d,
-    CVEfficientChannelAttention2d,
-    CVEfficientChannelAttention3d,
+    EfficientChannelAttention1d,
+    EfficientChannelAttention2d,
+    EfficientChannelAttention3d,
 )
 from .modules.attention.mca import (
-    CVMaskedChannelAttention1d,
-    CVMaskedChannelAttention2d,
-    CVMaskedChannelAttention3d,
+    MaskedChannelAttention1d,
+    MaskedChannelAttention2d,
+    MaskedChannelAttention3d,
 )

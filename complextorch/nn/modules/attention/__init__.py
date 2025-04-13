@@ -2,13 +2,12 @@ import numpy as np
 import torch
 import torch.nn as nn
 
-from .... import CVTensor
 from .... import nn as cvnn
 
-__all__ = ["CVScaledDotProductAttention", "CVMultiheadAttention"]
+__all__ = ["ScaledDotProductAttention", "MultiheadAttention"]
 
 
-class CVScaledDotProductAttention(nn.Module):
+class ScaledDotProductAttention(nn.Module):
     r"""
     Complex-Valued Scaled Dot-Product Attention
     -------------------------------------------
@@ -35,31 +34,33 @@ class CVScaledDotProductAttention(nn.Module):
         attn_dropout: float = 0.1,
         SoftMaxClass: nn.Module = cvnn.CVSoftMax,
     ) -> None:
-        super(CVScaledDotProductAttention, self).__init__()
+        super(ScaledDotProductAttention, self).__init__()
 
         self.temperature = temperature
-        self.dropout = cvnn.CVDropout(attn_dropout)
+        self.dropout = cvnn.Dropout(attn_dropout)
         self.softmax = SoftMaxClass(dim=-1)
 
-    def forward(self, q: CVTensor, k: CVTensor, v: CVTensor) -> CVTensor:
+    def forward(
+        self, q: torch.Tensor, k: torch.Tensor, v: torch.Tensor
+    ) -> torch.Tensor:
         r"""Implements the complex-valued scaled dot-product attention operation.
 
         Args:
-            q (CVTensor): complex-valued query tensor
-            k (CVTensor): complex-valued key tensor
-            v (CVTensor): complex-valued value tensor
+            q (torch.Tensor): complex-valued query tensor
+            k (torch.Tensor): complex-valued key tensor
+            v (torch.Tensor): complex-valued value tensor
 
         Returns:
-            CVTensor: \mathcal{S}(Q K^T / t) V
+            torch.Tensor: \mathcal{S}(Q K^T / t) V
         """
         attn = torch.matmul(q.complex / self.temperature, k.complex.transpose(-2, -1))
 
         attn = self.dropout(self.softmax(attn))
         output = torch.matmul(attn.complex, v.complex)
-        return CVTensor(output.real, output.imag)
+        return torch.complex(output.real, output.imag)
 
 
-class CVMultiheadAttention(nn.Module):
+class MultiheadAttention(nn.Module):
     r"""
     Complex-Valued Multihead Attention
     ----------------------------------
@@ -78,25 +79,27 @@ class CVMultiheadAttention(nn.Module):
         dropout: float = 0.1,
         SoftMaxClass: nn.Module = cvnn.CVSoftMax,
     ) -> None:
-        super(CVMultiheadAttention, self).__init__()
+        super(MultiheadAttention, self).__init__()
 
         self.d_k = d_k
         self.d_v = d_v
         self.n_heads = n_heads
 
-        self.w_q = cvnn.CVLinear(d_model, n_heads * d_k, bias=False)
-        self.w_k = cvnn.CVLinear(d_model, n_heads * d_k, bias=False)
-        self.w_v = cvnn.CVLinear(d_model, n_heads * d_v, bias=False)
-        self.fc = cvnn.CVLinear(n_heads * d_v, d_model, bias=False)
+        self.w_q = cvnn.Linear(d_model, n_heads * d_k, bias=False)
+        self.w_k = cvnn.Linear(d_model, n_heads * d_k, bias=False)
+        self.w_v = cvnn.Linear(d_model, n_heads * d_v, bias=False)
+        self.fc = cvnn.Linear(n_heads * d_v, d_model, bias=False)
 
-        self.attention = CVScaledDotProductAttention(
+        self.attention = ScaledDotProductAttention(
             temperature=d_k**0.5, attn_dropout=dropout, SoftMaxClass=SoftMaxClass
         )
 
-        self.dropout = cvnn.CVDropout(dropout)
-        self.layer_norm = cvnn.CVLayerNorm(d_model, eps=1e-6)
+        self.dropout = cvnn.Dropout(dropout)
+        self.layer_norm = cvnn.LayerNorm(d_model, eps=1e-6)
 
-    def forward(self, q: CVTensor, k: CVTensor, v: CVTensor) -> CVTensor:
+    def forward(
+        self, q: torch.Tensor, k: torch.Tensor, v: torch.Tensor
+    ) -> torch.Tensor:
         d_k, d_v, n_heads = self.d_k, self.d_v, self.n_heads
         batch_size, len_q, len_k, len_v = q.shape[0], q.shape[1], k.shape[1], v.shape[1]
 

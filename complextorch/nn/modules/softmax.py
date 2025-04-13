@@ -1,8 +1,8 @@
 from typing import Optional
 
+import torch
 import torch.nn as nn
 
-from ... import CVTensor
 from .. import functional as cvF
 
 __all__ = ["CVSoftMax", "MagSoftMax", "PhaseSoftMax"]
@@ -23,7 +23,7 @@ class CVSoftMax(nn.Module):
     .. math::
 
         G(\mathbf{z}) = \texttt{SoftMax}(\mathbf{x}) + j \texttt{SoftMax}(\mathbf{y}),
-        
+
     where :math:`\mathbf{z} = \mathbf{x} + j\mathbf{y}`
     """
 
@@ -32,14 +32,14 @@ class CVSoftMax(nn.Module):
 
         self.softmax = nn.Softmax(dim)
 
-    def forward(self, input: CVTensor) -> CVTensor:
+    def forward(self, input: torch.Tensor) -> torch.Tensor:
         r"""Computes softmax over the real and imaginary parts of the input tensor separately
 
         Args:
-            input (CVTensor): input tensor
+            input (torch.Tensor): input tensor
 
         Returns:
-            CVTensor: :math:`\texttt{SoftMax}(\mathbf{x}) + j \texttt{SoftMax}(\mathbf{y})`
+            torch.Tensor: :math:`\texttt{SoftMax}(\mathbf{x}) + j \texttt{SoftMax}(\mathbf{y})`
         """
         return cvF.apply_complex_split(self.softmax, self.softmax, input)
 
@@ -63,14 +63,14 @@ class PhaseSoftMax(nn.Module):
 
         self.softmax = nn.Softmax(dim)
 
-    def forward(self, input: CVTensor) -> CVTensor:
+    def forward(self, input: torch.Tensor) -> torch.Tensor:
         r"""Retains phase and applies `SoftMax <https://pytorch.org/docs/stable/generated/torch.nn.Softmax.html>`_ function to magnitude.
 
         Args:
-            input (CVTensor): input tensor
+            input (torch.Tensor): input tensor
 
         Returns:
-            CVTensor: :math:`\texttt{SoftMax}(|\mathbf{z}|) \odot \mathbf{z} / |\mathbf{z}|`
+            torch.Tensor: :math:`\texttt{SoftMax}(|\mathbf{z}|) \odot \mathbf{z} / |\mathbf{z}|`
         """
         x_mag = input.abs()
         return self.softmax(x_mag) * (input / x_mag)
@@ -95,13 +95,13 @@ class MagSoftMax(nn.Module):
 
         self.softmax = nn.Softmax(dim)
 
-    def forward(self, input: CVTensor) -> CVTensor:
+    def forward(self, input: torch.Tensor) -> torch.Tensor:
         r"""Ignores phase and applies `SoftMax <https://pytorch.org/docs/stable/generated/torch.nn.Softmax.html>`_ function to magnitude.
 
         Args:
-            input (CVTensor): input tensor
+            input (torch.Tensor): input tensor
 
         Returns:
-            CVTensor: :math:`\texttt{SoftMax}(|\mathbf{z}|)`
+            torch.Tensor: :math:`\texttt{SoftMax}(|\mathbf{z}|)`
         """
         return self.softmax(input.abs())

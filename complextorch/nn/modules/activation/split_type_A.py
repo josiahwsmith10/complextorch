@@ -1,6 +1,6 @@
+import torch
 import torch.nn as nn
 
-from .... import CVTensor
 from ... import functional as cvF
 
 __all__ = [
@@ -42,14 +42,14 @@ class GeneralizedSplitActivation(nn.Module):
         self.activation_r = activation_r
         self.activation_i = activation_i
 
-    def forward(self, input: CVTensor) -> CVTensor:
+    def forward(self, input: torch.Tensor) -> torch.Tensor:
         r"""Computes the generalized *Type-A* split activation function.
 
         Args:
-            input (CVTensor): input tensor
+            input (torch.Tensor): input tensor
 
         Returns:
-            CVTensor: :math:`\texttt{activation_r}(input.real) + j\texttt{activation_i}(input.imag)`
+            torch.Tensor: :math:`\texttt{activation_r}(input.real) + j\texttt{activation_i}(input.imag)`
         """
         return cvF.apply_complex_split(self.activation_r, self.activation_i, input)
 
@@ -152,13 +152,13 @@ class CVSplitAbs(nn.Module):
     def __init__(self) -> None:
         super(CVSplitAbs, self).__init__()
 
-    def forward(self, input: CVTensor) -> CVTensor:
+    def forward(self, input: torch.Tensor) -> torch.Tensor:
         r"""Computes the Type-A split abs() activation function.
 
         Args:
-            input (CVTensor): input tensor
+            input (torch.Tensor): input tensor
 
         Returns:
-            CVTensor: :math:`|\mathbf{x}| + j |\mathbf{y}|`
+            torch.Tensor: :math:`|\mathbf{x}| + j |\mathbf{y}|`
         """
-        return CVTensor(input.real.abs(), input.imag.abs())
+        return torch.complex(input.real.abs(), input.imag.abs())

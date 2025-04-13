@@ -3,12 +3,11 @@ import torch.nn as nn
 from torch.nn import init
 
 from .. import functional as cvF
-from ... import CVTensor
 
-__all__ = ["CVBatchNorm1d", "CVBatchNorm2d", "CVBatchNorm3d"]
+__all__ = ["BatchNorm1d", "BatchNorm2d", "BatchNorm3d"]
 
 
-class _CVBatchNorm(nn.Module):
+class _BatchNorm(nn.Module):
     r"""
     Complex-Valued Batch Normalization Base Class
     ---------------------------------------------
@@ -73,7 +72,7 @@ class _CVBatchNorm(nn.Module):
     def _check_input_dim(self, input) -> None:
         raise NotImplementedError
 
-    def forward(self, input: CVTensor) -> CVTensor:
+    def forward(self, input: torch.Tensor) -> torch.Tensor:
         self._check_input_dim(input)
 
         if self.momentum is None:
@@ -89,7 +88,7 @@ class _CVBatchNorm(nn.Module):
                 else:  # use exponential moving average
                     exponential_average_factor = self.momentum
 
-        return cvF.cv_batch_norm(
+        return cvF.batch_norm(
             input,
             self.running_mean,
             self.running_var,
@@ -107,7 +106,7 @@ class _CVBatchNorm(nn.Module):
         )
 
 
-class CVBatchNorm1d(_CVBatchNorm):
+class BatchNorm1d(_BatchNorm):
     r"""
     1-D Complex-Valued Batch Normalization
     --------------------------------------
@@ -126,12 +125,12 @@ class CVBatchNorm1d(_CVBatchNorm):
             - https://arxiv.org/abs/2302.08286
     """
 
-    def _check_input_dim(self, input: CVTensor) -> None:
+    def _check_input_dim(self, input: torch.Tensor) -> None:
         if input.dim() != 2 and input.dim() != 3:
             raise ValueError(f"expected 2D or 3D input (got {input.dim()}D input)")
 
 
-class CVBatchNorm2d(_CVBatchNorm):
+class BatchNorm2d(_BatchNorm):
     r"""
     2-D Complex-Valued Batch Normalization
     --------------------------------------
@@ -150,12 +149,12 @@ class CVBatchNorm2d(_CVBatchNorm):
             - https://arxiv.org/abs/2302.08286
     """
 
-    def _check_input_dim(self, input: CVTensor) -> None:
+    def _check_input_dim(self, input: torch.Tensor) -> None:
         if input.dim() != 4:
             raise ValueError(f"expected 4D input (got {input.dim()}D input)")
 
 
-class CVBatchNorm3d(_CVBatchNorm):
+class BatchNorm3d(_BatchNorm):
     r"""
     3-D Complex-Valued Batch Normalization
     --------------------------------------
@@ -174,6 +173,6 @@ class CVBatchNorm3d(_CVBatchNorm):
             - https://arxiv.org/abs/2302.08286
     """
 
-    def _check_input_dim(self, input: CVTensor) -> None:
+    def _check_input_dim(self, input: torch.Tensor) -> None:
         if input.dim() != 5:
             raise ValueError(f"expected 5D input (got {input.dim()}D input)")

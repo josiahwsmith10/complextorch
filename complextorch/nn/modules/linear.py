@@ -2,16 +2,14 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
-from ... import CVTensor
-
-__all__ = ["CVLinear"]
+__all__ = ["Linear"]
 
 
-class CVLinear(nn.Module):
+class Linear(nn.Module):
     r"""
     Complex-Valued Linear Layer
     ---------------------------
-    
+
     Follows `PyTorch implementation <https://pytorch.org/docs/stable/generated/torch.nn.Linear.html>`_ using Gauss' trick to improve the computation as in :doc:`Complex-Valued Convolution <./conv>`.
     """
 
@@ -23,7 +21,7 @@ class CVLinear(nn.Module):
         device=None,
         dtype=None,
     ) -> None:
-        super(CVLinear, self).__init__()
+        super(Linear, self).__init__()
 
         # Assumes PyTorch complex weight initialization is correct
         __temp = nn.Linear(
@@ -31,7 +29,7 @@ class CVLinear(nn.Module):
             out_features=out_features,
             bias=bias,
             device=device,
-            dtype=torch.complex64,
+            dtype=torch.cfloat,
         )
 
         self.linear_r = nn.Linear(
@@ -57,17 +55,17 @@ class CVLinear(nn.Module):
             self.linear_i.bias.data = __temp.bias.imag
 
     @property
-    def weight(self) -> CVTensor:
-        return CVTensor(self.linear_r.weight, self.linear_i.weight)
+    def weight(self) -> torch.Tensor:
+        return torch.complex(self.linear_r.weight, self.linear_i.weight)
 
     @property
-    def bias(self) -> CVTensor:
+    def bias(self) -> torch.Tensor:
         if self.linear_r.bias is None:
             return None
         else:
-            return CVTensor(self.linear_r.bias, self.linear_i.bias)
+            return torch.complex(self.linear_r.bias, self.linear_i.bias)
 
-    def forward(self, input: CVTensor) -> CVTensor:
+    def forward(self, input: torch.Tensor) -> torch.Tensor:
         r"""
         Computes multiplication 25% faster than naive method by using Gauss' multiplication trick
         """
@@ -83,4 +81,4 @@ class CVLinear(nn.Module):
             weight=(self.linear_r.weight + self.linear_i.weight),
             bias=bias,
         )
-        return CVTensor(t1 - t2, t3 - t2 - t1)
+        return torch.complex(t1 - t2, t3 - t2 - t1)

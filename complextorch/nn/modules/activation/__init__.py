@@ -13,5 +13,5 @@ from .split_type_B import (
     CVPolarTanh,
     CVPolarSquash,
     CVPolarLog,
-    modReLU
+    modReLU,
 )

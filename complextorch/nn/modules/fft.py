@@ -1,6 +1,5 @@
+import torch
 import torch.nn as nn
-
-from ... import CVTensor
 
 __all__ = ["FFTBlock", "IFFTBlock"]
 
@@ -22,16 +21,16 @@ class FFTBlock(nn.Module):
         self.dim = dim
         self.norm = norm
 
-    def forward(self, input: CVTensor) -> CVTensor:
+    def forward(self, input: torch.Tensor) -> torch.Tensor:
         r"""Performs forward fast Fourier transform (FFT) on the input tensor.
 
         Args:
-            input (CVTensor): input tensor
+            input (torch.Tensor): input tensor
 
         Returns:
-            CVTensor: fft(x) using configuration established on initialization
+            torch.Tensor: fft(x) using configuration established on initialization
         """
-        return input.fft(input, n=self.n, dim=self.dim, norm=self.norm)
+        return torch.fft.fft(input, n=self.n, dim=self.dim, norm=self.norm)
 
 
 class IFFTBlock(nn.Module):
@@ -51,13 +50,13 @@ class IFFTBlock(nn.Module):
         self.dim = dim
         self.norm = norm
 
-    def forward(self, input: CVTensor) -> CVTensor:
+    def forward(self, input: torch.Tensor) -> torch.Tensor:
         r"""Performs inverse fast Fourier transform (FFT) on the input tensor.
 
         Args:
-            input (CVTensor): input tensor
+            input (torch.Tensor): input tensor
 
         Returns:
-            CVTensor: ifft(x) using configuration established on initialization
+            torch.Tensor: ifft(x) using configuration established on initialization
         """
-        return input.ifft(input, n=self.n, dim=self.dim, norm=self.norm)
+        return torch.fft.ifft(input, n=self.n, dim=self.dim, norm=self.norm)

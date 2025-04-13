@@ -2,9 +2,7 @@ from typing import Optional
 
 import torch
 import torch.nn as nn
-import torch.functional as F
-
-from ... import CVTensor
+import torch.nn.functional as F
 
 __all__ = [
     "GeneralizedSplitLoss",
@@ -38,12 +36,12 @@ class GeneralizedSplitLoss(nn.Module):
         self.loss_r = loss_r
         self.loss_i = loss_i
 
-    def forward(self, x: CVTensor, y: CVTensor) -> torch.Tensor:
+    def forward(self, x: torch.Tensor, y: torch.Tensor) -> torch.Tensor:
         r"""Computes the real/imag split loss function.
 
         Args:
-            x (CVTensor): estimated label
-            y (CVTensor): target/ground truth label
+            x (torch.Tensor): estimated label
+            y (torch.Tensor): target/ground truth label
 
         Returns:
             torch.Tensor: :math:`\mathcal{L}_\mathbb{R}(\mathbf{x}_\mathbb{R}, \mathbf{y}_\mathbb{R}) + \mathcal{L}_\mathbb{I}(\mathbf{x}_\mathbb{I}, \mathbf{y}_\mathbb{I})`
@@ -79,12 +77,12 @@ class GeneralizedPolarLoss(nn.Module):
         self.weight_mag = weight_mag
         self.weight_phase = weight_phase
 
-    def forward(self, x: CVTensor, y: CVTensor) -> torch.Tensor:
+    def forward(self, x: torch.Tensor, y: torch.Tensor) -> torch.Tensor:
         r"""Computes the generalized split polar loss, which computes the loss independently on the magnitude and phase of the estimated and ground truth labels.
 
         Args:
-            x (CVTensor): estimated labels
-            y (CVTensor): target/ground truth labels
+            x (torch.Tensor): estimated labels
+            y (torch.Tensor): target/ground truth labels
 
         Returns:
             torch.Tensor: w_{||} \mathcal{L}_{||}(|\mathbf{x}|, |\mathbf{y}|) + w_\angle \mathcal{L}_\angle(\angle\mathbf{x}, \angle\mathbf{y})
@@ -171,11 +169,12 @@ class SSIM(nn.Module):
         data_range = data_range[:, None, None, None]
         C1 = (self.k1 * data_range) ** 2
         C2 = (self.k2 * data_range) ** 2
-        ux = F.conv2d(x, self.w)  # typing: ignore
-        uy = F.conv2d(y, self.w)  #
-        uxx = F.conv2d(x * x, self.w)
-        uyy = F.conv2d(y * y, self.w)
-        uxy = F.conv2d(x * y, self.w)
+        device = x.device
+        ux = F.conv2d(x, self.w.to(device))  # typing: ignore
+        uy = F.conv2d(y, self.w.to(device))  #
+        uxx = F.conv2d(x * x, self.w.to(device))
+        uyy = F.conv2d(y * y, self.w.to(device))
+        uxy = F.conv2d(x * y, self.w.to(device))
         vx = self.cov_norm * (uxx - ux * ux)
         vy = self.cov_norm * (uyy - uy * uy)
         vxy = self.cov_norm * (uxy - ux * uy)
@@ -207,8 +206,8 @@ class SplitSSIM(GeneralizedSplitLoss):
 
     def forward(
         self,
-        x: CVTensor,
-        y: CVTensor,
+        x: torch.Tensor,
+        y: torch.Tensor,
         data_range: Optional[torch.Tensor] = None,
         full: bool = False,
     ) -> torch.Tensor:
@@ -241,12 +240,12 @@ class PerpLossSSIM(nn.Module):
         self.ssim = SSIM()
         self.param = nn.Parameter(torch.ones(1) / 2)
 
-    def forward(self, x: CVTensor, y: CVTensor) -> torch.Tensor:
+    def forward(self, x: torch.Tensor, y: torch.Tensor) -> torch.Tensor:
         r"""Computes perpendicular SSIM loss function.
 
         Args:
-            x (CVTensor): estimated label
-            y (CVTensor): target/ground truth label
+            x (torch.Tensor): estimated label
+            y (torch.Tensor): target/ground truth label
 
         Returns:
             torch.Tensor: :math:`\texttt{PerpLossSSIM}(\mathbf{x}, \mathbf{y})`
@@ -294,12 +293,12 @@ class CVQuadError(nn.Module):
     def __init__(self) -> None:
         super(CVQuadError, self).__init__()
 
-    def forward(self, x: CVTensor, y: CVTensor) -> torch.Tensor:
+    def forward(self, x: torch.Tensor, y: torch.Tensor) -> torch.Tensor:
         r"""Computes the complex-valued quadratic error function.
 
         Args:
-            x (CVTensor): estimated labels
-            y (CVTensor): target/ground truth labels
+            x (torch.Tensor): estimated labels
+            y (torch.Tensor): target/ground truth labels
 
         Returns:
             torch.Tensor: :math:`\frac{1}{2}\text{sum}(|\mathbf{x} - \mathbf{y}|^2)`
@@ -328,12 +327,12 @@ class CVFourthPowError(nn.Module):
     def __init__(self) -> None:
         super(CVFourthPowError, self).__init__()
 
-    def forward(self, x: CVTensor, y: CVTensor) -> torch.Tensor:
+    def forward(self, x: torch.Tensor, y: torch.Tensor) -> torch.Tensor:
         r"""Computes the complex-valued fourth power error function.
 
         Args:
-            x (CVTensor): estimated labels
-            y (CVTensor): target/ground truth labels
+            x (torch.Tensor): estimated labels
+            y (torch.Tensor): target/ground truth labels
 
         Returns:
             torch.Tensor: :math:`\frac{1}{2}\text{sum}(|\mathbf{x} - \mathbf{y}|^4)`
@@ -348,7 +347,7 @@ class CVCauchyError(nn.Module):
     .. math::
 
         \mathcal{L}(\mathbf{x}, \mathbf{y}) = \frac{1}{2}\text{sum}( c^2 / 2 \ln(1 + |\mathbf{x} - \mathbf{y}|^2/c^2) )
-        
+
     where :math:`c` is typically set to unity.
 
     Based on work from the following paper:
@@ -365,12 +364,12 @@ class CVCauchyError(nn.Module):
 
         self.c2 = c**2
 
-    def forward(self, x: CVTensor, y: CVTensor) -> torch.Tensor:
+    def forward(self, x: torch.Tensor, y: torch.Tensor) -> torch.Tensor:
         r"""Computes the complex-valued Cauchy error function.
 
         Args:
-            x (CVTensor): estimated labels
-            y (CVTensor): target/ground truth labels
+            x (torch.Tensor): estimated labels
+            y (torch.Tensor): target/ground truth labels
 
         Returns:
             torch.Tensor: :math:`\frac{1}{2}\text{sum}( c^2 / 2 \ln(1 + |\mathbf{x} - \mathbf{y}|^2/c^2) )`
@@ -398,12 +397,12 @@ class CVLogCoshError(nn.Module):
     def __init__(self) -> None:
         super(CVLogCoshError, self).__init__()
 
-    def forward(self, x: CVTensor, y: CVTensor) -> torch.Tensor:
+    def forward(self, x: torch.Tensor, y: torch.Tensor) -> torch.Tensor:
         r"""Computes the complex-valued log-cosh error function.
 
         Args:
-            x (CVTensor): estimated labels
-            y (CVTensor): target/ground truth labels
+            x (torch.Tensor): estimated labels
+            y (torch.Tensor): target/ground truth labels
 
         Returns:
             torch.Tensor: :math:`\text{sum}(\ln(\cosh(|\mathbf{x} - \mathbf{y}|^2))`
@@ -431,12 +430,12 @@ class CVLogError(nn.Module):
     def __init__(self) -> None:
         super(CVLogError, self).__init__()
 
-    def forward(self, x: CVTensor, y: CVTensor) -> torch.Tensor:
+    def forward(self, x: torch.Tensor, y: torch.Tensor) -> torch.Tensor:
         r"""Computes the complex-valued log error function.
 
         Args:
-            x (CVTensor): estimated labels
-            y (CVTensor): target/ground truth labels
+            x (torch.Tensor): estimated labels
+            y (torch.Tensor): target/ground truth labels
 
         Returns:
             torch.Tensor: :math:`\text{sum}(|\ln(\mathbf{x}) - \ln(\mathbf{y})|^2)`

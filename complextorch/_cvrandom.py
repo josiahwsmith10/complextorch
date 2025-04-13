@@ -1,10 +1,9 @@
 import torch
 
-from . import CVTensor
-
 __all__ = ["randn"]
 
 
-def randn(*size, dtype=torch.complex64, device="cpu", requires_grad=False) -> CVTensor:
-    out = torch.randn(*size, dtype=dtype, device=device, requires_grad=requires_grad)
-    return CVTensor(out.real, out.imag)
+def randn(
+    *size, dtype=torch.cfloat, device="cpu", requires_grad=False
+) -> torch.Tensor:
+    return torch.randn(*size, dtype=dtype, device=device, requires_grad=requires_grad)

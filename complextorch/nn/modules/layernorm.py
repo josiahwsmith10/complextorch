@@ -5,12 +5,11 @@ import torch.nn as nn
 from torch.nn import init
 
 from .. import functional as cvF
-from ... import CVTensor
 
-__all__ = ["CVLayerNorm"]
+__all__ = ["LayerNorm"]
 
 
-class CVLayerNorm(nn.Module):
+class LayerNorm(nn.Module):
     r"""
     Complex-Valued Layer Normalization
     ----------------------------------
@@ -66,12 +65,16 @@ class CVLayerNorm(nn.Module):
         )
         init.zeros_(self.bias)
 
-    def forward(self, input: CVTensor) -> CVTensor:
+    def forward(self, input: torch.Tensor) -> torch.Tensor:
         # Sanity check to make sure the shapes match
         assert (
             self.normalized_shape == input.shape[-len(self.normalized_shape) :]
         ), "Expected normalized_shape to match last dimensions of input shape!"
 
-        return cvF.cv_layer_norm(
+        # if self.elementwise_affine:
+        #     self.weight.data = self.weight.data.to(input.device)
+        #     self.bias.data = self.bias.data.to(input.device)
+
+        return cvF.layer_norm(
             input, self.normalized_shape, self.weight, self.bias, self.eps
         )

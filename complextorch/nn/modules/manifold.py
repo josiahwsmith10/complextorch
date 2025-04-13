@@ -5,7 +5,7 @@ import torch
 import torch.nn as nn
 from torch.nn.common_types import _size_1_t, _size_2_t
 
-from ... import CVTensor, from_polar
+from ... import from_polar
 
 __all__ = ["wFMConv1d", "wFMConv2d"]
 
@@ -246,14 +246,14 @@ class wFMConv2d(nn.Module):
             )
         )
 
-    def forward(self, input: CVTensor) -> CVTensor:
+    def forward(self, input: torch.Tensor) -> torch.Tensor:
         r"""Computes the 2-D weighted Frechet mean (wFM) convolution.
 
         Args:
-            input (CVTensor): input tensor
+            input (torch.Tensor): input tensor
 
         Returns:
-            CVTensor: output tensor
+            torch.Tensor: output tensor
         """
         batch_size, in_channels, *input_shape = input.shape
 
@@ -272,7 +272,7 @@ class wFMConv2d(nn.Module):
             padding=self.padding,
         )
 
-        # Separate magnitude and angle from CVTensor input
+        # Separate magnitude and angle from torch.Tensor input
         (x_mag, x_ang) = input.polar
 
         ### Do magnitude processing
@@ -385,14 +385,14 @@ class wFMConv1d(nn.Module):
 
         self.wFM_conv = self.conv1d.wFM_conv
 
-    def forward(self, input: CVTensor) -> CVTensor:
+    def forward(self, input: torch.Tensor) -> torch.Tensor:
         r"""Computes the 1-D weighted Frechet mean (wFM) convolution. See :class:`wFMConv2d` for more implementation details as :class:`wFMConv1d` is a wrapper around :class:`wFMConv2d`.
 
         Args:
-            input (CVTensor): input tensor
+            input (torch.Tensor): input tensor
 
         Returns:
-            CVTensor: output tensor
+            torch.Tensor: output tensor
         """
         return self.conv1d(input.unsqueeze(-2)).squeeze()
 

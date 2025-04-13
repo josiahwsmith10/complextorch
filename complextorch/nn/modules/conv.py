@@ -5,27 +5,31 @@ from torch.nn.common_types import _size_1_t, _size_2_t, _size_3_t
 
 from typing import Tuple, Union
 
-from ... import CVTensor
 
 __all__ = [
-    "SlowCVConv1d",
-    "CVConv1d",
-    "CVConv2d",
-    "CVConv3d",
-    "CVConvTranpose1d",
-    "CVConvTranpose2d",
-    "CVConvTranpose3d",
+    "Conv1d",
+    "Conv2d",
+    "Conv3d",
+    "ConvTranspose1d",
+    "ConvTranspose2d",
+    "ConvTranspose3d",
+    "SlowConv1d",
+    "SlowConv2d",
+    "SlowConv3d",
+    "SlowConvTranspose1d",
+    "SlowConvTranspose2d",
+    "SlowConvTranspose3d",
 ]
 
 
-class SlowCVConv1d(nn.Module):
+class Conv1d(nn.Module):
     r"""
-    Slow Complex-Valued 1-D Convolution
-    -----------------------------------
+    Complex-Valued 1-D Convolution using PyTorch
+    --------------------------------------------
 
         - Implemented using `torch.nn.Conv1d <https://pytorch.org/docs/stable/generated/torch.nn.Conv1d.html>`_ and complex-valued tensors.
 
-        - Slower than using CVTensor. PyTorch must have some additional overhead that makes this method significantly slower than using CVTensors and the other CVConv layers
+        - Used to be slower than `complextorch` version but is now faster after PyTorch 2.1.0 update.
     """
 
     def __init__(
@@ -38,37 +42,307 @@ class SlowCVConv1d(nn.Module):
         dilation: int = 1,
         groups: int = 1,
         bias: bool = False,
+        padding_mode: str = "zeros",
+        device=None,
+        dtype=torch.cfloat,
     ) -> None:
-        super(SlowCVConv1d, self).__init__()
+        super(Conv1d, self).__init__()
 
         self.conv = nn.Conv1d(
-            in_channels,
-            out_channels,
-            kernel_size,
-            stride,
-            padding,
-            dilation,
-            groups,
-            bias,
-            dtype=torch.complex64,
+            in_channels=in_channels,
+            out_channels=out_channels,
+            kernel_size=kernel_size,
+            stride=stride,
+            padding=padding,
+            dilation=dilation,
+            groups=groups,
+            bias=bias,
+            padding_mode=padding_mode,
+            device=device,
+            dtype=dtype,
         )
 
-    def forward(self, input: CVTensor) -> CVTensor:
+    def forward(self, input: torch.Tensor) -> torch.Tensor:
         r"""Computes 1-D complex-valued convolution using PyTorch.
 
         Args:
-            input (CVTensor): input tensor
+            input (torch.Tensor): input tensor
 
         Returns:
-            CVTensor: Conv1d(input)
+            torch.Tensor: Conv1d(input)
         """
-        input = self.conv(input.complex)
-        return CVTensor(input.real, input.imag)
+        return self.conv(input)
 
 
-class _CVConv(nn.Module):
+class Conv2d(nn.Module):
     r"""
-    CVTensor-based Complex-Valued Convolution
+    Complex-Valued 2-D Convolution using PyTorch
+    --------------------------------------------
+
+        - Implemented using `torch.nn.Conv2d <https://pytorch.org/docs/stable/generated/torch.nn.Conv2d.html>`_ and complex-valued tensors.
+
+        - Used to be slower than `complextorch` version but is now faster after PyTorch 2.1.0 update.
+    """
+
+    def __init__(
+        self,
+        in_channels: int,
+        out_channels: int,
+        kernel_size: int,
+        stride: int = 1,
+        padding: int = 0,
+        dilation: int = 1,
+        groups: int = 1,
+        bias: bool = False,
+        padding_mode: str = "zeros",
+        device=None,
+        dtype=torch.cfloat,
+    ) -> None:
+        super(Conv1d, self).__init__()
+
+        self.conv = nn.Conv1d(
+            in_channels=in_channels,
+            out_channels=out_channels,
+            kernel_size=kernel_size,
+            stride=stride,
+            padding=padding,
+            dilation=dilation,
+            groups=groups,
+            bias=bias,
+            padding_mode=padding_mode,
+            device=device,
+            dtype=dtype,
+        )
+
+    def forward(self, input: torch.Tensor) -> torch.Tensor:
+        r"""Computes 2-D complex-valued convolution using PyTorch.
+
+        Args:
+            input (torch.Tensor): input tensor
+
+        Returns:
+            torch.Tensor: Conv1d(input)
+        """
+        return self.conv(input)
+
+
+class Conv3d(nn.Module):
+    r"""
+    Complex-Valued 3-D Convolution using PyTorch
+    --------------------------------------------
+
+        - Implemented using `torch.nn.Conv2d <https://pytorch.org/docs/stable/generated/torch.nn.Conv3d.html>`_ and complex-valued tensors.
+
+        - Used to be slower than `complextorch` version but is now faster after PyTorch 2.1.0 update.
+    """
+
+    def __init__(
+        self,
+        in_channels: int,
+        out_channels: int,
+        kernel_size: int,
+        stride: int = 1,
+        padding: int = 0,
+        dilation: int = 1,
+        groups: int = 1,
+        bias: bool = False,
+        padding_mode: str = "zeros",
+        device=None,
+        dtype=torch.cfloat,
+    ) -> None:
+        super(Conv1d, self).__init__()
+
+        self.conv = nn.Conv3d(
+            in_channels=in_channels,
+            out_channels=out_channels,
+            kernel_size=kernel_size,
+            stride=stride,
+            padding=padding,
+            dilation=dilation,
+            groups=groups,
+            bias=bias,
+            padding_mode=padding_mode,
+            device=device,
+            dtype=dtype,
+        )
+
+    def forward(self, input: torch.Tensor) -> torch.Tensor:
+        r"""Computes 3-D complex-valued convolution using PyTorch.
+
+        Args:
+            input (torch.Tensor): input tensor
+
+        Returns:
+            torch.Tensor: Conv1d(input)
+        """
+        return self.conv(input)
+
+
+class ConvTranspose1d(nn.Module):
+    r"""
+    Complex-Valued 1-D Transposed Convolution using PyTorch
+    -------------------------------------------------------
+
+        - Implemented using `torch.nn.ConvTranspose1d <https://pytorch.org/docs/stable/generated/torch.nn.ConvTranspose1d.html>`_ and complex-valued tensors.
+
+        - Used to be slower than `complextorch` version but is now faster after PyTorch 2.1.0 update.
+    """
+
+    def __init__(
+        self,
+        in_channels: int,
+        out_channels: int,
+        kernel_size: int,
+        stride: int = 1,
+        padding: int = 0,
+        output_padding: int = 1,
+        groups: int = 1,
+        bias: bool = False,
+        dilation: int = 1,
+        padding_mode: str = "zeros",
+        device=None,
+        dtype=torch.cfloat,
+    ) -> None:
+        super(Conv1d, self).__init__()
+
+        self.conv_transposed = nn.ConvTranspose1d(
+            in_channels=in_channels,
+            out_channels=out_channels,
+            kernel_size=kernel_size,
+            stride=stride,
+            padding=padding,
+            output_padding=output_padding,
+            groups=groups,
+            bias=bias,
+            dilation=dilation,
+            padding_mode=padding_mode,
+            device=device,
+            dtype=dtype,
+        )
+
+    def forward(self, input: torch.Tensor) -> torch.Tensor:
+        r"""Computes 1-D complex-valued transposed convolution using PyTorch.
+
+        Args:
+            input (torch.Tensor): input tensor
+
+        Returns:
+            torch.Tensor: ConvTranspose1d(input)
+        """
+        return self.conv_transposed(input)
+
+
+class ConvTranspose2d(nn.Module):
+    r"""
+    Complex-Valued 2-D Transposed Convolution using PyTorch
+    -------------------------------------------------------
+
+        - Implemented using `torch.nn.ConvTranspose2d <https://pytorch.org/docs/stable/generated/torch.nn.ConvTranspose2d.html>`_ and complex-valued tensors.
+
+        - Used to be slower than `complextorch` version but is now faster after PyTorch 2.1.0 update.
+    """
+
+    def __init__(
+        self,
+        in_channels: int,
+        out_channels: int,
+        kernel_size: int,
+        stride: int = 1,
+        padding: int = 0,
+        output_padding: int = 1,
+        groups: int = 1,
+        bias: bool = False,
+        dilation: int = 1,
+        padding_mode: str = "zeros",
+        device=None,
+        dtype=torch.cfloat,
+    ) -> None:
+        super(Conv1d, self).__init__()
+
+        self.conv_transposed = nn.ConvTranspose1d(
+            in_channels=in_channels,
+            out_channels=out_channels,
+            kernel_size=kernel_size,
+            stride=stride,
+            padding=padding,
+            output_padding=output_padding,
+            groups=groups,
+            bias=bias,
+            dilation=dilation,
+            padding_mode=padding_mode,
+            device=device,
+            dtype=dtype,
+        )
+
+    def forward(self, input: torch.Tensor) -> torch.Tensor:
+        r"""Computes 2-D complex-valued transposed convolution using PyTorch.
+
+        Args:
+            input (torch.Tensor): input tensor
+
+        Returns:
+            torch.Tensor: ConvTranspose2d(input)
+        """
+        return self.conv_transposed(input)
+
+
+class ConvTranspose3d(nn.Module):
+    r"""
+    Complex-Valued 3-D Transposed Convolution using PyTorch
+    -------------------------------------------------------
+
+        - Implemented using `torch.nn.ConvTranspose3d <https://pytorch.org/docs/stable/generated/torch.nn.ConvTranspose3d.html>`_ and complex-valued tensors.
+
+        - Used to be slower than `complextorch` version but is now faster after PyTorch 2.1.0 update.
+    """
+
+    def __init__(
+        self,
+        in_channels: int,
+        out_channels: int,
+        kernel_size: int,
+        stride: int = 1,
+        padding: int = 0,
+        output_padding: int = 1,
+        groups: int = 1,
+        bias: bool = False,
+        dilation: int = 1,
+        padding_mode: str = "zeros",
+        device=None,
+        dtype=torch.cfloat,
+    ) -> None:
+        super(Conv1d, self).__init__()
+
+        self.conv_transposed = nn.ConvTranspose1d(
+            in_channels=in_channels,
+            out_channels=out_channels,
+            kernel_size=kernel_size,
+            stride=stride,
+            padding=padding,
+            output_padding=output_padding,
+            groups=groups,
+            bias=bias,
+            dilation=dilation,
+            padding_mode=padding_mode,
+            device=device,
+            dtype=dtype,
+        )
+
+    def forward(self, input: torch.Tensor) -> torch.Tensor:
+        r"""Computes 3-D complex-valued transposed convolution using PyTorch.
+
+        Args:
+            input (torch.Tensor): input tensor
+
+        Returns:
+            torch.Tensor: ConvTranspose3d(input)
+        """
+        return self.conv_transposed(input)
+
+
+class _Conv(nn.Module):
+    r"""
+    torch.Tensor-based Complex-Valued Convolution
     -----------------------------------------
     """
 
@@ -88,7 +362,7 @@ class _CVConv(nn.Module):
         device=None,
         dtype=None,
     ) -> None:
-        super(_CVConv, self).__init__()
+        super(_Conv, self).__init__()
 
         self.ConvFunc = ConvFunc
         self.in_channels = in_channels
@@ -111,7 +385,7 @@ class _CVConv(nn.Module):
             bias=bias,
             padding_mode=padding_mode,
             device=device,
-            dtype=torch.complex64,
+            dtype=dtype if dtype else torch.cfloat,
         )
 
         self.conv_r = ConvClass(
@@ -149,14 +423,16 @@ class _CVConv(nn.Module):
             self.conv_i.bias.data = __temp.bias.imag
 
     @property
-    def weight(self) -> CVTensor:
-        return CVTensor(self.conv_r.weight, self.conv_i.weight)
+    def weight(self) -> torch.Tensor:
+        # print(self.conv_i.weight.type(), "weight type")
+        return torch.complex(self.conv_r.weight, self.conv_i.weight)
 
     @property
-    def bias(self) -> CVTensor:
-        return CVTensor(self.conv_r.bias, self.conv_i.bias)
+    def bias(self) -> torch.Tensor:
+        print(self.conv_i.bias.type(), "bias type")
+        return torch.complex(self.conv_r.bias, self.conv_i.bias)
 
-    def forward(self, input: CVTensor) -> CVTensor:
+    def forward(self, input: torch.Tensor) -> torch.Tensor:
         r"""
         Computes convolution 25% faster than naive method by using Gauss' multiplication trick
         """
@@ -173,10 +449,13 @@ class _CVConv(nn.Module):
             padding=self.padding,
             groups=self.groups,
         )
-        return CVTensor(t1 - t2, t3 - t2 - t1)
+        print(
+            "Conv memory allocated", torch.cuda.memory_allocated("cuda:0") / (1024**3)
+        )
+        return torch.complex(t1 - t2, t3 - t2 - t1)
 
 
-class CVConv1d(_CVConv):
+class SlowConv1d(_Conv):
     r"""
     1-D Complex-Valued Convolution
     ------------------------------
@@ -222,7 +501,7 @@ class CVConv1d(_CVConv):
         device=None,
         dtype=None,
     ) -> None:
-        super(CVConv1d, self).__init__(
+        super(SlowConv1d, self).__init__(
             ConvClass=nn.Conv1d,
             ConvFunc=F.conv1d,
             in_channels=in_channels,
@@ -239,7 +518,7 @@ class CVConv1d(_CVConv):
         )
 
 
-class CVConv2d(_CVConv):
+class SlowConv2d(_Conv):
     r"""
     2-D Complex-Valued Convolution
     ------------------------------
@@ -285,7 +564,7 @@ class CVConv2d(_CVConv):
         device=None,
         dtype=None,
     ) -> None:
-        super(CVConv2d, self).__init__(
+        super(SlowConv2d, self).__init__(
             ConvClass=nn.Conv2d,
             ConvFunc=F.conv2d,
             in_channels=in_channels,
@@ -302,7 +581,7 @@ class CVConv2d(_CVConv):
         )
 
 
-class CVConv3d(_CVConv):
+class SlowConv3d(_Conv):
     r"""
     3-D Complex-Valued Convolution
     ------------------------------
@@ -348,7 +627,7 @@ class CVConv3d(_CVConv):
         device=None,
         dtype=None,
     ) -> None:
-        super(CVConv3d, self).__init__(
+        super(SlowConv3d, self).__init__(
             ConvClass=nn.Conv3d,
             ConvFunc=F.conv3d,
             in_channels=in_channels,
@@ -365,9 +644,9 @@ class CVConv3d(_CVConv):
         )
 
 
-class _CVConvTranspose(nn.Module):
+class _ConvTranspose(nn.Module):
     r"""
-    CVTensor-based Complex-Valued Transposed Convolution
+    torch.Tensor-based Complex-Valued Transposed Convolution
     ----------------------------------------------------
     """
 
@@ -388,7 +667,7 @@ class _CVConvTranspose(nn.Module):
         device=None,
         dtype=None,
     ) -> None:
-        super(_CVConvTranspose, self).__init__()
+        super(_ConvTranspose, self).__init__()
 
         self.ConvFunc = ConvFunc
         self.in_channels = in_channels
@@ -413,7 +692,7 @@ class _CVConvTranspose(nn.Module):
             dilation=dilation,
             padding_mode=padding_mode,
             device=device,
-            dtype=torch.complex64,
+            dtype=dtype if dtype else torch.cfloat,
         )
 
         self.convt_r = ConvClass(
@@ -453,14 +732,14 @@ class _CVConvTranspose(nn.Module):
             self.convt_i.bias.data = __temp.bias.imag
 
     @property
-    def weight(self) -> CVTensor:
-        return CVTensor(self.convt_r.weight, self.convt_i.weight)
+    def weight(self) -> torch.Tensor:
+        return torch.complex(self.convt_r.weight, self.convt_i.weight)
 
     @property
-    def bias(self) -> CVTensor:
-        return CVTensor(self.convt_r.bias, self.convt_i.bias)
+    def bias(self) -> torch.Tensor:
+        return torch.complex(self.convt_r.bias, self.convt_i.bias)
 
-    def forward(self, input: CVTensor) -> CVTensor:
+    def forward(self, input: torch.Tensor) -> torch.Tensor:
         r"""
         Computes convolution 25% faster than naive method by using Gauss' multiplication trick
         """
@@ -479,10 +758,10 @@ class _CVConvTranspose(nn.Module):
             padding=self.padding,
             groups=self.groups,
         )
-        return CVTensor(t1 - t2, t3 - t2 - t1)
+        return torch.complex(t1 - t2, t3 - t2 - t1)
 
 
-class CVConvTranpose1d(_CVConvTranspose):
+class SlowConvTranspose1d(_ConvTranspose):
     r"""
     1-D Complex-Valued Transposed Convolution
     -----------------------------------------
@@ -530,7 +809,7 @@ class CVConvTranpose1d(_CVConvTranspose):
         device=None,
         dtype=None,
     ) -> None:
-        super(CVConvTranpose1d, self).__init__(
+        super(SlowConvTranspose1d, self).__init__(
             ConvClass=nn.ConvTranspose1d,
             ConvFunc=F.conv_transpose1d,
             in_channels=in_channels,
@@ -548,7 +827,7 @@ class CVConvTranpose1d(_CVConvTranspose):
         )
 
 
-class CVConvTranpose2d(_CVConvTranspose):
+class SlowConvTranspose2d(_ConvTranspose):
     r"""
     2-D Complex-Valued Transposed Convolution
     -----------------------------------------
@@ -596,7 +875,7 @@ class CVConvTranpose2d(_CVConvTranspose):
         device=None,
         dtype=None,
     ) -> None:
-        super(CVConvTranpose2d, self).__init__(
+        super(SlowConvTranspose2d, self).__init__(
             ConvClass=nn.ConvTranspose2d,
             ConvFunc=F.conv_transpose2d,
             in_channels=in_channels,
@@ -614,7 +893,7 @@ class CVConvTranpose2d(_CVConvTranspose):
         )
 
 
-class CVConvTranpose3d(_CVConvTranspose):
+class SlowConvTranspose3d(_ConvTranspose):
     r"""
     3-D Complex-Valued Transposed Convolution
     -----------------------------------------
@@ -662,7 +941,7 @@ class CVConvTranpose3d(_CVConvTranspose):
         device=None,
         dtype=None,
     ) -> None:
-        super(CVConvTranpose3d, self).__init__(
+        super(SlowConvTranspose3d, self).__init__(
             ConvClass=nn.ConvTranspose3d,
             ConvFunc=F.conv_transpose3d,
             in_channels=in_channels,

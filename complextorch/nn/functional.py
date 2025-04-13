@@ -3,27 +3,27 @@ import torch.nn as nn
 
 from typing import List, Optional
 
-from .. import CVTensor, from_polar
+from .. import from_polar
 
 __all__ = [
     "apply_complex",
     "apply_complex_split",
     "apply_complex_polar",
     "inv_sqrtm2x2",
-    "cv_batch_norm",
-    "cv_layer_norm",
+    "batch_norm",
+    "layer_norm",
 ]
 
 
 def apply_complex(
-    real_module: nn.Module, imag_module: nn.Module, x: CVTensor
-) -> CVTensor:
+    real_module: nn.Module, imag_module: nn.Module, x: torch.Tensor
+) -> torch.Tensor:
     r"""
     Apply Complex
     -------------
 
     Naive complex computation between a complex-valued module defined by two
-    real-valued modules and a complex-valued tensor (CVTensor).
+    real-valued modules and a complex-valued torch.Tensor.
 
     Gauss' trick is often faster and is implemented throughout this package.
 
@@ -33,13 +33,13 @@ def apply_complex(
 
         G(\mathbf{z}) = G_\mathbb{R}(\mathbf{x}) - G_\mathbb{I}(\mathbf{y}) + j(G_\mathbb{R}(\mathbf{y}) + G_\mathbb{I}(\mathbf{x}))
     """
-    return CVTensor(
+    return torch.complex(
         real_module(x.real) - imag_module(x.imag),
         real_module(x.imag) + imag_module(x.real),
     )
 
 
-def apply_complex_split(r_fun, i_fun, x: CVTensor) -> CVTensor:
+def apply_complex_split(r_fun: callable, i_fun: callable, x: torch.Tensor) -> torch.Tensor:
     r"""
     Apply Complex Split
     -------------------
@@ -53,17 +53,17 @@ def apply_complex_split(r_fun, i_fun, x: CVTensor) -> CVTensor:
         G(\mathbf{z}) = G_\mathbb{R}(\mathbf{x}) + j G_\mathbb{I}(\mathbf{y})
 
     Args:
-        r_fun: function to be applied to the real part of the input tensor
-        i_fun: function to be applied to the imaginary part of the input tensor
-        x (CVTensor): input tensor
+        r_fun (callable): function to be applied to the real part of the input tensor
+        i_fun (callable): function to be applied to the imaginary part of the input tensor
+        x (torch.Tensor): input tensor
 
     Returns:
-        CVTensor: :math:`G_\mathbb{R}(\mathbf{x}) + j G_\mathbb{I}(\mathbf{y})`
+        torch.Tensor: :math:`G_\mathbb{R}(\mathbf{x}) + j G_\mathbb{I}(\mathbf{y})`
     """
-    return CVTensor(r_fun(x.real), i_fun(x.imag))
+    return torch.complex(r_fun(x.real), i_fun(x.imag))
 
 
-def apply_complex_polar(mag_fun, phase_fun, x: CVTensor) -> CVTensor:
+def apply_complex_polar(mag_fun: callable, phase_fun: callable, x: torch.Tensor) -> torch.Tensor:
     r"""
     Apply Complex Polar
     -------------------
@@ -77,12 +77,12 @@ def apply_complex_polar(mag_fun, phase_fun, x: CVTensor) -> CVTensor:
         G(\mathbf{z}) = G_{||}(|\mathbf{z}|) \odot \exp(j G_\angle(\angle\mathbf{z}))
 
     Args:
-        mag_fun: function to be applied to the magnitude of the input tensor
-        phase_fun: function to be applied to the phase of the input tensor
-        x (CVTensor): input tensor
+        mag_fun (callable): function to be applied to the magnitude of the input tensor
+        phase_fun (callable): function to be applied to the phase of the input tensor
+        x (torch.Tensor): input tensor
 
     Returns:
-        CVTensor: :math:`G_{||}(|\mathbf{z}|) \odot \exp(j G_\angle(\angle\mathbf{z}))`
+        torch.Tensor: :math:`G_{||}(|\mathbf{z}|) \odot \exp(j G_\angle(\angle\mathbf{z}))`
     """
     if phase_fun is None:
         # Assumes no function will be computed on phase (improves computational efficiency)
@@ -281,8 +281,8 @@ def _whiten2x2_batch_norm(
     )
 
 
-def cv_batch_norm(
-    x: CVTensor,
+def batch_norm(
+    x: torch.Tensor,
     running_mean: Optional[torch.Tensor] = None,
     running_var: Optional[torch.Tensor] = None,
     weight: Optional[torch.Tensor] = None,
@@ -290,7 +290,7 @@ def cv_batch_norm(
     training: bool = True,
     momentum: float = 0.1,
     eps: float = 1e-5,
-) -> CVTensor:
+) -> torch.Tensor:
     r"""
     Complex-Valued Batch Normalization
     ----------------------------------
@@ -300,7 +300,7 @@ def cv_batch_norm(
 
     Arguments
     ---------
-    x : cvtorch.CVTensor
+    x : torch.Tensor
         The input complex-valued data is expected to be at least 2d, with
         shape [B, F, ...], where `B` is the batch dimension, `F` -- the
         channels/features, `...` -- the spatial dimensions (if present).
@@ -369,7 +369,7 @@ def cv_batch_norm(
             dim=0,
         ) + bias.view(2, *shape)
 
-    return CVTensor(z[0], z[1])
+    return torch.complex(z[0], z[1])
 
 
 def _whiten2x2_layer_norm(
@@ -397,7 +397,7 @@ def _whiten2x2_layer_norm(
     axes = [-(i + 1) for i in range(len(normalized_shape))]
 
     # Compute the batch mean [2, B, 1, ...] and center the batch
-    mean = x.clone().mean(dim=axes, keepdim=True)
+    mean = x.mean(dim=axes, keepdim=True)
     x -= mean
 
     # head shape for broadcasting
@@ -422,13 +422,13 @@ def _whiten2x2_layer_norm(
     )
 
 
-def cv_layer_norm(
-    x: CVTensor,
+def layer_norm(
+    x: torch.Tensor,
     normalized_shape: List[int],
     weight: Optional[torch.Tensor] = None,
     bias: Optional[torch.Tensor] = None,
     eps: float = 1e-5,
-) -> CVTensor:
+) -> torch.Tensor:
     r"""
     Complex-Valued Layer Normalization
     ----------------------------------
@@ -438,7 +438,7 @@ def cv_layer_norm(
 
     Arguments
     ---------
-    x : cvtorch.CVTensor
+    x : torch.Tensor
         The input complex-valued data is expected to be at least 2d, with
         shape [B, F, ...], where `B` is the batch dimension, `F` -- the
 
@@ -479,4 +479,4 @@ def cv_layer_norm(
             dim=0,
         ) + bias.view(2, *shape)
 
-    return CVTensor(z[0], z[1])
+    return torch.complex(z[0], z[1])

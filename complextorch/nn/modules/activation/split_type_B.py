@@ -1,7 +1,6 @@
 import torch
 import torch.nn as nn
 
-from .... import CVTensor
 from ... import functional as cvF
 
 __all__ = [
@@ -40,14 +39,14 @@ class GeneralizedPolarActivation(nn.Module):
         self.activation_mag = activation_mag
         self.activation_phase = activation_phase
 
-    def forward(self, input: CVTensor) -> CVTensor:
+    def forward(self, input: torch.Tensor) -> torch.Tensor:
         r"""Computes the generalized *Type-B* split activation function.
 
         Args:
-            input (CVTensor): input tensor
+            input (torch.Tensor): input tensor
 
         Returns:
-            CVTensor: :math:`G_{||}(|\mathbf{z}|) \odot \exp(j G_\angle(\angle\mathbf{z}))`
+            torch.Tensor: :math:`G_{||}(|\mathbf{z}|) \odot \exp(j G_\angle(\angle\mathbf{z}))`
         """
         return cvF.apply_complex_polar(
             self.activation_mag, self.activation_phase, input
