@@ -2,13 +2,53 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
-__all__ = ["Linear"]
+__all__ = ["Linear", "SlowLinear"]
 
 
 class Linear(nn.Module):
     r"""
-    Complex-Valued Linear Layer
-    ---------------------------
+    Complex-Valued Linear using PyTorch
+    -----------------------------------
+
+        - Implemented using `torch.nn.Linear <https://pytorch.org/docs/stable/generated/torch.nn.Linear.html>`_ and complex-valued tensors.
+
+        - Used to be slower than `complextorch` version but is now faster after PyTorch 2.1.0 update.
+    """
+
+    def __init__(
+        self,
+        in_features: int,
+        out_features: int,
+        bias: bool = False,
+        device=None,
+        dtype=torch.cfloat,
+    ) -> None:
+        super(Linear, self).__init__()
+
+        self.linear = nn.Linear(
+            in_channels=in_features,
+            out_channels=out_features,
+            bias=bias,
+            device=device,
+            dtype=dtype,
+        )
+
+    def forward(self, input: torch.Tensor) -> torch.Tensor:
+        r"""Computes complex-valued convolution using PyTorch.
+
+        Args:
+            input (torch.Tensor): input tensor
+
+        Returns:
+            torch.Tensor: Linear(input)
+        """
+        return self.linear(input)
+
+
+class SlowLinear(nn.Module):
+    r"""
+    Slow Complex-Valued Linear Layer
+    --------------------------------
 
     Follows `PyTorch implementation <https://pytorch.org/docs/stable/generated/torch.nn.Linear.html>`_ using Gauss' trick to improve the computation as in :doc:`Complex-Valued Convolution <./conv>`.
     """
@@ -21,7 +61,7 @@ class Linear(nn.Module):
         device=None,
         dtype=None,
     ) -> None:
-        super(Linear, self).__init__()
+        super(SlowLinear, self).__init__()
 
         # Assumes PyTorch complex weight initialization is correct
         __temp = nn.Linear(

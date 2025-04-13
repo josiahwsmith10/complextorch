@@ -98,9 +98,9 @@ class Conv2d(nn.Module):
         device=None,
         dtype=torch.cfloat,
     ) -> None:
-        super(Conv1d, self).__init__()
+        super(Conv2d, self).__init__()
 
-        self.conv = nn.Conv1d(
+        self.conv = nn.Conv2d(
             in_channels=in_channels,
             out_channels=out_channels,
             kernel_size=kernel_size,
@@ -121,7 +121,7 @@ class Conv2d(nn.Module):
             input (torch.Tensor): input tensor
 
         Returns:
-            torch.Tensor: Conv1d(input)
+            torch.Tensor: Conv2d(input)
         """
         return self.conv(input)
 
@@ -150,7 +150,7 @@ class Conv3d(nn.Module):
         device=None,
         dtype=torch.cfloat,
     ) -> None:
-        super(Conv1d, self).__init__()
+        super(Conv3d, self).__init__()
 
         self.conv = nn.Conv3d(
             in_channels=in_channels,
@@ -173,7 +173,7 @@ class Conv3d(nn.Module):
             input (torch.Tensor): input tensor
 
         Returns:
-            torch.Tensor: Conv1d(input)
+            torch.Tensor: Conv3d(input)
         """
         return self.conv(input)
 
@@ -203,7 +203,7 @@ class ConvTranspose1d(nn.Module):
         device=None,
         dtype=torch.cfloat,
     ) -> None:
-        super(Conv1d, self).__init__()
+        super(ConvTranspose1d, self).__init__()
 
         self.conv_transposed = nn.ConvTranspose1d(
             in_channels=in_channels,
@@ -257,9 +257,9 @@ class ConvTranspose2d(nn.Module):
         device=None,
         dtype=torch.cfloat,
     ) -> None:
-        super(Conv1d, self).__init__()
+        super(ConvTranspose2d, self).__init__()
 
-        self.conv_transposed = nn.ConvTranspose1d(
+        self.conv_transposed = nn.ConvTranspose2d(
             in_channels=in_channels,
             out_channels=out_channels,
             kernel_size=kernel_size,
@@ -311,9 +311,9 @@ class ConvTranspose3d(nn.Module):
         device=None,
         dtype=torch.cfloat,
     ) -> None:
-        super(Conv1d, self).__init__()
+        super(ConvTranspose3d, self).__init__()
 
-        self.conv_transposed = nn.ConvTranspose1d(
+        self.conv_transposed = nn.ConvTranspose3d(
             in_channels=in_channels,
             out_channels=out_channels,
             kernel_size=kernel_size,
