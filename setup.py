@@ -1,18 +1,16 @@
 from setuptools import setup, find_packages
 
-with open("README.md", "r", encoding="utf-8") as fh:
-    long_description = fh.read()
-
 setup(
     name="complextorch",
-    version="1.1.6",  # update index.rst, conf.py, and complextorch/__init__.py
+    version="1.1.9",  # update index.rst, conf.py, and complextorch/__init__.py
     author="Josiah W. Smith",
     author_email="josiah.radar@gmail.com",
     description="A lightweight complex-valued neural network package built on PyTorch",
-    long_description=long_description,
+    long_description=open("README.md").read(),
     long_description_content_type="text/markdown",
     url="https://www.github.com/josiahwsmith10/complextorch",
-    packages=find_packages(),
+    packages=find_packages(include=["complextorch", "complextorch.*"]),
+    include_package_data=True,
     project_urls={
         "Bug Tracker": "https://github.com/josiahwsmith10/complextorch/issues",
         "Documentation": "https://complextorch.readthedocs.io/en/latest/index.html",
