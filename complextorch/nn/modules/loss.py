@@ -440,5 +440,5 @@ class CVLogError(nn.Module):
         Returns:
             torch.Tensor: :math:`\text{sum}(|\ln(\mathbf{x}) - \ln(\mathbf{y})|^2)`
         """
-        err = torch.log(x.complex) - torch.log(y.complex)
+        err = torch.log(x) - torch.log(y)
         return (err.abs() ** 2).sum()

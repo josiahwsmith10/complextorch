@@ -53,11 +53,10 @@ class ScaledDotProductAttention(nn.Module):
         Returns:
             torch.Tensor: \mathcal{S}(Q K^T / t) V
         """
-        attn = torch.matmul(q.complex / self.temperature, k.complex.transpose(-2, -1))
+        attn = torch.matmul(q / self.temperature, k.transpose(-2, -1))
 
         attn = self.dropout(self.softmax(attn))
-        output = torch.matmul(attn.complex, v.complex)
-        return torch.complex(output.real, output.imag)
+        return torch.matmul(attn, v)
 
 
 class MultiheadAttention(nn.Module):

@@ -96,5 +96,4 @@ class MagMinMaxNorm(nn.Module):
         x_mag = input.abs()
         x_min = x_mag.min()
         x_max = x_mag.max()
-        out = (input - x_min) / (x_max - x_min)
-        return torch.complex(out.real, out.imag)
+        return (input - x_min) / (x_max - x_min)

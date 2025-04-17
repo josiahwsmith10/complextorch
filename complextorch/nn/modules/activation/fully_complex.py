@@ -38,8 +38,7 @@ class CVSigmoid(nn.Module):
         Returns:
             torch.Tensor: :math:`\frac{1}{1 + \exp{(\mathbf{z})}}`
         """
-        out = 1 / (1 + torch.exp(input.complex))
-        return torch.complex(out.real, out.imag)
+        return 1 / (1 + torch.exp(input))
 
 
 class zReLU(nn.Module):
@@ -89,8 +88,7 @@ class zReLU(nn.Module):
         """
         x_angle = input.angle()
         mask = (0 <= x_angle) & (x_angle <= torch.pi / 2)
-        out = input * mask
-        return torch.complex(out.real, out.imag)
+        return input * mask
 
 
 class CVCardiod(nn.Module):

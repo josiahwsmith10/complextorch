@@ -26,8 +26,8 @@ class Linear(nn.Module):
         super(Linear, self).__init__()
 
         self.linear = nn.Linear(
-            in_channels=in_features,
-            out_channels=out_features,
+            in_features=in_features,
+            out_features=out_features,
             bias=bias,
             device=device,
             dtype=dtype,
