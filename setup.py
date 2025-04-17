@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name="complextorch",
-    version="1.1.11",  # update index.rst, conf.py, and complextorch/__init__.py
+    version="1.1.12",  # update index.rst, conf.py, and complextorch/__init__.py
     author="Josiah W. Smith",
     author_email="josiah.radar@gmail.com",
     description="A lightweight complex-valued neural network package built on PyTorch",

@@ -1,7 +1,7 @@
 import torch
 import torch.nn as nn
 
-from typing import List, Optional
+from typing import List, Optional, Callable
 
 from .. import from_polar
 
@@ -39,7 +39,7 @@ def apply_complex(
     )
 
 
-def apply_complex_split(r_fun: callable, i_fun: callable, x: torch.Tensor) -> torch.Tensor:
+def apply_complex_split(r_fun: Callable, i_fun: Callable, x: torch.Tensor) -> torch.Tensor:
     r"""
     Apply Complex Split
     -------------------
@@ -53,8 +53,8 @@ def apply_complex_split(r_fun: callable, i_fun: callable, x: torch.Tensor) -> to
         G(\mathbf{z}) = G_\mathbb{R}(\mathbf{x}) + j G_\mathbb{I}(\mathbf{y})
 
     Args:
-        r_fun (callable): function to be applied to the real part of the input tensor
-        i_fun (callable): function to be applied to the imaginary part of the input tensor
+        r_fun (Callable): function to be applied to the real part of the input tensor
+        i_fun (Callable): function to be applied to the imaginary part of the input tensor
         x (torch.Tensor): input tensor
 
     Returns:
@@ -63,7 +63,7 @@ def apply_complex_split(r_fun: callable, i_fun: callable, x: torch.Tensor) -> to
     return torch.complex(r_fun(x.real), i_fun(x.imag))
 
 
-def apply_complex_polar(mag_fun: callable, phase_fun: callable, x: torch.Tensor) -> torch.Tensor:
+def apply_complex_polar(mag_fun: Callable, phase_fun: Callable, x: torch.Tensor) -> torch.Tensor:
     r"""
     Apply Complex Polar
     -------------------
@@ -77,8 +77,8 @@ def apply_complex_polar(mag_fun: callable, phase_fun: callable, x: torch.Tensor)
         G(\mathbf{z}) = G_{||}(|\mathbf{z}|) \odot \exp(j G_\angle(\angle\mathbf{z}))
 
     Args:
-        mag_fun (callable): function to be applied to the magnitude of the input tensor
-        phase_fun (callable): function to be applied to the phase of the input tensor
+        mag_fun (Callable): function to be applied to the magnitude of the input tensor
+        phase_fun (Callable): function to be applied to the phase of the input tensor
         x (torch.Tensor): input tensor
 
     Returns:
