@@ -1,4 +1,4 @@
 sphinx_rtd_theme
-torch
-numpy
-deprecated
+numpy>=2.2.0
+torch>=1.11.0+cu115
+deprecated>=1.2.18

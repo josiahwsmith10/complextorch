@@ -5,7 +5,7 @@ with open("README.md", "r", encoding="utf-8") as fh:
 
 setup(
     name="complextorch",
-    version="1.1.4",  # update index.rst, conf.py, and complextorch/__init__.py
+    version="1.1.6",  # update index.rst, conf.py, and complextorch/__init__.py
     author="Josiah W. Smith",
     author_email="josiah.radar@gmail.com",
     description="A lightweight complex-valued neural network package built on PyTorch",
@@ -25,5 +25,10 @@ setup(
     ],
     package_dir={"": "."},
     python_requires=">=3.6",
-    install_requires=["numpy"],
+    install_requires=[
+        "numpy>=2.2.0",
+        "setuptools>=68.2.2",
+        "torch>=1.11.0",
+        "deprecated>=1.2.18",
+    ],
 )

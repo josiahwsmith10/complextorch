@@ -2,7 +2,7 @@ Welcome to complextorch's documentation!
 ========================================
 
 :Author:  Josiah W. Smith
-:Version: 1.1.4 of 04/13/2025
+:Version: 1.1.6 of 04/13/2025
 
 A lightweight complex-valued neural network package built on PyTorch. 
 
@@ -11,7 +11,7 @@ Notably, we include efficient implementations for linear, convolution, and atten
 
 Although there is an emphasis on 1-D data tensors, due to a focus on signal processing, communications, and radar data, many of the routines are implemented for 2-D and 3-D data as well.
 
-Version 1.1.4 Release Notes:
+Version 1.1 Release Notes:
 
 * Methods have been renamed to reflect identical names in PyTorch, e.g., `complextorch.nn.CVConv1d` was renamed to `complextorch.nn.Conv1d`. This change was implemented for quick conversion from PyTorch to `complextorch`. 
 * Use of `torch.Tensor` is now recommended over `complextorch.CVTensor`. Previous speed advantages of `complextorch.CVTensor` are no longer present if using a version of PyTorch newer than 2.1.0. 
