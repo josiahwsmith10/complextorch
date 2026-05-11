@@ -1,22 +1,34 @@
-from typing import Optional
-
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
 __all__ = [
-    "GeneralizedSplitLoss",
-    "SplitL1",
-    "SplitMSE",
     "SSIM",
-    "SplitSSIM",
-    "PerpLossSSIM",
-    "CVQuadError",
-    "CVFourthPowError",
     "CVCauchyError",
+    "CVFourthPowError",
     "CVLogCoshError",
     "CVLogError",
+    "CVQuadError",
+    "GeneralizedSplitLoss",
+    "MSELoss",
+    "PerpLossSSIM",
+    "SplitL1",
+    "SplitMSE",
+    "SplitSSIM",
 ]
+
+
+def _reduce(loss: torch.Tensor, reduction: str) -> torch.Tensor:
+    r"""Apply a PyTorch-style reduction (``'mean'`` | ``'sum'`` | ``'none'``)."""
+    if reduction == "mean":
+        return loss.mean()
+    if reduction == "sum":
+        return loss.sum()
+    if reduction == "none":
+        return loss
+    raise ValueError(
+        f"reduction must be one of 'mean', 'sum', 'none'; got {reduction!r}"
+    )
 
 
 class GeneralizedSplitLoss(nn.Module):
@@ -32,7 +44,7 @@ class GeneralizedSplitLoss(nn.Module):
     """
 
     def __init__(self, loss_r: nn.Module, loss_i: nn.Module) -> None:
-        super(GeneralizedSplitLoss, self).__init__()
+        super().__init__()
         self.loss_r = loss_r
         self.loss_i = loss_i
 
@@ -70,7 +82,7 @@ class GeneralizedPolarLoss(nn.Module):
         weight_mag: float = 1.0,
         weight_phase: float = 1.0,
     ) -> None:
-        super(GeneralizedPolarLoss, self).__init__()
+        super().__init__()
         self.loss_mag = loss_mag
         self.loss_phase = loss_phase
 
@@ -146,7 +158,7 @@ class SSIM(nn.Module):
         self,
         x: torch.Tensor,
         y: torch.Tensor,
-        data_range: Optional[torch.Tensor] = None,
+        data_range: torch.Tensor | None = None,
         full: bool = False,
     ) -> torch.Tensor:
         r"""Computes the SSIM metric on the real-valued tensors.
@@ -163,10 +175,12 @@ class SSIM(nn.Module):
         assert isinstance(self.w, torch.Tensor)
 
         if data_range is None:
-            data_range = torch.ones_like(y)  # * Y.max()
+            data_range = torch.ones_like(y)
             p = (self.win_size - 1) // 2
-            data_range = data_range[:, :, p:-p, p:-p]
-        data_range = data_range[:, None, None, None]
+            if p > 0:
+                data_range = data_range[:, :, p:-p, p:-p]
+        else:
+            data_range = data_range[:, None, None, None]
         C1 = (self.k1 * data_range) ** 2
         C2 = (self.k2 * data_range) ** 2
         device = x.device
@@ -189,8 +203,7 @@ class SSIM(nn.Module):
 
         if full:
             return S
-        else:
-            return S.mean()
+        return S.mean()
 
 
 class SplitSSIM(GeneralizedSplitLoss):
@@ -208,7 +221,7 @@ class SplitSSIM(GeneralizedSplitLoss):
         self,
         x: torch.Tensor,
         y: torch.Tensor,
-        data_range: Optional[torch.Tensor] = None,
+        data_range: torch.Tensor | None = None,
         full: bool = False,
     ) -> torch.Tensor:
         return self.loss_r(
@@ -264,7 +277,7 @@ class PerpLossSSIM(nn.Module):
             mag_target[aligned_mask] - ploss[aligned_mask]
         )
         final_term[~aligned_mask] = ploss[~aligned_mask]
-        ssim_loss = (1 - self.ssim(x, y)) / mag_input.shape[0]
+        ssim_loss = (1 - self.ssim(mag_input, mag_target)) / mag_input.shape[0]
 
         return (
             final_term.mean() * torch.clamp(self.param, 0, 1)
@@ -279,7 +292,11 @@ class CVQuadError(nn.Module):
 
     .. math::
 
-        \mathcal{L}(\mathbf{x}, \mathbf{y}) = \frac{1}{2}\text{sum}(|\mathbf{x} - \mathbf{y}|^2)
+        \mathcal{L}(\mathbf{x}, \mathbf{y}) = \frac{1}{2}\text{reduce}(|\mathbf{x} - \mathbf{y}|^2)
+
+    The original paper specified a sum reduction; the default here is ``'mean'``
+    so the loss is independent of batch/feature size and consistent with the
+    rest of the library. Use ``reduction='sum'`` to recover the paper's form.
 
     Based on work from the following paper:
 
@@ -290,20 +307,37 @@ class CVQuadError(nn.Module):
             - https://www.ingentaconnect.com/content/asprs/pers/2010/00000076/00000009/art00008?crawler=true&mimetype=application/pdf
     """
 
-    def __init__(self) -> None:
-        super(CVQuadError, self).__init__()
+    def __init__(self, reduction: str = "mean") -> None:
+        super().__init__()
+        self.reduction = reduction
 
     def forward(self, x: torch.Tensor, y: torch.Tensor) -> torch.Tensor:
-        r"""Computes the complex-valued quadratic error function.
+        return _reduce(0.5 * ((x - y).abs() ** 2), self.reduction)
 
-        Args:
-            x (torch.Tensor): estimated labels
-            y (torch.Tensor): target/ground truth labels
 
-        Returns:
-            torch.Tensor: :math:`\frac{1}{2}\text{sum}(|\mathbf{x} - \mathbf{y}|^2)`
-        """
-        return 0.5 * ((x - y).abs() ** 2).sum()
+class MSELoss(nn.Module):
+    r"""
+    Complex-Valued Mean Squared Error Loss
+    --------------------------------------
+
+    .. math::
+
+        \mathcal{L}(\mathbf{x}, \mathbf{y}) = \text{reduce}(|\mathbf{x} - \mathbf{y}|^2)
+
+    Drop-in complex analogue of :class:`torch.nn.MSELoss`. Unlike
+    :class:`CVQuadError` this carries no 1/2 factor, so it matches PyTorch's
+    real-valued MSE exactly when ``x`` and ``y`` are real.
+
+    Args:
+        reduction: ``'mean'`` (default), ``'sum'``, or ``'none'``.
+    """
+
+    def __init__(self, reduction: str = "mean") -> None:
+        super().__init__()
+        self.reduction = reduction
+
+    def forward(self, x: torch.Tensor, y: torch.Tensor) -> torch.Tensor:
+        return _reduce((x - y).abs() ** 2, self.reduction)
 
 
 class CVFourthPowError(nn.Module):
@@ -313,7 +347,9 @@ class CVFourthPowError(nn.Module):
 
     .. math::
 
-        \mathcal{L}(\mathbf{x}, \mathbf{y}) = \frac{1}{2}\text{sum}(|\mathbf{x} - \mathbf{y}|^4)
+        \mathcal{L}(\mathbf{x}, \mathbf{y}) = \frac{1}{2}\text{reduce}(|\mathbf{x} - \mathbf{y}|^4)
+
+    See :class:`CVQuadError` for notes on ``reduction``.
 
     Based on work from the following paper:
 
@@ -324,20 +360,12 @@ class CVFourthPowError(nn.Module):
             - https://www.ingentaconnect.com/content/asprs/pers/2010/00000076/00000009/art00008?crawler=true&mimetype=application/pdf
     """
 
-    def __init__(self) -> None:
-        super(CVFourthPowError, self).__init__()
+    def __init__(self, reduction: str = "mean") -> None:
+        super().__init__()
+        self.reduction = reduction
 
     def forward(self, x: torch.Tensor, y: torch.Tensor) -> torch.Tensor:
-        r"""Computes the complex-valued fourth power error function.
-
-        Args:
-            x (torch.Tensor): estimated labels
-            y (torch.Tensor): target/ground truth labels
-
-        Returns:
-            torch.Tensor: :math:`\frac{1}{2}\text{sum}(|\mathbf{x} - \mathbf{y}|^4)`
-        """
-        return 0.5 * ((x - y).abs() ** 4).sum()
+        return _reduce(0.5 * ((x - y).abs() ** 4), self.reduction)
 
 
 class CVCauchyError(nn.Module):
@@ -346,9 +374,10 @@ class CVCauchyError(nn.Module):
 
     .. math::
 
-        \mathcal{L}(\mathbf{x}, \mathbf{y}) = \frac{1}{2}\text{sum}( c^2 / 2 \ln(1 + |\mathbf{x} - \mathbf{y}|^2/c^2) )
+        \mathcal{L}(\mathbf{x}, \mathbf{y}) = \text{reduce}( c^2 / 2 \ln(1 + |\mathbf{x} - \mathbf{y}|^2/c^2) )
 
-    where :math:`c` is typically set to unity.
+    where :math:`c` is typically set to unity. See :class:`CVQuadError` for
+    notes on ``reduction``.
 
     Based on work from the following paper:
 
@@ -359,22 +388,16 @@ class CVCauchyError(nn.Module):
             - https://www.ingentaconnect.com/content/asprs/pers/2010/00000076/00000009/art00008?crawler=true&mimetype=application/pdf
     """
 
-    def __init__(self, c: float = 1) -> None:
-        super(CVCauchyError, self).__init__()
-
+    def __init__(self, c: float = 1, reduction: str = "mean") -> None:
+        super().__init__()
         self.c2 = c**2
+        self.reduction = reduction
 
     def forward(self, x: torch.Tensor, y: torch.Tensor) -> torch.Tensor:
-        r"""Computes the complex-valued Cauchy error function.
-
-        Args:
-            x (torch.Tensor): estimated labels
-            y (torch.Tensor): target/ground truth labels
-
-        Returns:
-            torch.Tensor: :math:`\frac{1}{2}\text{sum}( c^2 / 2 \ln(1 + |\mathbf{x} - \mathbf{y}|^2/c^2) )`
-        """
-        return (self.c2 / 2 * torch.log(1 + ((x - y).abs() ** 2) / self.c2)).sum()
+        return _reduce(
+            self.c2 / 2 * torch.log(1 + ((x - y).abs() ** 2) / self.c2),
+            self.reduction,
+        )
 
 
 class CVLogCoshError(nn.Module):
@@ -383,7 +406,9 @@ class CVLogCoshError(nn.Module):
 
     .. math::
 
-        \mathcal{L}(\mathbf{x}, \mathbf{y}) = \text{sum}(\ln(\cosh(|\mathbf{x} - \mathbf{y}|^2))
+        \mathcal{L}(\mathbf{x}, \mathbf{y}) = \text{reduce}(\ln(\cosh(|\mathbf{x} - \mathbf{y}|^2))
+
+    See :class:`CVQuadError` for notes on ``reduction``.
 
     Based on work from the following paper:
 
@@ -394,20 +419,12 @@ class CVLogCoshError(nn.Module):
             - https://www.ingentaconnect.com/content/asprs/pers/2010/00000076/00000009/art00008?crawler=true&mimetype=application/pdf
     """
 
-    def __init__(self) -> None:
-        super(CVLogCoshError, self).__init__()
+    def __init__(self, reduction: str = "mean") -> None:
+        super().__init__()
+        self.reduction = reduction
 
     def forward(self, x: torch.Tensor, y: torch.Tensor) -> torch.Tensor:
-        r"""Computes the complex-valued log-cosh error function.
-
-        Args:
-            x (torch.Tensor): estimated labels
-            y (torch.Tensor): target/ground truth labels
-
-        Returns:
-            torch.Tensor: :math:`\text{sum}(\ln(\cosh(|\mathbf{x} - \mathbf{y}|^2))`
-        """
-        return torch.log(torch.cosh((x - y).abs() ** 2)).sum()
+        return _reduce(torch.log(torch.cosh((x - y).abs() ** 2)), self.reduction)
 
 
 class CVLogError(nn.Module):
@@ -416,7 +433,9 @@ class CVLogError(nn.Module):
 
     .. math::
 
-        \mathcal{L}(\mathbf{x}, \mathbf{y}) = \text{sum}(|\ln(\mathbf{x}) - \ln(\mathbf{y})|^2)
+        \mathcal{L}(\mathbf{x}, \mathbf{y}) = \text{reduce}(|\ln(\mathbf{x}) - \ln(\mathbf{y})|^2)
+
+    See :class:`CVQuadError` for notes on ``reduction``.
 
     Based on work from the following paper:
 
@@ -427,18 +446,10 @@ class CVLogError(nn.Module):
             - https://arxiv.org/abs/2101.12249
     """
 
-    def __init__(self) -> None:
-        super(CVLogError, self).__init__()
+    def __init__(self, reduction: str = "mean") -> None:
+        super().__init__()
+        self.reduction = reduction
 
     def forward(self, x: torch.Tensor, y: torch.Tensor) -> torch.Tensor:
-        r"""Computes the complex-valued log error function.
-
-        Args:
-            x (torch.Tensor): estimated labels
-            y (torch.Tensor): target/ground truth labels
-
-        Returns:
-            torch.Tensor: :math:`\text{sum}(|\ln(\mathbf{x}) - \ln(\mathbf{y})|^2)`
-        """
         err = torch.log(x) - torch.log(y)
-        return (err.abs() ** 2).sum()
+        return _reduce(err.abs() ** 2, self.reduction)

@@ -1,10 +1,9 @@
-import numpy as np
 import torch
 import torch.nn as nn
 
-from .... import nn as cvnn
+from complextorch import nn as cvnn
 
-__all__ = ["ScaledDotProductAttention", "MultiheadAttention"]
+__all__ = ["MultiheadAttention", "ScaledDotProductAttention"]
 
 
 class ScaledDotProductAttention(nn.Module):
@@ -23,9 +22,9 @@ class ScaledDotProductAttention(nn.Module):
     where :math:`Q, K, V` are complex-valued tensors, :math:`t` is known as the temperature typically :math:`t = \sqrt{d_{attn}}`, and :math:`\mathcal{S}` is the softmax function.
 
     For complex-values, the `traditional softmax function <https://pytorch.org/docs/stable/generated/torch.nn.Softmax.html>`_ cannot be applied, and variants must be applied.
-    Included in this library are several options for :doc:`complex-valued softmax <./softmax>` and similar :doc:`masking <./mask>` functions.
+    Included in this library are several options for :mod:`complex-valued softmax <complextorch.nn.modules.softmax>` and similar :mod:`masking <complextorch.nn.modules.mask>` functions.
 
-    By default, the :class:`CVScaledDotProductAttention` employs the :class:`complextorch.nn.CVSoftmax`, which applies the traditional softmax to the magnitude of the complex-valued tensor while leaving the phase information unchanged.
+    By default, the :class:`ScaledDotProductAttention` employs :class:`complextorch.nn.CVSoftMax`, which applies the traditional softmax to the real and imaginary parts of the complex-valued tensor separately. If a phase-preserving alternative is preferred, pass :class:`complextorch.nn.PhaseSoftMax` via the ``SoftMaxClass`` argument.
     """
 
     def __init__(
@@ -33,12 +32,21 @@ class ScaledDotProductAttention(nn.Module):
         temperature: float,
         attn_dropout: float = 0.1,
         SoftMaxClass: nn.Module = cvnn.CVSoftMax,
+        softmax_on: str = "complex",
     ) -> None:
-        super(ScaledDotProductAttention, self).__init__()
+        super().__init__()
+        if softmax_on not in ("complex", "real"):
+            raise ValueError(
+                f"softmax_on must be 'complex' or 'real', got {softmax_on!r}"
+            )
 
         self.temperature = temperature
         self.dropout = cvnn.Dropout(attn_dropout)
-        self.softmax = SoftMaxClass(dim=-1)
+        self.softmax_on = softmax_on
+        if softmax_on == "complex":
+            self.softmax = SoftMaxClass(dim=-1)
+        else:
+            self.softmax = nn.Softmax(dim=-1)
 
     def forward(
         self, q: torch.Tensor, k: torch.Tensor, v: torch.Tensor
@@ -51,9 +59,16 @@ class ScaledDotProductAttention(nn.Module):
             v (torch.Tensor): complex-valued value tensor
 
         Returns:
-            torch.Tensor: \mathcal{S}(Q K^T / t) V
+            torch.Tensor: \mathcal{S}(Q K^H / t) V
         """
-        attn = torch.matmul(q / self.temperature, k.transpose(-2, -1))
+        # Conjugate transpose so the dot product is the Hermitian inner product Q K^H.
+        attn = torch.matmul(q / self.temperature, k.conj().transpose(-2, -1))
+
+        if self.softmax_on == "real":
+            # Softmax on Re[QK^H]: real-valued attention weights × complex V.
+            weights = self.softmax(attn.real)
+            weights = self.dropout(weights.to(v.dtype))
+            return torch.matmul(weights, v)
 
         attn = self.dropout(self.softmax(attn))
         return torch.matmul(attn, v)
@@ -66,7 +81,7 @@ class MultiheadAttention(nn.Module):
 
     Multihead self attention extended to complex-valued tensors.
 
-    By default, the :class:`CVMultiheadAttention` employs the :class:`complextorch.nn.CVSoftmax`, which applies the traditional softmax to the magnitude of the complex-valued tensor while leaving the phase information unchanged.
+    By default, the :class:`MultiheadAttention` employs :class:`complextorch.nn.CVSoftMax`, which applies the traditional softmax to the real and imaginary parts of the complex-valued tensor separately. Pass :class:`complextorch.nn.PhaseSoftMax` via ``SoftMaxClass`` for the phase-preserving alternative.
     """
 
     def __init__(
@@ -77,8 +92,9 @@ class MultiheadAttention(nn.Module):
         d_v: int,
         dropout: float = 0.1,
         SoftMaxClass: nn.Module = cvnn.CVSoftMax,
+        softmax_on: str = "complex",
     ) -> None:
-        super(MultiheadAttention, self).__init__()
+        super().__init__()
 
         self.d_k = d_k
         self.d_v = d_v
@@ -90,7 +106,10 @@ class MultiheadAttention(nn.Module):
         self.fc = cvnn.Linear(n_heads * d_v, d_model, bias=False)
 
         self.attention = ScaledDotProductAttention(
-            temperature=d_k**0.5, attn_dropout=dropout, SoftMaxClass=SoftMaxClass
+            temperature=d_k**0.5,
+            attn_dropout=dropout,
+            SoftMaxClass=SoftMaxClass,
+            softmax_on=softmax_on,
         )
 
         self.dropout = cvnn.Dropout(dropout)

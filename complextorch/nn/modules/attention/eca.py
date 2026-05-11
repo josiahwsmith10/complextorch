@@ -1,8 +1,8 @@
 import numpy as np
-import torch.nn as nn
 import torch
+import torch.nn as nn
 
-from .... import nn as cvnn
+from complextorch import nn as cvnn
 
 __all__ = [
     "EfficientChannelAttention1d",
@@ -22,7 +22,7 @@ class _EfficientChannelAttention(nn.Module):
 
         \texttt{CV-ECA}(\mathbf{z}) = \mathcal{M}(\text{conv}(H_\texttt{CVAdaptiveAvgPoolNd}(\mathbf{z}))) \odot \mathbf{z},
 
-    where :math:`\mathcal{M}(\cdot)` is the masking function (by default, ComplexRatioMask is used) and :math:`H_\texttt{CVAdaptiveAvgPoolNd}(\cdot)` is the complex-valued global :doc:`pooling <../pooling>` operator.
+    where :math:`\mathcal{M}(\cdot)` is the masking function (by default, ComplexRatioMask is used) and :math:`H_\texttt{CVAdaptiveAvgPoolNd}(\cdot)` is the complex-valued global :mod:`pooling <complextorch.nn.modules.pooling>` operator.
     """
 
     def __init__(
@@ -34,7 +34,7 @@ class _EfficientChannelAttention(nn.Module):
         gamma: int = 2,
         dtype=torch.cfloat,
     ) -> None:
-        super(_EfficientChannelAttention, self).__init__()
+        super().__init__()
         self.channels = channels
         self.b = b
         self.gamma = gamma
@@ -51,8 +51,7 @@ class _EfficientChannelAttention(nn.Module):
 
     def kernel_size(self) -> int:
         k = int(abs((np.log2(self.channels) / self.gamma) + self.b / self.gamma))
-        out = k if k % 2 else k + 1
-        return out
+        return k if k % 2 else k + 1
 
     def forward(self, input: torch.Tensor) -> torch.Tensor:
         batch_size, channels, *im_size = input.shape
@@ -62,8 +61,8 @@ class _EfficientChannelAttention(nn.Module):
         y = self.avg_pool(input)
 
         # Two different branches of ECA module
-        y = self.conv(y.squeeze(-1).view(batch_size, 1, channels)).transpose(-1, -2)
-        y = y.transpose(-1, -2).view(batch_size, channels, *one_vec)
+        y = self.conv(y.squeeze(-1).view(batch_size, 1, channels))
+        y = y.view(batch_size, channels, *one_vec)
 
         # Multi-scale information fusion
         y = self.mask(y)
@@ -82,7 +81,7 @@ class EfficientChannelAttention1d(_EfficientChannelAttention):
 
         \texttt{CV-ECA}(\mathbf{z}) = \mathcal{M}(\text{conv}(H_\texttt{CVAdaptiveAvgPool1d}(\mathbf{z}))) \odot \mathbf{z},
 
-    where :math:`\mathcal{M}(\cdot)` is the masking function (by default, ComplexRatioMask is used) and :math:`H_\texttt{CVAdaptiveAvgPoolNd}(\cdot)` is the complex-valued global :doc:`pooling <../pooling>` operator.
+    where :math:`\mathcal{M}(\cdot)` is the masking function (by default, ComplexRatioMask is used) and :math:`H_\texttt{CVAdaptiveAvgPoolNd}(\cdot)` is the complex-valued global :mod:`pooling <complextorch.nn.modules.pooling>` operator.
 
     Based on work from the following paper:
 
@@ -101,7 +100,7 @@ class EfficientChannelAttention1d(_EfficientChannelAttention):
         gamma: int = 2,
         dtype=torch.cfloat,
     ) -> None:
-        super(EfficientChannelAttention1d, self).__init__(
+        super().__init__(
             channels=channels,
             MaskingClass=MaskingClass,
             AvgPoolClass=cvnn.AdaptiveAvgPool1d,
@@ -122,7 +121,7 @@ class EfficientChannelAttention2d(_EfficientChannelAttention):
 
         \texttt{CV-ECA}(\mathbf{z}) = \mathcal{M}(\text{conv}(H_\texttt{CVAdaptiveAvgPool2d}(\mathbf{z}))) \odot \mathbf{z},
 
-    where :math:`\mathcal{M}(\cdot)` is the masking function (by default, ComplexRatioMask is used) and :math:`H_\texttt{CVAdaptiveAvgPoolNd}(\cdot)` is the complex-valued global :doc:`pooling <../pooling>` operator.
+    where :math:`\mathcal{M}(\cdot)` is the masking function (by default, ComplexRatioMask is used) and :math:`H_\texttt{CVAdaptiveAvgPoolNd}(\cdot)` is the complex-valued global :mod:`pooling <complextorch.nn.modules.pooling>` operator.
 
     Based on work from the following paper:
 
@@ -141,7 +140,7 @@ class EfficientChannelAttention2d(_EfficientChannelAttention):
         gamma: int = 2,
         dtype=torch.cfloat,
     ) -> None:
-        super(EfficientChannelAttention2d, self).__init__(
+        super().__init__(
             channels=channels,
             MaskingClass=MaskingClass,
             AvgPoolClass=cvnn.AdaptiveAvgPool2d,
@@ -162,7 +161,7 @@ class EfficientChannelAttention3d(_EfficientChannelAttention):
 
         \texttt{CV-ECA}(\mathbf{z}) = \mathcal{M}(\text{conv}(H_\texttt{CVAdaptiveAvgPool3d}(\mathbf{z}))) \odot \mathbf{z},
 
-    where :math:`\mathcal{M}(\cdot)` is the masking function (by default, ComplexRatioMask is used) and :math:`H_\texttt{CVAdaptiveAvgPoolNd}(\cdot)` is the complex-valued global :doc:`pooling <../pooling>` operator.
+    where :math:`\mathcal{M}(\cdot)` is the masking function (by default, ComplexRatioMask is used) and :math:`H_\texttt{CVAdaptiveAvgPoolNd}(\cdot)` is the complex-valued global :mod:`pooling <complextorch.nn.modules.pooling>` operator.
 
     Based on work from the following paper:
 
@@ -181,7 +180,7 @@ class EfficientChannelAttention3d(_EfficientChannelAttention):
         gamma: int = 2,
         dtype=torch.cfloat,
     ) -> None:
-        super(EfficientChannelAttention3d, self).__init__(
+        super().__init__(
             channels=channels,
             MaskingClass=MaskingClass,
             AvgPoolClass=cvnn.AdaptiveAvgPool3d,

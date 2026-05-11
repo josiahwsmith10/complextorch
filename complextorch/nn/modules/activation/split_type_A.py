@@ -1,15 +1,21 @@
 import torch
 import torch.nn as nn
 
-from ... import functional as cvF
+from complextorch.nn import functional as cvF
 
 __all__ = [
-    "GeneralizedSplitActivation",
-    "CVSplitTanh",
-    "CTanh",
-    "CVSplitSigmoid",
+    "CCELU",
+    "CELU",
+    "CGELU",
     "CSigmoid",
+    "CTanh",
     "CVSplitAbs",
+    "CVSplitCELU",
+    "CVSplitELU",
+    "CVSplitGELU",
+    "CVSplitSigmoid",
+    "CVSplitTanh",
+    "GeneralizedSplitActivation",
 ]
 
 
@@ -38,7 +44,7 @@ class GeneralizedSplitActivation(nn.Module):
     """
 
     def __init__(self, activation_r: nn.Module, activation_i: nn.Module) -> None:
-        super(GeneralizedSplitActivation, self).__init__()
+        super().__init__()
         self.activation_r = activation_r
         self.activation_i = activation_i
 
@@ -75,7 +81,7 @@ class CVSplitTanh(GeneralizedSplitActivation):
     """
 
     def __init__(self) -> None:
-        super(CVSplitTanh, self).__init__(nn.Tanh(), nn.Tanh())
+        super().__init__(nn.Tanh(), nn.Tanh())
 
 
 class CTanh(CVSplitTanh):
@@ -97,8 +103,6 @@ class CTanh(CVSplitTanh):
             - https://ieeexplore.ieee.org/abstract/document/6138313
     """
 
-    pass
-
 
 class CVSplitSigmoid(GeneralizedSplitActivation):
     r"""
@@ -113,7 +117,7 @@ class CVSplitSigmoid(GeneralizedSplitActivation):
     """
 
     def __init__(self) -> None:
-        super(CVSplitSigmoid, self).__init__(nn.Sigmoid(), nn.Sigmoid())
+        super().__init__(nn.Sigmoid(), nn.Sigmoid())
 
 
 class CSigmoid(CVSplitSigmoid):
@@ -126,8 +130,6 @@ class CSigmoid(CVSplitSigmoid):
 
         G(\mathbf{z}) = \text{sigmoid}(\mathbf{x}) + j \text{sigmoid}(\mathbf{y})
     """
-
-    pass
 
 
 class CVSplitAbs(nn.Module):
@@ -150,7 +152,7 @@ class CVSplitAbs(nn.Module):
     """
 
     def __init__(self) -> None:
-        super(CVSplitAbs, self).__init__()
+        super().__init__()
 
     def forward(self, input: torch.Tensor) -> torch.Tensor:
         r"""Computes the Type-A split abs() activation function.
@@ -162,3 +164,71 @@ class CVSplitAbs(nn.Module):
             torch.Tensor: :math:`|\mathbf{x}| + j |\mathbf{y}|`
         """
         return torch.complex(input.real.abs(), input.imag.abs())
+
+
+class CVSplitELU(GeneralizedSplitActivation):
+    r"""
+    Split Complex-Valued ELU
+    ------------------------
+
+    .. math::
+
+        G(\mathbf{z}) = \text{ELU}(\mathbf{x}) + j\,\text{ELU}(\mathbf{y})
+
+    where :math:`\text{ELU}` is :class:`torch.nn.ELU`.
+    """
+
+    def __init__(self, alpha: float = 1.0, inplace: bool = False) -> None:
+        super().__init__(nn.ELU(alpha, inplace), nn.ELU(alpha, inplace))
+
+
+class CELU(CVSplitELU):
+    r"""Alias for :class:`CVSplitELU`.
+
+    Note: not to be confused with :class:`torch.nn.CELU` — this is the
+    complex-valued *ELU* (matches the naming used by ``torchcvnn``). For the
+    complex-valued :class:`torch.nn.CELU` see :class:`CVSplitCELU` /
+    :class:`CCELU`.
+    """
+
+
+class CVSplitCELU(GeneralizedSplitActivation):
+    r"""
+    Split Complex-Valued CELU
+    -------------------------
+
+    .. math::
+
+        G(\mathbf{z}) = \text{CELU}(\mathbf{x}) + j\,\text{CELU}(\mathbf{y})
+
+    where :math:`\text{CELU}` is :class:`torch.nn.CELU`.
+    """
+
+    def __init__(self, alpha: float = 1.0, inplace: bool = False) -> None:
+        super().__init__(nn.CELU(alpha, inplace), nn.CELU(alpha, inplace))
+
+
+class CCELU(CVSplitCELU):
+    r"""Alias for :class:`CVSplitCELU`."""
+
+
+class CVSplitGELU(GeneralizedSplitActivation):
+    r"""
+    Split Complex-Valued GELU
+    -------------------------
+
+    .. math::
+
+        G(\mathbf{z}) = \text{GELU}(\mathbf{x}) + j\,\text{GELU}(\mathbf{y})
+
+    where :math:`\text{GELU}` is :class:`torch.nn.GELU`.
+    """
+
+    def __init__(self, approximate: str = "none") -> None:
+        super().__init__(
+            nn.GELU(approximate=approximate), nn.GELU(approximate=approximate)
+        )
+
+
+class CGELU(CVSplitGELU):
+    r"""Alias for :class:`CVSplitGELU`."""

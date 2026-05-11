@@ -15,7 +15,7 @@ class FFTBlock(nn.Module):
     """
 
     def __init__(self, n=None, dim=-1, norm=None) -> None:
-        super(FFTBlock, self).__init__()
+        super().__init__()
 
         self.n = n
         self.dim = dim
@@ -44,7 +44,7 @@ class IFFTBlock(nn.Module):
     """
 
     def __init__(self, n=None, dim=-1, norm=None) -> None:
-        super(IFFTBlock, self).__init__()
+        super().__init__()
 
         self.n = n
         self.dim = dim

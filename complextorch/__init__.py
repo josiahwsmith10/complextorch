@@ -10,8 +10,8 @@ For more information see: https://pypi.org/project/complextorch or https://githu
 
 __author__ = "Josiah W. Smith"
 
-__version__ = "1.2.0"
+__version__ = "2.0.0"
 
-__all__ = ["nn"]
+__all__ = ["datasets", "models", "nn", "signal", "transforms"]
 
-from . import nn
+from complextorch import datasets, models, nn, signal, transforms
