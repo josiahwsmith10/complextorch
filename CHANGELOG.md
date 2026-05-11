@@ -5,18 +5,6 @@ All notable changes to `complextorch` are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
-
-### Changed
-
-- Documentation migrated to PyData Sphinx Theme + MyST + sphinx-autoapi. The
-  API reference is now auto-generated from docstrings; per-module `.rst`
-  stubs no longer need to be maintained by hand.
-- `docs/` now ships an executable Getting Started notebook (`myst-nb`) which
-  re-runs on every build, so the public-API examples cannot rot.
-- Intersphinx links to PyTorch / NumPy / SciPy so `:class:torch.nn.*`
-  references resolve.
-
 ## [2.0.0]
 
 ### Added
@@ -69,6 +57,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   distinct from `CVQuadError`).
 - Optional dependencies gated behind extras: `complextorch[datasets]` pulls
   in `h5py`; `complextorch[datasets-alos]` pulls in `rasterio`.
+- Comprehensive test suite under `tests/`, mirroring the `complextorch/`
+  tree 1:1 (~490 tests). Covers every public class and helper, including
+  Fast/Slow numerical equivalence (state-dict-aligned weights), full loss
+  reduction matrix + invalid-reduction checks, Hypothesis-driven round-trip
+  invariants (polar, casting, FFT), `scipy.special.expi` parity +
+  `gradcheck` for `_expi`, and a parameterized sweep over the 11 dataset
+  stubs.
+- `[test]` extras now pull in `pytest-xdist` (parallel runs via `-n auto`)
+  and `hypothesis` (property tests).
 
 ### Changed
 
@@ -79,6 +76,31 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **BREAKING:** `Linear` / `SlowLinear` / fast `Conv{1,2,3}d` / fast
   `ConvTranspose{1,2,3}d` default `bias=True` to match `torch.nn`. Pass
   `bias=False` explicitly if you relied on the old default.
+- CI enforces `--cov-fail-under=100` on Python 3.10 / 3.11 / 3.12 — any PR
+  that drops line coverage fails automatically. Coverage config (omit list,
+  `exclude_lines` for `raise NotImplementedError` / `pragma: no cover` /
+  `if TYPE_CHECKING:` / `@overload`) lives in `pyproject.toml`.
+- Documentation migrated to PyData Sphinx Theme + MyST + sphinx-autoapi. The
+  API reference is now auto-generated from docstrings; per-module `.rst`
+  stubs no longer need to be maintained by hand.
+- `docs/` now ships an executable Getting Started notebook (`myst-nb`) which
+  re-runs on every build, so the public-API examples cannot rot.
+- Intersphinx links to PyTorch / NumPy / SciPy so `:class:torch.nn.*`
+  references resolve.
+
+### Fixed
+
+- `PerpLossSSIM.forward` was passing the complex `(x, y)` pair to the
+  real-only SSIM conv, raising `RuntimeError` on first use. Now passes the
+  precomputed magnitudes (matching the cited perpendicular-loss reference).
+- Removed dead branches surfaced by the coverage push: an unreachable
+  `elif mask_in_missing:` arm in `BaseMasked._load_from_state_dict`
+  (PyTorch's `load_state_dict` hard-codes `strict=True` when calling
+  `_load_from_state_dict`, so the precondition is never met), an `if
+  weight.is_complex():` check in `MaskedWeightMixin.sparsity` whose two
+  branches returned identical values, the real-input fallbacks in
+  `transforms._resize_spectrum` (only called with complex spectra from
+  `FFTResize`), and the unused `_maybe_bn` helper in `rnn.py`.
 
 ## [1.2.0]
 

@@ -1,7 +1,8 @@
 <h1 align="center">ComplexTorch</h1>
 <p align="center">
   <img src="https://img.shields.io/badge/complextorch-black?style=for-the-badge">
-  
+  <a href="https://github.com/josiahwsmith10/complextorch/actions/workflows/test.yml"><img src="https://github.com/josiahwsmith10/complextorch/actions/workflows/test.yml/badge.svg" alt="pytest"></a>
+  <img src="https://img.shields.io/badge/coverage-100%25-brightgreen" alt="coverage 100%">
 </p>
 <h3>
 
@@ -68,3 +69,16 @@ x = torch.randn(64, 5, 7, dtype=torch.cfloat)
 model = cT.nn.Conv1d(5, 16, kernel_size=3)
 y = model(x)
 ```
+
+## Development
+
+The test suite mirrors `complextorch/` 1:1 under `tests/` and covers every public class and helper. CI enforces **100% line coverage** on Python 3.10 / 3.11 / 3.12 — any PR that drops coverage fails automatically.
+
+```sh
+pip install '.[test]'                                   # pytest, pytest-cov, pytest-xdist, hypothesis
+pytest                                                  # auto-parallel (-n auto) from pyproject
+pytest --cov=complextorch --cov-report=term-missing --cov-fail-under=100   # mirror CI exactly
+pytest --cov=complextorch --cov-report=html && open htmlcov/index.html     # browse uncovered lines
+```
+
+When adding a new module, add a matching `tests/.../test_<module>.py`. Fast/Slow numerical equivalence checks share weights via `load_state_dict`; loss tests sweep the `reduction` matrix; round-trip invariants (Fast/Slow, polar, casting, FFT) live under `tests/invariants/` and use Hypothesis. Prefer per-line `# pragma: no cover` over whole-function exclusions so dead code stays visible.
