@@ -79,6 +79,13 @@ jobs:
       - name: Build multi-version HTML
         run: sphinx-multiversion docs/source docs/build/html
 
+      - name: Alias main/ → latest/
+        # sphinx-multiversion 0.2.4 has no built-in "latest" alias; it builds
+        # each ref into a directory named after the ref. Copy main/ to latest/
+        # so the conventional /latest/ URL works and the version switcher /
+        # root redirect resolve.
+        run: cp -r docs/build/html/main docs/build/html/latest
+
       - name: Add root → latest redirect
         run: cp docs/source/_templates/redirect.html docs/build/html/index.html
 

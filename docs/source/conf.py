@@ -139,7 +139,10 @@ html_theme_options = {
         },
     ],
     "switcher": {
-        "json_url": "https://josiahwsmith10.github.io/complextorch/_static/switcher.json",
+        # sphinx-multiversion puts each version's static assets under
+        # /<version>/_static/, so the switcher manifest lives at
+        # /latest/_static/switcher.json (we alias main -> latest in CI).
+        "json_url": "https://josiahwsmith10.github.io/complextorch/latest/_static/switcher.json",
         "version_match": release,
     },
     "navbar_end": ["version-switcher", "theme-switcher", "navbar-icon-links"],
