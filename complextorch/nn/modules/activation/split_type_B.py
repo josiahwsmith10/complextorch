@@ -190,7 +190,7 @@ class _modReLU(nn.Module):
         G(x) = \text{ReLU}(x + b)
     """
 
-    def __init__(self, bias: float = 0.0) -> None:
+    def __init__(self, bias: float = -0.1) -> None:
         super(_modReLU, self).__init__()
 
         assert bias < 0, "bias must be smaller than 0 to have a non-linearity effect"
@@ -240,7 +240,7 @@ class modReLU(GeneralizedPolarActivation):
             - https://arxiv.org/abs/2302.08286
     """
 
-    def __init__(self, bias: float = 0.0) -> None:
+    def __init__(self, bias: float = -0.1) -> None:
         assert bias < 0, "bias must be smaller than 0 to have a non-linearity effect"
 
         super(modReLU, self).__init__(_modReLU(bias), None)

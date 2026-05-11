@@ -21,10 +21,14 @@ Notably, we include efficient implementations for linear, convolution, and atten
 
 Although there is an emphasis on 1-D data tensors, due to a focus on signal processing, communications, and radar data, many of the routines are implemented for 2-D and 3-D data as well.
 
-### Version 1.1 Release Notes:
-- Methods have been renamed to reflect identical names in PyTorch, e.g., `complextorch.nn.CVConv1d` was renamed to `complextorch.nn.Conv1d`. This change was implemented for quick conversion from PyTorch to `complextorch`. 
-- Use of `torch.Tensor` is now recommended over `complextorch.CVTensor`. Previous speed advantages of `complextorch.CVTensor` are no longer present if using a version of PyTorch newer than 2.1.0. 
-- Similarly, previous implementations of `complextorch.nn.Conv1d` (for 1-D, 2-D, 3-D, and transposed convolution) and `complextorch.nn.Linear` have been renamed with the prefix `Slow` as PyTorch's native convolution and linear operators now outperform that of `complextorch`. Now, `complextorch.nn.Conv1d`, for example, uses `torch.nn.Conv1d` with `dtype=torch.float` for maximum efficiency. 
+### Version 1.2 Release Notes:
+- The legacy `CVTensor` API and its supporting helpers (`cat`, `roll`, `from_polar`, `randn`, and the `torch.Tensor.rect` / `torch.Tensor.polar` monkey-patch) have been removed. The package now operates exclusively on complex-dtype `torch.Tensor` (typically `torch.cfloat`). Use `torch.polar(abs, angle)` and `torch.randn(..., dtype=torch.cfloat)` directly.
+- Correctness fixes in `SlowLinear` / `SlowConv*` / `SlowConvTranspose*` — the Gauss-trick bias was previously off by `b_i * (1 + j)` when `bias=True`. `SlowConv*` and `SlowConvTranspose*` now correctly forward `dilation` and `output_padding` too. The fast (native-cfloat) wrappers were unaffected.
+- Complex-valued `BatchNorm*` eval-mode no longer broadcasts `running_mean` against the wrong axes.
+- `PhaseSigmoid` is now implemented (previously was an empty class). `MagMinMaxNorm` now correctly preserves phase.
+- Fast `ConvTranspose1d` / `ConvTranspose2d` / `ConvTranspose3d` are now exported from `complextorch.nn`. Their `output_padding` default matches PyTorch's (`0`).
+- Complex-valued losses (`CVQuadError`, `CVFourthPowError`, `CVCauchyError`, `CVLogCoshError`, `CVLogError`) now accept a `reduction` argument (`'mean'` | `'sum'` | `'none'`), defaulting to `'mean'`.
+- `complextorch.nn.Conv1d` (and its 2-D / 3-D / transposed siblings) wrap `torch.nn.Conv1d` with `dtype=torch.cfloat` for maximum efficiency. The hand-rolled real/imag-split convolutions remain available under the `Slow` prefix.
 
 ## Documentation
 

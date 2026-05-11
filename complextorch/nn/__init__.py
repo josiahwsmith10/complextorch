@@ -17,6 +17,7 @@ from .modules.activation import (
 )
 
 from .modules.conv import Conv1d, Conv2d, Conv3d
+from .modules.conv import ConvTranspose1d, ConvTranspose2d, ConvTranspose3d
 from .modules.conv import SlowConv1d, SlowConv2d, SlowConv3d
 from .modules.conv import SlowConvTranspose1d, SlowConvTranspose2d, SlowConvTranspose3d
 
@@ -36,7 +37,7 @@ from .modules.softmax import CVSoftMax, MagSoftMax, PhaseSoftMax
 from .modules.mask import ComplexRatioMask, PhaseSigmoid, MagMinMaxNorm
 
 from .modules.loss import GeneralizedSplitLoss
-from .modules.loss import SplitSSIM, PerpLossSSIM, SplitL1, SplitMSE
+from .modules.loss import SSIM, SplitSSIM, PerpLossSSIM, SplitL1, SplitMSE
 from .modules.loss import CVQuadError, CVFourthPowError, CVCauchyError, CVLogCoshError
 from .modules.loss import CVLogError
 

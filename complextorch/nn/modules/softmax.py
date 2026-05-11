@@ -73,7 +73,7 @@ class PhaseSoftMax(nn.Module):
             torch.Tensor: :math:`\texttt{SoftMax}(|\mathbf{z}|) \odot \mathbf{z} / |\mathbf{z}|`
         """
         x_mag = input.abs()
-        return self.softmax(x_mag) * (input / x_mag)
+        return self.softmax(x_mag) * (input / x_mag.clamp(min=1e-12))
 
 
 class MagSoftMax(nn.Module):

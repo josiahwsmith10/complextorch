@@ -75,14 +75,14 @@ class SlowLinear(nn.Module):
         self.linear_r = nn.Linear(
             in_features=in_features,
             out_features=out_features,
-            bias=bias,
+            bias=False,
             device=device,
             dtype=dtype,
         )
         self.linear_i = nn.Linear(
             in_features=in_features,
             out_features=out_features,
-            bias=bias,
+            bias=False,
             device=device,
             dtype=dtype,
         )
@@ -91,8 +91,11 @@ class SlowLinear(nn.Module):
         self.linear_i.weight.data = __temp.weight.imag
 
         if bias:
-            self.linear_r.bias.data = __temp.bias.real
-            self.linear_i.bias.data = __temp.bias.imag
+            self.bias_r = nn.Parameter(__temp.bias.real.detach().clone())
+            self.bias_i = nn.Parameter(__temp.bias.imag.detach().clone())
+        else:
+            self.register_parameter("bias_r", None)
+            self.register_parameter("bias_i", None)
 
     @property
     def weight(self) -> torch.Tensor:
@@ -100,10 +103,9 @@ class SlowLinear(nn.Module):
 
     @property
     def bias(self) -> torch.Tensor:
-        if self.linear_r.bias is None:
+        if self.bias_r is None:
             return None
-        else:
-            return torch.complex(self.linear_r.bias, self.linear_i.bias)
+        return torch.complex(self.bias_r, self.bias_i)
 
     def forward(self, input: torch.Tensor) -> torch.Tensor:
         r"""
@@ -111,14 +113,14 @@ class SlowLinear(nn.Module):
         """
         t1 = self.linear_r(input.real)
         t2 = self.linear_i(input.imag)
-        bias = (
-            None
-            if self.linear_r.bias is None
-            else (self.linear_r.bias + self.linear_i.bias)
-        )
         t3 = F.linear(
             input=(input.real + input.imag),
             weight=(self.linear_r.weight + self.linear_i.weight),
-            bias=bias,
+            bias=None,
         )
-        return torch.complex(t1 - t2, t3 - t2 - t1)
+        out_r = t1 - t2
+        out_i = t3 - t2 - t1
+        if self.bias_r is not None:
+            out_r = out_r + self.bias_r
+            out_i = out_i + self.bias_i
+        return torch.complex(out_r, out_i)

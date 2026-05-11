@@ -11,7 +11,7 @@ class Dropout(nn.Module):
     Complex-Valued Dropout Layer
     ----------------------------
 
-    Applies `PyTorch Droput <https://pytorch.org/docs/stable/generated/torch.nn.Dropout.html>`_ to real and imaginary parts separately.
+    Applies `PyTorch Dropout <https://pytorch.org/docs/stable/generated/torch.nn.Dropout.html>`_ to real and imaginary parts separately, with **independent** Bernoulli masks per part.
 
     Implements the following operation:
 
@@ -19,7 +19,16 @@ class Dropout(nn.Module):
 
         G(\mathbf{z}) = \texttt{Dropout}(\mathbf{x}) + j \texttt{Dropout}(\mathbf{y}),
 
-    where :math:`\mathbf{z} = \mathbf{x} + j\mathbf{y}`
+    where :math:`\mathbf{z} = \mathbf{x} + j\mathbf{y}`.
+
+    .. note::
+
+        This differs from the dropout used in *Trabelsi et al. (2018) Deep Complex
+        Networks*, which uses a **shared** Bernoulli mask so that the entire complex
+        value is dropped together (preserving the phase of the surviving entries).
+        Because the real and imaginary masks here are sampled independently, the
+        phase of a non-dropped entry can change when only one of its real/imag
+        parts is zeroed out. Choose this layer deliberately.
     """
 
     def __init__(self, p: float = 0.5, inplace: bool = False) -> None:

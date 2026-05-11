@@ -236,6 +236,23 @@ class wFMConv2d(nn.Module):
             weight_dropout=weight_dropout,
         )
 
+        # Lazily built and cached by input spatial shape so we don't reallocate
+        # an ``nn.Fold`` on every forward when shapes are stable.
+        self._fold_cache: "dict[tuple, nn.Fold]" = {}
+
+    def _get_fold(self, input_shape) -> nn.Fold:
+        key = tuple(input_shape)
+        fold = self._fold_cache.get(key)
+        if fold is None:
+            fold = nn.Fold(
+                output_size=input_shape,
+                kernel_size=self.kernel_size,
+                stride=self.stride,
+                padding=self.padding,
+            )
+            self._fold_cache[key] = fold
+        return fold
+
     def compute_output_shape(self, input_shape) -> Tuple[int]:
         return tuple(
             int(np.floor((in_shape + 2 * padding - (kernel_size - 1) - 1) / stride + 1))
@@ -263,12 +280,7 @@ class wFMConv2d(nn.Module):
         output_shape = self.compute_output_shape(input_shape)
         L = np.prod(output_shape)  # Total number of unfolded blocks
 
-        self.fold = nn.Fold(
-            output_size=input_shape,
-            kernel_size=kernel_size,
-            stride=self.stride,
-            padding=self.padding,
-        )
+        fold = self._get_fold(input_shape)
 
         # Separate magnitude and angle from torch.Tensor input
         x_mag, x_ang = input.abs(), input.angle()
@@ -310,7 +322,7 @@ class wFMConv2d(nn.Module):
         )
 
         # Stack the magnitude and phase tensors
-        in_fold = self.fold(
+        in_fold = fold(
             torch.cat((x_mag, x_ang), dim=1).view(
                 batch_size, 2 * in_channels * prod_kernel_size, L
             )
@@ -392,7 +404,7 @@ class wFMConv1d(nn.Module):
         Returns:
             torch.Tensor: output tensor
         """
-        return self.conv1d(input.unsqueeze(-2)).squeeze()
+        return self.conv1d(input.unsqueeze(-2)).squeeze(-2)
 
     @property
     def weight_matrix_ang(self) -> torch.Tensor:

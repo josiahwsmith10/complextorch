@@ -5,6 +5,8 @@ import torch
 
 __all__ = ["ComplexRatioMask", "PhaseSigmoid", "MagMinMaxNorm"]
 
+_EPS = 1e-12
+
 
 class ComplexRatioMask(nn.Module):
     r"""
@@ -39,7 +41,7 @@ class ComplexRatioMask(nn.Module):
             torch.Tensor: :math:`\text{sigmoid}(|\mathbf{z}|) * \mathbf{z} / |\mathbf{z}|`
         """
         x_mag = input.abs()
-        return x_mag.sigmoid() * (input / x_mag)
+        return x_mag.sigmoid() * (input / x_mag.clamp(min=_EPS))
 
 
 class PhaseSigmoid(nn.Module):
@@ -49,7 +51,7 @@ class PhaseSigmoid(nn.Module):
 
     .. math::
 
-        \texttt{ComplexRatioMask}(\mathbf{z}) = \texttt{Sigmoid}(|\mathbf{z}|) \odot \frac{\mathbf{z}}{|\mathbf{z}|}
+        \texttt{PhaseSigmoid}(\mathbf{z}) = \texttt{Sigmoid}(|\mathbf{z}|) \odot \frac{\mathbf{z}}{|\mathbf{z}|}
 
     Retains phase and squeezes magnitude using `sigmoid function <https://pytorch.org/docs/stable/generated/torch.nn.Sigmoid.html>`_.
 
@@ -62,7 +64,20 @@ class PhaseSigmoid(nn.Module):
             - https://ieeexplore.ieee.org/abstract/document/9335579
     """
 
-    pass
+    def __init__(self) -> None:
+        super(PhaseSigmoid, self).__init__()
+
+    def forward(self, input: torch.Tensor) -> torch.Tensor:
+        r"""Computes phase-preserving sigmoid mask on a complex-valued input tensor.
+
+        Args:
+            input (torch.Tensor): input tensor
+
+        Returns:
+            torch.Tensor: :math:`\text{sigmoid}(|\mathbf{z}|) * \mathbf{z} / |\mathbf{z}|`
+        """
+        x_mag = input.abs()
+        return x_mag.sigmoid() * (input / x_mag.clamp(min=_EPS))
 
 
 class MagMinMaxNorm(nn.Module):
@@ -70,13 +85,15 @@ class MagMinMaxNorm(nn.Module):
     Magnitude Min-Max Normalization Layer
     -------------------------------------
 
-    Applies the *min-max norm* to the input tensor yielding an output whose magnitude is normalized between 0 and 1 over the specified dimension while phase information remains unchanged.
+    Applies the *min-max norm* to the magnitude of the input tensor, yielding an
+    output whose magnitude is normalized between 0 and 1 (over the specified
+    dimension, if any) while phase information remains unchanged.
 
     Implements the following operation:
 
     .. math::
 
-        \texttt{MagMinMaxNorm}(\mathbf{z}) = \frac{\mathbf{z} - \mathbf{z}_{min}}{\mathbf{z}_{max} - \mathbf{z}_{min}}
+        \texttt{MagMinMaxNorm}(\mathbf{z}) = \frac{|\mathbf{z}| - |\mathbf{z}|_{min}}{|\mathbf{z}|_{max} - |\mathbf{z}|_{min}} \odot \exp(j \angle\mathbf{z})
     """
 
     def __init__(self, dim: Optional[int] = None) -> None:
@@ -85,15 +102,21 @@ class MagMinMaxNorm(nn.Module):
         self.dim = dim
 
     def forward(self, input: torch.Tensor) -> torch.Tensor:
-        r"""Applies the *min-max norm* to the input tensor yielding an output whose magnitude is normalized between 0 and 1 over the specified dimension while phase information remains unchanged.
+        r"""Applies the *min-max norm* to the magnitude of the input tensor while
+        preserving phase.
 
         Args:
             input (torch.Tensor): input tensor
 
         Returns:
-            torch.Tensor: :math:`\frac{\mathbf{z} - \mathbf{z}_{min}}{\mathbf{z}_{max} - \mathbf{z}_{min}}`
+            torch.Tensor: phase-preserving min-max normalized tensor
         """
         x_mag = input.abs()
-        x_min = x_mag.min()
-        x_max = x_mag.max()
-        return (input - x_min) / (x_max - x_min)
+        if self.dim is None:
+            x_min = x_mag.min()
+            x_max = x_mag.max()
+        else:
+            x_min = x_mag.min(dim=self.dim, keepdim=True).values
+            x_max = x_mag.max(dim=self.dim, keepdim=True).values
+        new_mag = (x_mag - x_min) / (x_max - x_min).clamp(min=_EPS)
+        return torch.polar(new_mag, input.angle())

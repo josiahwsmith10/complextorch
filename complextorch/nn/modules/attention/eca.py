@@ -62,8 +62,8 @@ class _EfficientChannelAttention(nn.Module):
         y = self.avg_pool(input)
 
         # Two different branches of ECA module
-        y = self.conv(y.squeeze(-1).view(batch_size, 1, channels)).transpose(-1, -2)
-        y = y.transpose(-1, -2).view(batch_size, channels, *one_vec)
+        y = self.conv(y.squeeze(-1).view(batch_size, 1, channels))
+        y = y.view(batch_size, channels, *one_vec)
 
         # Multi-scale information fusion
         y = self.mask(y)

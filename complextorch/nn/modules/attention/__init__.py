@@ -25,7 +25,7 @@ class ScaledDotProductAttention(nn.Module):
     For complex-values, the `traditional softmax function <https://pytorch.org/docs/stable/generated/torch.nn.Softmax.html>`_ cannot be applied, and variants must be applied.
     Included in this library are several options for :doc:`complex-valued softmax <./softmax>` and similar :doc:`masking <./mask>` functions.
 
-    By default, the :class:`CVScaledDotProductAttention` employs the :class:`complextorch.nn.CVSoftmax`, which applies the traditional softmax to the magnitude of the complex-valued tensor while leaving the phase information unchanged.
+    By default, the :class:`ScaledDotProductAttention` employs :class:`complextorch.nn.CVSoftMax`, which applies the traditional softmax to the real and imaginary parts of the complex-valued tensor separately. If a phase-preserving alternative is preferred, pass :class:`complextorch.nn.PhaseSoftMax` via the ``SoftMaxClass`` argument.
     """
 
     def __init__(
@@ -51,9 +51,10 @@ class ScaledDotProductAttention(nn.Module):
             v (torch.Tensor): complex-valued value tensor
 
         Returns:
-            torch.Tensor: \mathcal{S}(Q K^T / t) V
+            torch.Tensor: \mathcal{S}(Q K^H / t) V
         """
-        attn = torch.matmul(q / self.temperature, k.transpose(-2, -1))
+        # Conjugate transpose so the dot product is the Hermitian inner product Q K^H.
+        attn = torch.matmul(q / self.temperature, k.conj().transpose(-2, -1))
 
         attn = self.dropout(self.softmax(attn))
         return torch.matmul(attn, v)
@@ -66,7 +67,7 @@ class MultiheadAttention(nn.Module):
 
     Multihead self attention extended to complex-valued tensors.
 
-    By default, the :class:`CVMultiheadAttention` employs the :class:`complextorch.nn.CVSoftmax`, which applies the traditional softmax to the magnitude of the complex-valued tensor while leaving the phase information unchanged.
+    By default, the :class:`MultiheadAttention` employs :class:`complextorch.nn.CVSoftMax`, which applies the traditional softmax to the real and imaginary parts of the complex-valued tensor separately. Pass :class:`complextorch.nn.PhaseSoftMax` via ``SoftMaxClass`` for the phase-preserving alternative.
     """
 
     def __init__(

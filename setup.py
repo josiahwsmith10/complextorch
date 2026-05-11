@@ -36,11 +36,10 @@ setup(
         "Operating System :: OS Independent",
     ],
     package_dir={"": "."},
-    python_requires=">=3.6",
+    python_requires=">=3.10",
     install_requires=[
         "numpy>=2.2.0",
         "setuptools>=68.2.2",
-        "torch>=1.11.0",
-        "deprecated>=1.2.18",
+        "torch>=2.1.0",
     ],
 )

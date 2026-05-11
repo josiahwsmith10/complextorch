@@ -5,7 +5,6 @@ from torch.nn.common_types import _size_1_t, _size_2_t, _size_3_t
 
 from typing import Tuple, Union
 
-
 __all__ = [
     "Conv1d",
     "Conv2d",
@@ -195,7 +194,7 @@ class ConvTranspose1d(nn.Module):
         kernel_size: int,
         stride: int = 1,
         padding: int = 0,
-        output_padding: int = 1,
+        output_padding: int = 0,
         groups: int = 1,
         bias: bool = False,
         dilation: int = 1,
@@ -249,7 +248,7 @@ class ConvTranspose2d(nn.Module):
         kernel_size: int,
         stride: int = 1,
         padding: int = 0,
-        output_padding: int = 1,
+        output_padding: int = 0,
         groups: int = 1,
         bias: bool = False,
         dilation: int = 1,
@@ -303,7 +302,7 @@ class ConvTranspose3d(nn.Module):
         kernel_size: int,
         stride: int = 1,
         padding: int = 0,
-        output_padding: int = 1,
+        output_padding: int = 0,
         groups: int = 1,
         bias: bool = False,
         dilation: int = 1,
@@ -396,7 +395,7 @@ class _Conv(nn.Module):
             padding=padding,
             dilation=dilation,
             groups=groups,
-            bias=bias,
+            bias=False,
             padding_mode=padding_mode,
             device=device,
             dtype=dtype,
@@ -409,7 +408,7 @@ class _Conv(nn.Module):
             padding=padding,
             dilation=dilation,
             groups=groups,
-            bias=bias,
+            bias=False,
             padding_mode=padding_mode,
             device=device,
             dtype=dtype,
@@ -419,18 +418,21 @@ class _Conv(nn.Module):
         self.conv_i.weight.data = __temp.weight.imag
 
         if bias:
-            self.conv_r.bias.data = __temp.bias.real
-            self.conv_i.bias.data = __temp.bias.imag
+            self.bias_r = nn.Parameter(__temp.bias.real.detach().clone())
+            self.bias_i = nn.Parameter(__temp.bias.imag.detach().clone())
+        else:
+            self.register_parameter("bias_r", None)
+            self.register_parameter("bias_i", None)
 
     @property
     def weight(self) -> torch.Tensor:
-        # print(self.conv_i.weight.type(), "weight type")
         return torch.complex(self.conv_r.weight, self.conv_i.weight)
 
     @property
     def bias(self) -> torch.Tensor:
-        print(self.conv_i.bias.type(), "bias type")
-        return torch.complex(self.conv_r.bias, self.conv_i.bias)
+        if self.bias_r is None:
+            return None
+        return torch.complex(self.bias_r, self.bias_i)
 
     def forward(self, input: torch.Tensor) -> torch.Tensor:
         r"""
@@ -438,21 +440,22 @@ class _Conv(nn.Module):
         """
         t1 = self.conv_r(input.real)
         t2 = self.conv_i(input.imag)
-        bias = (
-            None if self.conv_r.bias is None else (self.conv_r.bias + self.conv_i.bias)
-        )
         t3 = self.ConvFunc(
             input=(input.real + input.imag),
             weight=(self.conv_r.weight + self.conv_i.weight),
-            bias=bias,
+            bias=None,
             stride=self.stride,
             padding=self.padding,
+            dilation=self.dilation,
             groups=self.groups,
         )
-        print(
-            "Conv memory allocated", torch.cuda.memory_allocated("cuda:0") / (1024**3)
-        )
-        return torch.complex(t1 - t2, t3 - t2 - t1)
+        out_r = t1 - t2
+        out_i = t3 - t2 - t1
+        if self.bias_r is not None:
+            bias_shape = (-1,) + (1,) * (out_r.dim() - 2)
+            out_r = out_r + self.bias_r.view(bias_shape)
+            out_i = out_i + self.bias_i.view(bias_shape)
+        return torch.complex(out_r, out_i)
 
 
 class SlowConv1d(_Conv):
@@ -703,7 +706,7 @@ class _ConvTranspose(nn.Module):
             padding=padding,
             output_padding=output_padding,
             groups=groups,
-            bias=bias,
+            bias=False,
             dilation=dilation,
             padding_mode=padding_mode,
             device=device,
@@ -717,7 +720,7 @@ class _ConvTranspose(nn.Module):
             padding=padding,
             output_padding=output_padding,
             groups=groups,
-            bias=bias,
+            bias=False,
             dilation=dilation,
             padding_mode=padding_mode,
             device=device,
@@ -728,8 +731,11 @@ class _ConvTranspose(nn.Module):
         self.convt_i.weight.data = __temp.weight.imag
 
         if bias:
-            self.convt_r.bias.data = __temp.bias.real
-            self.convt_i.bias.data = __temp.bias.imag
+            self.bias_r = nn.Parameter(__temp.bias.real.detach().clone())
+            self.bias_i = nn.Parameter(__temp.bias.imag.detach().clone())
+        else:
+            self.register_parameter("bias_r", None)
+            self.register_parameter("bias_i", None)
 
     @property
     def weight(self) -> torch.Tensor:
@@ -737,7 +743,9 @@ class _ConvTranspose(nn.Module):
 
     @property
     def bias(self) -> torch.Tensor:
-        return torch.complex(self.convt_r.bias, self.convt_i.bias)
+        if self.bias_r is None:
+            return None
+        return torch.complex(self.bias_r, self.bias_i)
 
     def forward(self, input: torch.Tensor) -> torch.Tensor:
         r"""
@@ -745,20 +753,23 @@ class _ConvTranspose(nn.Module):
         """
         t1 = self.convt_r(input.real)
         t2 = self.convt_i(input.imag)
-        bias = (
-            None
-            if self.convt_r.bias is None
-            else (self.convt_r.bias + self.convt_i.bias)
-        )
         t3 = self.ConvFunc(
             input=(input.real + input.imag),
             weight=(self.convt_r.weight + self.convt_i.weight),
-            bias=bias,
+            bias=None,
             stride=self.stride,
             padding=self.padding,
+            output_padding=self.output_padding,
+            dilation=self.dilation,
             groups=self.groups,
         )
-        return torch.complex(t1 - t2, t3 - t2 - t1)
+        out_r = t1 - t2
+        out_i = t3 - t2 - t1
+        if self.bias_r is not None:
+            bias_shape = (-1,) + (1,) * (out_r.dim() - 2)
+            out_r = out_r + self.bias_r.view(bias_shape)
+            out_i = out_i + self.bias_i.view(bias_shape)
+        return torch.complex(out_r, out_i)
 
 
 class SlowConvTranspose1d(_ConvTranspose):
