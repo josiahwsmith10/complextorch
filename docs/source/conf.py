@@ -6,10 +6,26 @@
 # -- Project information -----------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#project-information
 
+import re
+from pathlib import Path
+
 project = "complextorch"
 copyright = "2025, Josiah W. Smith"
 author = "Josiah W. Smith"
-release = "1.0.0"
+
+
+def _read_version() -> str:
+    init_py = Path(__file__).resolve().parents[2] / "complextorch" / "__init__.py"
+    match = re.search(
+        r'^__version__\s*=\s*"([^"]+)"', init_py.read_text(), re.MULTILINE
+    )
+    if not match:
+        raise RuntimeError("Cannot find __version__ in complextorch/__init__.py")
+    return match.group(1)
+
+
+release = _read_version()
+version = release
 
 # -- General configuration ---------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#general-configuration

@@ -1,8 +1,22 @@
+import re
+from pathlib import Path
+
 from setuptools import setup, find_packages
+
+
+def _read_version() -> str:
+    init_py = Path(__file__).parent / "complextorch" / "__init__.py"
+    match = re.search(
+        r'^__version__\s*=\s*"([^"]+)"', init_py.read_text(), re.MULTILINE
+    )
+    if not match:
+        raise RuntimeError("Cannot find __version__ in complextorch/__init__.py")
+    return match.group(1)
+
 
 setup(
     name="complextorch",
-    version="1.2.0",  # update index.rst, conf.py, and complextorch/__init__.py
+    version=_read_version(),
     author="Josiah W. Smith",
     author_email="josiah.radar@gmail.com",
     description="A lightweight complex-valued neural network package built on PyTorch",
