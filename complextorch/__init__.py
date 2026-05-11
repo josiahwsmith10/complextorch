@@ -12,13 +12,6 @@ __author__ = "Josiah W. Smith"
 
 __version__ = "1.2.0"
 
-__all__ = ["CVTensor", "cat", "roll", "from_polar", "nn", "randn"]
-
-from ._cvtensor import CVTensor
-from ._cvtensor import cat
-from ._cvtensor import roll
-from ._cvtensor import from_polar
+__all__ = ["nn"]
 
 from . import nn
-
-from ._cvrandom import randn

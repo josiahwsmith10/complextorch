@@ -2,7 +2,6 @@ import numpy as np
 import torch.nn as nn
 import torch
 
-# from .... import CVTensor
 from .... import nn as cvnn
 
 __all__ = [

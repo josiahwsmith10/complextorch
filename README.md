@@ -55,7 +55,10 @@ pip install . --use-pep517
 ## Basic Usage
 
 ``` python
+import torch
 import complextorch as cT
 
-x = cT.randn(64, 5, 7)
+x = torch.randn(64, 5, 7, dtype=torch.cfloat)
+model = cT.nn.Conv1d(5, 16, kernel_size=3)
+y = model(x)
 ```

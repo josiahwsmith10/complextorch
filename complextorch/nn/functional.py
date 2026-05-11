@@ -3,8 +3,6 @@ import torch.nn as nn
 
 from typing import List, Optional, Callable
 
-from .. import from_polar
-
 __all__ = [
     "apply_complex",
     "apply_complex_split",
@@ -39,7 +37,9 @@ def apply_complex(
     )
 
 
-def apply_complex_split(r_fun: Callable, i_fun: Callable, x: torch.Tensor) -> torch.Tensor:
+def apply_complex_split(
+    r_fun: Callable, i_fun: Callable, x: torch.Tensor
+) -> torch.Tensor:
     r"""
     Apply Complex Split
     -------------------
@@ -63,7 +63,9 @@ def apply_complex_split(r_fun: Callable, i_fun: Callable, x: torch.Tensor) -> to
     return torch.complex(r_fun(x.real), i_fun(x.imag))
 
 
-def apply_complex_polar(mag_fun: Callable, phase_fun: Callable, x: torch.Tensor) -> torch.Tensor:
+def apply_complex_polar(
+    mag_fun: Callable, phase_fun: Callable, x: torch.Tensor
+) -> torch.Tensor:
     r"""
     Apply Complex Polar
     -------------------
@@ -89,7 +91,7 @@ def apply_complex_polar(mag_fun: Callable, phase_fun: Callable, x: torch.Tensor)
         x_mag = x.abs()
         return (mag_fun(x_mag) / x_mag) * x
     else:
-        return from_polar(mag_fun(x.abs()), phase_fun(x.angle()))
+        return torch.polar(mag_fun(x.abs()), phase_fun(x.angle()))
 
 
 def inv_sqrtm2x2(
@@ -345,7 +347,7 @@ def batch_norm(
     )
 
     # stack along the first axis
-    x = torch.stack(x.rect, dim=0)
+    x = torch.stack((x.real, x.imag), dim=0)
 
     # whiten
     z = _whiten2x2_batch_norm(
@@ -458,7 +460,7 @@ def layer_norm(
     """
 
     # stack along the first axis
-    x = torch.stack(x.rect, dim=0)
+    x = torch.stack((x.real, x.imag), dim=0)
 
     # whiten
     z = _whiten2x2_layer_norm(

@@ -26,8 +26,6 @@ Version 1.1 Release Notes:
 .. toctree::
    :maxdepth: 1
 
-   _cvtensor
-   _cvrandom
    about
 
 Indices and tables

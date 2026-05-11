@@ -5,8 +5,6 @@ import torch
 import torch.nn as nn
 from torch.nn.common_types import _size_1_t, _size_2_t
 
-from ... import from_polar
-
 __all__ = ["wFMConv1d", "wFMConv2d"]
 
 
@@ -273,7 +271,7 @@ class wFMConv2d(nn.Module):
         )
 
         # Separate magnitude and angle from torch.Tensor input
-        (x_mag, x_ang) = input.polar
+        x_mag, x_ang = input.abs(), input.angle()
 
         ### Do magnitude processing
         x_mag = self.unfold(x_mag).view(batch_size, in_channels, prod_kernel_size, L)
@@ -319,7 +317,7 @@ class wFMConv2d(nn.Module):
         ).view(batch_size, 2, in_channels, *input_shape)
 
         x_out = self.wFM_conv(in_fold)
-        return from_polar(x_out[:, 0], x_out[:, 1])
+        return torch.polar(x_out[:, 0], x_out[:, 1])
 
 
 class wFMConv1d(nn.Module):
