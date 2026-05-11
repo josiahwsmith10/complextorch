@@ -1,7 +1,7 @@
 import torch
 import torch.nn as nn
 
-from ... import functional as cvF
+from complextorch.nn import functional as cvF
 
 __all__ = [
     "GeneralizedSplitActivation",
@@ -10,6 +10,12 @@ __all__ = [
     "CVSplitSigmoid",
     "CSigmoid",
     "CVSplitAbs",
+    "CVSplitELU",
+    "CELU",
+    "CVSplitCELU",
+    "CCELU",
+    "CVSplitGELU",
+    "CGELU",
 ]
 
 
@@ -162,3 +168,77 @@ class CVSplitAbs(nn.Module):
             torch.Tensor: :math:`|\mathbf{x}| + j |\mathbf{y}|`
         """
         return torch.complex(input.real.abs(), input.imag.abs())
+
+
+class CVSplitELU(GeneralizedSplitActivation):
+    r"""
+    Split Complex-Valued ELU
+    ------------------------
+
+    .. math::
+
+        G(\mathbf{z}) = \text{ELU}(\mathbf{x}) + j\,\text{ELU}(\mathbf{y})
+
+    where :math:`\text{ELU}` is :class:`torch.nn.ELU`.
+    """
+
+    def __init__(self, alpha: float = 1.0, inplace: bool = False) -> None:
+        super().__init__(nn.ELU(alpha, inplace), nn.ELU(alpha, inplace))
+
+
+class CELU(CVSplitELU):
+    r"""Alias for :class:`CVSplitELU`.
+
+    Note: not to be confused with :class:`torch.nn.CELU` — this is the
+    complex-valued *ELU* (matches the naming used by ``torchcvnn``). For the
+    complex-valued :class:`torch.nn.CELU` see :class:`CVSplitCELU` /
+    :class:`CCELU`.
+    """
+
+    pass
+
+
+class CVSplitCELU(GeneralizedSplitActivation):
+    r"""
+    Split Complex-Valued CELU
+    -------------------------
+
+    .. math::
+
+        G(\mathbf{z}) = \text{CELU}(\mathbf{x}) + j\,\text{CELU}(\mathbf{y})
+
+    where :math:`\text{CELU}` is :class:`torch.nn.CELU`.
+    """
+
+    def __init__(self, alpha: float = 1.0, inplace: bool = False) -> None:
+        super().__init__(nn.CELU(alpha, inplace), nn.CELU(alpha, inplace))
+
+
+class CCELU(CVSplitCELU):
+    r"""Alias for :class:`CVSplitCELU`."""
+
+    pass
+
+
+class CVSplitGELU(GeneralizedSplitActivation):
+    r"""
+    Split Complex-Valued GELU
+    -------------------------
+
+    .. math::
+
+        G(\mathbf{z}) = \text{GELU}(\mathbf{x}) + j\,\text{GELU}(\mathbf{y})
+
+    where :math:`\text{GELU}` is :class:`torch.nn.GELU`.
+    """
+
+    def __init__(self, approximate: str = "none") -> None:
+        super().__init__(
+            nn.GELU(approximate=approximate), nn.GELU(approximate=approximate)
+        )
+
+
+class CGELU(CVSplitGELU):
+    r"""Alias for :class:`CVSplitGELU`."""
+
+    pass

@@ -2,7 +2,7 @@ Welcome to complextorch's documentation!
 ========================================
 
 :Author:  Josiah W. Smith
-:Version: |release| of 05/10/2026
+:Version: |release| of 05/11/2026
 
 A lightweight complex-valued neural network package built on PyTorch.
 
@@ -10,6 +10,24 @@ This is a package built on `PyTorch <https://pytorch.org/>`_ with the intention 
 Notably, we include efficient implementations for linear, convolution, and attention modules in addition to activation functions and normalization layers such as batchnorm and layernorm.
 
 Although there is an emphasis on 1-D data tensors, due to a focus on signal processing, communications, and radar data, many of the routines are implemented for 2-D and 3-D data as well.
+
+Version 2.0 Release Notes (feature-parity expansion):
+
+* New top-level subpackages: ``complextorch.signal`` (``pwelch``), ``complextorch.transforms`` (torchcvnn-style dataloader transforms — ``LogAmplitude``, ``FFT2``, ``IFFT2``, ``FFTResize``, ``PolSAR``, ``Normalize``, ``RandomPhase``, etc.), ``complextorch.datasets`` (SAR / MRI dataset surface; ``SAMPLE`` and ``SLCDataset`` are full implementations, the SAR/MRI-specific readers are present as importable stubs with upstream pointers), and ``complextorch.models`` (Vision Transformer with ``vit_t/s/b/l/h`` presets).
+* New ``complextorch.nn.init`` module: ``kaiming_normal_``, ``kaiming_uniform_``, ``xavier_normal_``, ``xavier_uniform_``, ``trabelsi_standard_``, ``trabelsi_independent_`` — variance-correct complex weight initializers (PyTorch's built-ins treat the real and imaginary parts independently, which is wrong for complex magnitude).
+* New ``complextorch.nn.relevance`` (complex Variational Dropout & Automatic Relevance Determination) and ``complextorch.nn.masked`` (fixed-mask sparsified layers) subsystems for learned-sparsity workflows. Adds ``LinearVD``, ``LinearARD``, ``BilinearVD/ARD``, ``Conv{1,2,3}dVD/ARD``, plus ``LinearMasked``/``Conv*dMasked`` and the deploy/extract helpers ``named_penalties``, ``compute_ard_masks``, ``deploy_masks``. Requires ``scipy`` (new runtime dep).
+* New RNN family: ``GRUCell``, ``GRU``, ``LSTMCell``, ``LSTM`` (cell-based, with optional ``batchnorm=True`` flag for stable deep stacks).
+* New transformer family: ``TransformerEncoderLayer``, ``TransformerEncoder``, ``TransformerDecoderLayer``, ``TransformerDecoder``, ``Transformer``.
+* New normalization: ``RMSNorm``, ``GroupNorm``, ``NaiveBatchNorm{1,2,3}d`` (split-form baseline). The functional whitening helpers (``whiten2x2_batch_norm``, ``whiten2x2_layer_norm``, ``inv_sqrtm2x2``, ``batch_norm``, ``layer_norm``) are now public in ``complextorch.nn.functional``.
+* New pooling: ``MagMaxPool{1,2,3}d`` (magnitude-argmax, the canonical complex max-pool — ``torch.nn.MaxPool*d`` doesn't define ``>`` on complex), ``AvgPool{1,2,3}d``.
+* New channel dropout: ``Dropout1d``, ``Dropout2d``, ``Dropout3d`` with shared real/imag mask (Trabelsi 2018).
+* New upsampling: ``Upsample`` (split real/imag) and ``PolarUpsample`` (phase-preserving polar form).
+* New activations: ``CELU``, ``CCELU``, ``CGELU`` (split type-A ELU/CELU/GELU + ``CVSplit*`` aliases), ``zAbsReLU``, ``zLeakyReLU`` (first-quadrant + leaky variants), ``Mod`` (magnitude as module), ``AdaptiveModReLU`` (per-channel learnable threshold). Existing ``modReLU`` gains a ``learnable=True`` flag for a scalar trainable threshold.
+* New layers: ``Bilinear`` (with ``conjugate=True/False``), ``InterleavedToComplex`` / ``ComplexToInterleaved`` / ``ConcatenatedToComplex`` / ``ComplexToConcatenated`` / ``RealToComplex`` (layout-conversion modules), ``PhaseShift`` (learnable per-channel phase rotation).
+* New loss: ``MSELoss`` matching ``torch.nn.MSELoss`` exactly (no 1/2 factor — distinct from ``CVQuadError``).
+* **Breaking**: ``MultiheadAttention`` / ``ScaledDotProductAttention`` now use the Hermitian inner product ``QKᴴ`` (was ``QKᵀ`` — a math bug). New ``softmax_on='complex'|'real'`` flag selects the attention-weight semantics; default ``'complex'`` keeps the existing ``CVSoftMax`` behavior.
+* **Breaking**: ``Linear`` / ``SlowLinear`` / fast ``Conv{1,2,3}d`` / fast ``ConvTranspose{1,2,3}d`` default ``bias=True`` to match ``torch.nn``. Pass ``bias=False`` explicitly if you relied on the old default.
+* New optional dependencies (gated behind extras): ``complextorch[datasets]`` pulls in ``h5py``; ``complextorch[datasets-alos]`` pulls in ``rasterio``.
 
 Version 1.2 Release Notes:
 
@@ -23,9 +41,13 @@ Version 1.2 Release Notes:
 
 .. toctree::
    :maxdepth: 3
-   
+
    installation
    nn
+   signal
+   transforms
+   datasets
+   models
 
 .. toctree::
    :maxdepth: 1

@@ -10,6 +10,8 @@ __all__ = [
     "inv_sqrtm2x2",
     "batch_norm",
     "layer_norm",
+    "whiten2x2_batch_norm",
+    "whiten2x2_layer_norm",
 ]
 
 
@@ -207,7 +209,7 @@ def inv_sqrtm2x2(
     return w, x, y, z
 
 
-def _whiten2x2_batch_norm(
+def whiten2x2_batch_norm(
     x: torch.Tensor,
     training: bool = True,
     running_mean: Optional[torch.Tensor] = None,
@@ -351,7 +353,7 @@ def batch_norm(
     x = torch.stack((x.real, x.imag), dim=0)
 
     # whiten
-    z = _whiten2x2_batch_norm(
+    z = whiten2x2_batch_norm(
         x,
         training=training,
         running_mean=running_mean,
@@ -375,7 +377,7 @@ def batch_norm(
     return torch.complex(z[0], z[1])
 
 
-def _whiten2x2_layer_norm(
+def whiten2x2_layer_norm(
     x: torch.Tensor,
     normalized_shape: List[int],
     eps: float = 1e-5,
@@ -467,7 +469,7 @@ def layer_norm(
     x = torch.stack((x.real, x.imag), dim=0)
 
     # whiten
-    z = _whiten2x2_layer_norm(
+    z = whiten2x2_layer_norm(
         x,
         normalized_shape,
         eps=eps,

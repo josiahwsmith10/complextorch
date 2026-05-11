@@ -1,8 +1,9 @@
+import torch
 import torch.nn as nn
 
-from .split_type_A import GeneralizedSplitActivation
+from complextorch.nn.modules.activation.split_type_A import GeneralizedSplitActivation
 
-__all__ = ["CVSplitReLU", "CReLU", "CPReLU"]
+__all__ = ["CVSplitReLU", "CReLU", "CPReLU", "zAbsReLU", "zLeakyReLU"]
 
 
 class CVSplitReLU(GeneralizedSplitActivation):
@@ -70,3 +71,69 @@ class CPReLU(GeneralizedSplitActivation):
 
     def __init__(self) -> None:
         super(CPReLU, self).__init__(nn.PReLU(), nn.PReLU())
+
+
+class zAbsReLU(nn.Module):
+    r"""
+    Magnitude-Thresholded ReLU with Learnable Threshold
+    ---------------------------------------------------
+
+    Zeros out elements whose magnitude is below a learnable threshold
+    :math:`a`, preserving the phase of passing elements:
+
+    .. math::
+
+        \texttt{zAbsReLU}(z) = \begin{cases}
+            z & \text{if } |z| \geq a \\
+            0 & \text{otherwise}
+        \end{cases}
+
+    Args:
+        a_init: initial value of the (scalar) threshold parameter.
+    """
+
+    def __init__(self, a_init: float = 0.0) -> None:
+        super().__init__()
+        self.a = nn.Parameter(torch.tensor(float(a_init)))
+
+    def forward(self, input: torch.Tensor) -> torch.Tensor:
+        mask = (input.abs() >= self.a).to(
+            input.dtype if input.is_complex() else input.real.dtype
+        )
+        if input.is_complex():
+            return input * mask
+        return input * mask
+
+
+class zLeakyReLU(nn.Module):
+    r"""
+    Leaky First-Quadrant Complex ReLU
+    ---------------------------------
+
+    Soft version of :class:`zReLU`: passes :math:`z` unchanged when both
+    :math:`\Re z > 0` and :math:`\Im z > 0`; scales by ``negative_slope``
+    elsewhere.
+
+    .. math::
+
+        \texttt{zLeakyReLU}(z) = \begin{cases}
+            z & \text{if } \Re z > 0 \text{ and } \Im z > 0 \\
+            \alpha\, z & \text{otherwise}
+        \end{cases}
+    """
+
+    def __init__(self, negative_slope: float = 0.01) -> None:
+        super().__init__()
+        self.negative_slope = negative_slope
+
+    def forward(self, input: torch.Tensor) -> torch.Tensor:
+        in_q1 = (input.real > 0) & (input.imag > 0)
+        scale = torch.where(
+            in_q1,
+            torch.ones_like(input.real),
+            torch.full_like(input.real, self.negative_slope),
+        )
+        return input * scale
+
+    def extra_repr(self) -> str:
+        return f"negative_slope={self.negative_slope}"

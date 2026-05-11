@@ -29,6 +29,8 @@ class Conv1d(nn.Module):
         - Implemented using `torch.nn.Conv1d <https://pytorch.org/docs/stable/generated/torch.nn.Conv1d.html>`_ and complex-valued tensors.
 
         - Used to be slower than `complextorch` version but is now faster after PyTorch 2.1.0 update.
+
+        - Convenience wrapper over ``torch.nn.Conv1d`` whose only behavioural difference is the default ``dtype=torch.cfloat``.
     """
 
     def __init__(
@@ -40,7 +42,7 @@ class Conv1d(nn.Module):
         padding: int = 0,
         dilation: int = 1,
         groups: int = 1,
-        bias: bool = False,
+        bias: bool = True,
         padding_mode: str = "zeros",
         device=None,
         dtype=torch.cfloat,
@@ -81,6 +83,8 @@ class Conv2d(nn.Module):
         - Implemented using `torch.nn.Conv2d <https://pytorch.org/docs/stable/generated/torch.nn.Conv2d.html>`_ and complex-valued tensors.
 
         - Used to be slower than `complextorch` version but is now faster after PyTorch 2.1.0 update.
+
+        - Convenience wrapper over ``torch.nn.Conv2d`` whose only behavioural difference is the default ``dtype=torch.cfloat``.
     """
 
     def __init__(
@@ -92,7 +96,7 @@ class Conv2d(nn.Module):
         padding: int = 0,
         dilation: int = 1,
         groups: int = 1,
-        bias: bool = False,
+        bias: bool = True,
         padding_mode: str = "zeros",
         device=None,
         dtype=torch.cfloat,
@@ -130,9 +134,11 @@ class Conv3d(nn.Module):
     Complex-Valued 3-D Convolution using PyTorch
     --------------------------------------------
 
-        - Implemented using `torch.nn.Conv2d <https://pytorch.org/docs/stable/generated/torch.nn.Conv3d.html>`_ and complex-valued tensors.
+        - Implemented using `torch.nn.Conv3d <https://pytorch.org/docs/stable/generated/torch.nn.Conv3d.html>`_ and complex-valued tensors.
 
         - Used to be slower than `complextorch` version but is now faster after PyTorch 2.1.0 update.
+
+        - Convenience wrapper over ``torch.nn.Conv3d`` whose only behavioural difference is the default ``dtype=torch.cfloat``.
     """
 
     def __init__(
@@ -144,7 +150,7 @@ class Conv3d(nn.Module):
         padding: int = 0,
         dilation: int = 1,
         groups: int = 1,
-        bias: bool = False,
+        bias: bool = True,
         padding_mode: str = "zeros",
         device=None,
         dtype=torch.cfloat,
@@ -185,6 +191,8 @@ class ConvTranspose1d(nn.Module):
         - Implemented using `torch.nn.ConvTranspose1d <https://pytorch.org/docs/stable/generated/torch.nn.ConvTranspose1d.html>`_ and complex-valued tensors.
 
         - Used to be slower than `complextorch` version but is now faster after PyTorch 2.1.0 update.
+
+        - Convenience wrapper over ``torch.nn.ConvTranspose1d`` whose only behavioural difference is the default ``dtype=torch.cfloat``.
     """
 
     def __init__(
@@ -196,7 +204,7 @@ class ConvTranspose1d(nn.Module):
         padding: int = 0,
         output_padding: int = 0,
         groups: int = 1,
-        bias: bool = False,
+        bias: bool = True,
         dilation: int = 1,
         padding_mode: str = "zeros",
         device=None,
@@ -239,6 +247,8 @@ class ConvTranspose2d(nn.Module):
         - Implemented using `torch.nn.ConvTranspose2d <https://pytorch.org/docs/stable/generated/torch.nn.ConvTranspose2d.html>`_ and complex-valued tensors.
 
         - Used to be slower than `complextorch` version but is now faster after PyTorch 2.1.0 update.
+
+        - Convenience wrapper over ``torch.nn.ConvTranspose2d`` whose only behavioural difference is the default ``dtype=torch.cfloat``.
     """
 
     def __init__(
@@ -250,7 +260,7 @@ class ConvTranspose2d(nn.Module):
         padding: int = 0,
         output_padding: int = 0,
         groups: int = 1,
-        bias: bool = False,
+        bias: bool = True,
         dilation: int = 1,
         padding_mode: str = "zeros",
         device=None,
@@ -293,6 +303,8 @@ class ConvTranspose3d(nn.Module):
         - Implemented using `torch.nn.ConvTranspose3d <https://pytorch.org/docs/stable/generated/torch.nn.ConvTranspose3d.html>`_ and complex-valued tensors.
 
         - Used to be slower than `complextorch` version but is now faster after PyTorch 2.1.0 update.
+
+        - Convenience wrapper over ``torch.nn.ConvTranspose3d`` whose only behavioural difference is the default ``dtype=torch.cfloat``.
     """
 
     def __init__(
@@ -304,7 +316,7 @@ class ConvTranspose3d(nn.Module):
         padding: int = 0,
         output_padding: int = 0,
         groups: int = 1,
-        bias: bool = False,
+        bias: bool = True,
         dilation: int = 1,
         padding_mode: str = "zeros",
         device=None,

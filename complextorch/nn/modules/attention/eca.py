@@ -2,7 +2,7 @@ import numpy as np
 import torch.nn as nn
 import torch
 
-from .... import nn as cvnn
+from complextorch import nn as cvnn
 
 __all__ = [
     "EfficientChannelAttention1d",

@@ -2,7 +2,7 @@ import numpy as np
 import torch
 import torch.nn as nn
 
-from .... import nn as cvnn
+from complextorch import nn as cvnn
 
 __all__ = ["ScaledDotProductAttention", "MultiheadAttention"]
 
@@ -33,12 +33,21 @@ class ScaledDotProductAttention(nn.Module):
         temperature: float,
         attn_dropout: float = 0.1,
         SoftMaxClass: nn.Module = cvnn.CVSoftMax,
+        softmax_on: str = "complex",
     ) -> None:
         super(ScaledDotProductAttention, self).__init__()
+        if softmax_on not in ("complex", "real"):
+            raise ValueError(
+                f"softmax_on must be 'complex' or 'real', got {softmax_on!r}"
+            )
 
         self.temperature = temperature
         self.dropout = cvnn.Dropout(attn_dropout)
-        self.softmax = SoftMaxClass(dim=-1)
+        self.softmax_on = softmax_on
+        if softmax_on == "complex":
+            self.softmax = SoftMaxClass(dim=-1)
+        else:
+            self.softmax = nn.Softmax(dim=-1)
 
     def forward(
         self, q: torch.Tensor, k: torch.Tensor, v: torch.Tensor
@@ -55,6 +64,12 @@ class ScaledDotProductAttention(nn.Module):
         """
         # Conjugate transpose so the dot product is the Hermitian inner product Q K^H.
         attn = torch.matmul(q / self.temperature, k.conj().transpose(-2, -1))
+
+        if self.softmax_on == "real":
+            # Softmax on Re[QK^H]: real-valued attention weights × complex V.
+            weights = self.softmax(attn.real)
+            weights = self.dropout(weights.to(v.dtype))
+            return torch.matmul(weights, v)
 
         attn = self.dropout(self.softmax(attn))
         return torch.matmul(attn, v)
@@ -78,6 +93,7 @@ class MultiheadAttention(nn.Module):
         d_v: int,
         dropout: float = 0.1,
         SoftMaxClass: nn.Module = cvnn.CVSoftMax,
+        softmax_on: str = "complex",
     ) -> None:
         super(MultiheadAttention, self).__init__()
 
@@ -91,7 +107,10 @@ class MultiheadAttention(nn.Module):
         self.fc = cvnn.Linear(n_heads * d_v, d_model, bias=False)
 
         self.attention = ScaledDotProductAttention(
-            temperature=d_k**0.5, attn_dropout=dropout, SoftMaxClass=SoftMaxClass
+            temperature=d_k**0.5,
+            attn_dropout=dropout,
+            SoftMaxClass=SoftMaxClass,
+            softmax_on=softmax_on,
         )
 
         self.dropout = cvnn.Dropout(dropout)

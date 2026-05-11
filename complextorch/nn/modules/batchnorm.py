@@ -2,9 +2,16 @@ import torch
 import torch.nn as nn
 from torch.nn import init
 
-from .. import functional as cvF
+from complextorch.nn import functional as cvF
 
-__all__ = ["BatchNorm1d", "BatchNorm2d", "BatchNorm3d"]
+__all__ = [
+    "BatchNorm1d",
+    "BatchNorm2d",
+    "BatchNorm3d",
+    "NaiveBatchNorm1d",
+    "NaiveBatchNorm2d",
+    "NaiveBatchNorm3d",
+]
 
 
 class _BatchNorm(nn.Module):
@@ -176,3 +183,66 @@ class BatchNorm3d(_BatchNorm):
     def _check_input_dim(self, input: torch.Tensor) -> None:
         if input.dim() != 5:
             raise ValueError(f"expected 5D input (got {input.dim()}D input)")
+
+
+class _NaiveBatchNorm(nn.Module):
+    r"""
+    Naive (split) Complex Batch Normalization Base
+    ----------------------------------------------
+
+    Applies an independent :class:`torch.nn.BatchNorm{1,2,3}d` to the real and
+    imaginary parts of the input. Cheaper than the Trabelsi 2×2-whitening
+    :class:`_BatchNorm` (about half the cost) but does not decorrelate the
+    real/imag components. Useful as a baseline.
+    """
+
+    _real_bn_class = nn.BatchNorm1d  # overridden per dim
+
+    def __init__(
+        self,
+        num_features: int,
+        eps: float = 1e-5,
+        momentum: float = 0.1,
+        affine: bool = True,
+        track_running_stats: bool = True,
+    ) -> None:
+        super().__init__()
+        self.num_features = num_features
+        self.bn_r = self._real_bn_class(
+            num_features,
+            eps=eps,
+            momentum=momentum,
+            affine=affine,
+            track_running_stats=track_running_stats,
+        )
+        self.bn_i = self._real_bn_class(
+            num_features,
+            eps=eps,
+            momentum=momentum,
+            affine=affine,
+            track_running_stats=track_running_stats,
+        )
+
+    def forward(self, input: torch.Tensor) -> torch.Tensor:
+        return torch.complex(self.bn_r(input.real), self.bn_i(input.imag))
+
+    def extra_repr(self) -> str:
+        return f"num_features={self.num_features}"
+
+
+class NaiveBatchNorm1d(_NaiveBatchNorm):
+    r"""1-D split-form complex BatchNorm. See :class:`_NaiveBatchNorm`."""
+
+    _real_bn_class = nn.BatchNorm1d
+
+
+class NaiveBatchNorm2d(_NaiveBatchNorm):
+    r"""2-D split-form complex BatchNorm. See :class:`_NaiveBatchNorm`."""
+
+    _real_bn_class = nn.BatchNorm2d
+
+
+class NaiveBatchNorm3d(_NaiveBatchNorm):
+    r"""3-D split-form complex BatchNorm. See :class:`_NaiveBatchNorm`."""
+
+    _real_bn_class = nn.BatchNorm3d

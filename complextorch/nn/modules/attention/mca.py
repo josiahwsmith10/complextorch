@@ -1,7 +1,7 @@
 import torch
 import torch.nn as nn
 
-from .... import nn as cvnn
+from complextorch import nn as cvnn
 
 __all__ = [
     "MaskedChannelAttention1d",

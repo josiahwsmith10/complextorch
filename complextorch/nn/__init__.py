@@ -1,60 +1,142 @@
-from .modules.activation import CVSplitReLU, CReLU, CPReLU
-from .modules.activation import CVSigmoid, zReLU, CVCardiod, CVSigLog
-from .modules.activation import (
+from complextorch.nn.modules.activation import (
+    CVSplitReLU,
+    CReLU,
+    CPReLU,
+    zAbsReLU,
+    zLeakyReLU,
+)
+from complextorch.nn.modules.activation import (
+    CVSigmoid,
+    zReLU,
+    CVCardiod,
+    CVSigLog,
+    Mod,
+)
+from complextorch.nn.modules.activation import (
     GeneralizedSplitActivation,
     CVSplitTanh,
     CTanh,
     CVSplitSigmoid,
     CSigmoid,
     CVSplitAbs,
+    CVSplitELU,
+    CELU,
+    CVSplitCELU,
+    CCELU,
+    CVSplitGELU,
+    CGELU,
 )
-from .modules.activation import (
+from complextorch.nn.modules.activation import (
     GeneralizedPolarActivation,
     CVPolarTanh,
     CVPolarSquash,
     CVPolarLog,
     modReLU,
+    AdaptiveModReLU,
 )
 
-from .modules.conv import Conv1d, Conv2d, Conv3d
-from .modules.conv import ConvTranspose1d, ConvTranspose2d, ConvTranspose3d
-from .modules.conv import SlowConv1d, SlowConv2d, SlowConv3d
-from .modules.conv import SlowConvTranspose1d, SlowConvTranspose2d, SlowConvTranspose3d
+from complextorch.nn.modules.casting import (
+    InterleavedToComplex,
+    ComplexToInterleaved,
+    ConcatenatedToComplex,
+    ComplexToConcatenated,
+    RealToComplex,
+)
+from complextorch.nn.modules.phase import PhaseShift
 
-from .modules.manifold import wFMConv1d, wFMConv2d
+from complextorch.nn.modules.conv import Conv1d, Conv2d, Conv3d
+from complextorch.nn.modules.conv import (
+    ConvTranspose1d,
+    ConvTranspose2d,
+    ConvTranspose3d,
+)
+from complextorch.nn.modules.conv import SlowConv1d, SlowConv2d, SlowConv3d
+from complextorch.nn.modules.conv import (
+    SlowConvTranspose1d,
+    SlowConvTranspose2d,
+    SlowConvTranspose3d,
+)
 
-from .modules.dropout import Dropout
+from complextorch.nn.modules.manifold import wFMConv1d, wFMConv2d
 
-from .modules.linear import Linear, SlowLinear
+from complextorch.nn.modules.dropout import Dropout, Dropout1d, Dropout2d, Dropout3d
 
-from .modules.fft import FFTBlock, IFFTBlock
+from complextorch.nn.modules.linear import Linear, SlowLinear, Bilinear
 
-from .modules.batchnorm import BatchNorm1d, BatchNorm2d, BatchNorm3d
-from .modules.layernorm import LayerNorm
+from complextorch.nn.modules.fft import FFTBlock, IFFTBlock
 
-from .modules.softmax import CVSoftMax, MagSoftMax, PhaseSoftMax
+from complextorch.nn.modules.batchnorm import (
+    BatchNorm1d,
+    BatchNorm2d,
+    BatchNorm3d,
+    NaiveBatchNorm1d,
+    NaiveBatchNorm2d,
+    NaiveBatchNorm3d,
+)
+from complextorch.nn.modules.layernorm import LayerNorm
+from complextorch.nn.modules.rmsnorm import RMSNorm
+from complextorch.nn.modules.groupnorm import GroupNorm
 
-from .modules.mask import ComplexRatioMask, PhaseSigmoid, MagMinMaxNorm
+from complextorch.nn import init
+from complextorch.nn import relevance
+from complextorch.nn import masked
+from complextorch.nn import utils
 
-from .modules.loss import GeneralizedSplitLoss
-from .modules.loss import SSIM, SplitSSIM, PerpLossSSIM, SplitL1, SplitMSE
-from .modules.loss import CVQuadError, CVFourthPowError, CVCauchyError, CVLogCoshError
-from .modules.loss import CVLogError
+from complextorch.nn.modules.softmax import CVSoftMax, MagSoftMax, PhaseSoftMax
 
-from .modules.pooling import (
+from complextorch.nn.modules.mask import ComplexRatioMask, PhaseSigmoid, MagMinMaxNorm
+
+from complextorch.nn.modules.loss import GeneralizedSplitLoss
+from complextorch.nn.modules.loss import (
+    SSIM,
+    SplitSSIM,
+    PerpLossSSIM,
+    SplitL1,
+    SplitMSE,
+)
+from complextorch.nn.modules.loss import (
+    CVQuadError,
+    CVFourthPowError,
+    CVCauchyError,
+    CVLogCoshError,
+)
+from complextorch.nn.modules.loss import CVLogError, MSELoss
+
+from complextorch.nn.modules.pooling import (
     AdaptiveAvgPool1d,
     AdaptiveAvgPool2d,
     AdaptiveAvgPool3d,
+    AvgPool1d,
+    AvgPool2d,
+    AvgPool3d,
+    MagMaxPool1d,
+    MagMaxPool2d,
+    MagMaxPool3d,
+)
+
+from complextorch.nn.modules.upsampling import Upsample, PolarUpsample
+
+from complextorch.nn.modules.rnn import GRUCell, GRU, LSTMCell, LSTM
+
+from complextorch.nn.modules.transformer import (
+    TransformerEncoderLayer,
+    TransformerEncoder,
+    TransformerDecoderLayer,
+    TransformerDecoder,
+    Transformer,
 )
 
 # dependent on the above
-from .modules.attention import MultiheadAttention, ScaledDotProductAttention
-from .modules.attention.eca import (
+from complextorch.nn.modules.attention import (
+    MultiheadAttention,
+    ScaledDotProductAttention,
+)
+from complextorch.nn.modules.attention.eca import (
     EfficientChannelAttention1d,
     EfficientChannelAttention2d,
     EfficientChannelAttention3d,
 )
-from .modules.attention.mca import (
+from complextorch.nn.modules.attention.mca import (
     MaskedChannelAttention1d,
     MaskedChannelAttention2d,
     MaskedChannelAttention3d,

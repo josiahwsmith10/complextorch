@@ -4,7 +4,7 @@ import torch
 import torch.nn as nn
 from torch.nn import init
 
-from .. import functional as cvF
+from complextorch.nn import functional as cvF
 
 __all__ = ["LayerNorm"]
 

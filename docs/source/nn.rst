@@ -6,3 +6,7 @@ NN
 
     nn/modules
     nn/functional
+    nn/init
+    nn/relevance
+    nn/masked
+    nn/utils

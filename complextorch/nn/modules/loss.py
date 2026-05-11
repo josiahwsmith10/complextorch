@@ -16,6 +16,7 @@ __all__ = [
     "CVCauchyError",
     "CVLogCoshError",
     "CVLogError",
+    "MSELoss",
 ]
 
 
@@ -315,6 +316,31 @@ class CVQuadError(nn.Module):
 
     def forward(self, x: torch.Tensor, y: torch.Tensor) -> torch.Tensor:
         return _reduce(0.5 * ((x - y).abs() ** 2), self.reduction)
+
+
+class MSELoss(nn.Module):
+    r"""
+    Complex-Valued Mean Squared Error Loss
+    --------------------------------------
+
+    .. math::
+
+        \mathcal{L}(\mathbf{x}, \mathbf{y}) = \text{reduce}(|\mathbf{x} - \mathbf{y}|^2)
+
+    Drop-in complex analogue of :class:`torch.nn.MSELoss`. Unlike
+    :class:`CVQuadError` this carries no 1/2 factor, so it matches PyTorch's
+    real-valued MSE exactly when ``x`` and ``y`` are real.
+
+    Args:
+        reduction: ``'mean'`` (default), ``'sum'``, or ``'none'``.
+    """
+
+    def __init__(self, reduction: str = "mean") -> None:
+        super(MSELoss, self).__init__()
+        self.reduction = reduction
+
+    def forward(self, x: torch.Tensor, y: torch.Tensor) -> torch.Tensor:
+        return _reduce((x - y).abs() ** 2, self.reduction)
 
 
 class CVFourthPowError(nn.Module):

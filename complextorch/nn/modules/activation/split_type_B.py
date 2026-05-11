@@ -1,13 +1,14 @@
 import torch
 import torch.nn as nn
 
-from ... import functional as cvF
+from complextorch.nn import functional as cvF
 
 __all__ = [
     "GeneralizedPolarActivation",
     "CVPolarTanh",
     "CVPolarSquash",
     "modReLU",
+    "AdaptiveModReLU",
     "CVPolarLog",
 ]
 
@@ -183,29 +184,18 @@ class _modReLU(nn.Module):
     r"""
     Helper class to compute :math:`\text{ReLU}(x + b)` on real-valued magnitude torch.Tensor.
 
-    Implements the operation:
-
-    .. math::
-
-        G(x) = \text{ReLU}(x + b)
+    If ``learnable=True``, ``b`` is an :class:`torch.nn.Parameter` and is
+    learned. Otherwise it is a fixed scalar buffer.
     """
 
-    def __init__(self, bias: float = -0.1) -> None:
+    def __init__(self, bias: float = -0.1, learnable: bool = False) -> None:
         super(_modReLU, self).__init__()
-
-        assert bias < 0, "bias must be smaller than 0 to have a non-linearity effect"
-
-        self.bias = bias
+        if learnable:
+            self.bias = nn.Parameter(torch.tensor(float(bias)))
+        else:
+            self.register_buffer("bias", torch.tensor(float(bias)))
 
     def forward(self, input: torch.Tensor) -> torch.Tensor:
-        r"""Computes the :math:`\text{ReLU}(x + b)` functionality.
-
-        Args:
-            input (torch.Tensor): input tensor
-
-        Returns:
-            torch.Tensor: :math:`\text{ReLU}(x + b)`
-        """
         return torch.relu(input + self.bias)
 
 
@@ -222,6 +212,10 @@ class modReLU(GeneralizedPolarActivation):
 
     Notice that :math:`|\mathbf{z}|` (:math:`\mathbf{z}`.abs()) is always positive, so if :math:`b > 0`  then :math:`|\mathbf{z}| + b > = 0` always.
     In order to have any non-linearity effect, :math:`b` must be smaller than :math:`0` (:math:`b < 0`).
+
+    With ``learnable=True``, the bias :math:`b` becomes a single trainable
+    scalar :class:`torch.nn.Parameter` initialised to the value of ``bias``;
+    with ``learnable=False`` (default) it remains a fixed constant.
 
     Based on work from the following papers:
 
@@ -240,7 +234,53 @@ class modReLU(GeneralizedPolarActivation):
             - https://arxiv.org/abs/2302.08286
     """
 
-    def __init__(self, bias: float = -0.1) -> None:
-        assert bias < 0, "bias must be smaller than 0 to have a non-linearity effect"
+    def __init__(self, bias: float = -0.1, learnable: bool = False) -> None:
+        # When learnable, the bias may move above 0 during training; only
+        # validate the initialisation when it's a fixed constant.
+        if not learnable:
+            assert (
+                bias < 0
+            ), "bias must be smaller than 0 to have a non-linearity effect"
+        super(modReLU, self).__init__(_modReLU(bias, learnable=learnable), None)
 
-        super(modReLU, self).__init__(_modReLU(bias), None)
+
+class _AdaptiveModReLUBias(nn.Module):
+    r"""Helper module: ``ReLU(x + b)`` where ``b`` has shape ``(num_features,)``.
+
+    The bias is broadcast against the channel dimension (assumed to be dim 1 of
+    the magnitude tensor of shape ``(B, C, ...)``).
+    """
+
+    def __init__(self, num_features: int, init: float = -0.1) -> None:
+        super().__init__()
+        self.num_features = num_features
+        self.bias = nn.Parameter(torch.full((num_features,), float(init)))
+
+    def forward(self, input: torch.Tensor) -> torch.Tensor:
+        # input shape: (B, C, ...); broadcast bias along C
+        shape = [1] * input.dim()
+        shape[1] = self.num_features
+        b = self.bias.view(*shape)
+        return torch.relu(input + b)
+
+
+class AdaptiveModReLU(GeneralizedPolarActivation):
+    r"""
+    Adaptive (per-channel) modulus Rectified Linear Unit
+    ----------------------------------------------------
+
+    Per-channel learnable-threshold variant of :class:`modReLU`. Expects input
+    shape ``(B, C, ...)``; learns a separate bias :math:`b_c` per channel.
+
+    .. math::
+
+        G(\mathbf{z})_c = \texttt{ReLU}(|\mathbf{z}_c| + b_c) \odot \exp(j \angle\mathbf{z}_c)
+
+    Args:
+        num_features: number of channels ``C``.
+        init: initial value of every :math:`b_c`. Defaults to ``-0.1`` so the
+            non-linearity is active at start of training.
+    """
+
+    def __init__(self, num_features: int, init: float = -0.1) -> None:
+        super().__init__(_AdaptiveModReLUBias(num_features, init), None)

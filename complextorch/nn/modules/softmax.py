@@ -3,7 +3,7 @@ from typing import Optional
 import torch
 import torch.nn as nn
 
-from .. import functional as cvF
+from complextorch.nn import functional as cvF
 
 __all__ = ["CVSoftMax", "MagSoftMax", "PhaseSoftMax"]
 

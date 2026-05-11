@@ -1,7 +1,7 @@
 import torch
 import torch.nn as nn
 
-__all__ = ["CVSigmoid", "zReLU", "CVCardiod", "CVSigLog"]
+__all__ = ["CVSigmoid", "zReLU", "CVCardiod", "CVSigLog", "Mod"]
 
 
 class CVSigmoid(nn.Module):
@@ -168,3 +168,21 @@ class CVSigLog(nn.Module):
             torch.Tensor: :math:`\frac{\mathbf{z}}{(c + 1/r * |\mathbf{z}|)}`
         """
         return input / (self.c + input.abs() / self.r)
+
+
+class Mod(nn.Module):
+    r"""
+    Magnitude Module
+    ----------------
+
+    Returns the magnitude :math:`|z|` of a complex input, producing a real
+    tensor. Useful inside :class:`torch.nn.Sequential` where you cannot easily
+    use ``torch.abs`` as a layer.
+
+    .. math::
+
+        G(\mathbf{z}) = |\mathbf{z}|
+    """
+
+    def forward(self, input: torch.Tensor) -> torch.Tensor:
+        return input.abs()
