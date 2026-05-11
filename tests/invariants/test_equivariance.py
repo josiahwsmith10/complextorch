@@ -21,6 +21,7 @@ from complextorch.nn import (
     PhaseConjConv2d,
     PhaseDivConv2d,
     PhaseShift,
+    wFMConvStrict2d,
 )
 
 
@@ -63,6 +64,20 @@ def test_mag_batchnorm_is_u1_equivariant():
     layer.eval()
     x = torch.randn(2, 4, 6, 6, dtype=torch.cfloat) + 0.1
     rotor = _rotor()
+    torch.testing.assert_close(layer(x * rotor), layer(x) * rotor, atol=1e-4, rtol=1e-4)
+
+
+def test_wfm_conv_strict_2d_is_u1_equivariant():
+    """SurReal wFM-Conv with convex weights (Eq. 14-16) is U(1)-equivariant.
+
+    Uses ``padding=0``: zero-padding breaks equivariance because a complex
+    zero cannot be rotated faithfully in ``(log|z|, arg z)`` form.
+    """
+    layer = wFMConvStrict2d(in_channels=2, out_channels=3, kernel_size=3, padding=0)
+    # Keep phases away from ±π so a small rotation does not wrap the branch cut.
+    torch.manual_seed(0)
+    x = 0.5 * torch.randn(2, 2, 6, 6, dtype=torch.cfloat) + 1.5
+    rotor = torch.polar(torch.tensor(1.0), torch.tensor(0.3))
     torch.testing.assert_close(layer(x * rotor), layer(x) * rotor, atol=1e-4, rtol=1e-4)
 
 

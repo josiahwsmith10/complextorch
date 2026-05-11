@@ -3,7 +3,14 @@ import torch
 import torch.nn as nn
 from torch.nn.common_types import _size_1_t, _size_2_t
 
-__all__ = ["wFMConv1d", "wFMConv2d", "wFMDistanceLinear", "wFMReLU"]
+__all__ = [
+    "tReLU",
+    "wFMConv1d",
+    "wFMConv2d",
+    "wFMConvStrict2d",
+    "wFMDistanceLinear",
+    "wFMReLU",
+]
 
 
 def _normalize_weights_squared(weights: torch.Tensor) -> torch.Tensor:
@@ -549,3 +556,211 @@ class wFMDistanceLinear(nn.Module):
 
     def extra_repr(self) -> str:
         return f"input_dim={self.input_dim}"
+
+
+class tReLU(nn.Module):
+    r"""
+    Tangent ReLU (SurReal Eq. 21-22)
+    --------------------------------
+
+    Paper-faithful nonlinearity from Chakraborty, Xing, Yu (arxiv:1910.11334),
+    obtained by applying ReLU in the tangent space of the rotation+scaling
+    manifold:
+
+    .. math::
+
+        r \mapsto \exp\!\bigl(\operatorname{ReLU}(\log r)\bigr) = \max(r, 1)
+        \qquad \text{(Eq.\ 21)}
+
+        R(\theta) \mapsto \exp_m\!\bigl(\operatorname{ReLU}(\log_m R(\theta))\bigr)
+            = R\!\bigl(\max(\theta, 0)\bigr) \qquad \text{(Eq.\ 22)}
+
+    For a complex input :math:`z = r e^{j\theta}` with :math:`\theta \in (-\pi, \pi]`
+    (the principal value returned by :func:`torch.angle`):
+
+    .. math::
+
+        \texttt{tReLU}(z) = \max(|z|, 1) \cdot e^{j \max(\arg z,\, 0)}
+
+    This partitions the complex plane into four regions; magnitudes below 1
+    are rectified to 1 and negative phases are rectified to 0.
+
+    Stateless: no learnable parameters.
+
+    .. note::
+        ``tReLU`` is NOT U(1)-equivariant: the ``max(\theta, 0)`` clip depends
+        on the absolute phase, so rotating the input rotates the output only
+        when the rotation does not flip a phase across the 0 boundary. This
+        matches standard ReLU's lack of translation-equivariance in real
+        networks; the tangent-space lift is the principled analogue.
+
+    Based on work from the following paper:
+
+        **R Chakraborty, Y Xing, S Yu. SurReal: Complex-Valued Learning as Principled Transformations on a Scaling and Rotation Manifold**
+
+            - Eqs. (21)-(22)
+
+            - https://arxiv.org/abs/1910.11334
+    """
+
+    def forward(self, input: torch.Tensor) -> torch.Tensor:
+        if not input.is_complex():
+            input = input.to(torch.cfloat)
+        mag_out = input.abs().clamp(min=1.0)
+        phase_out = input.angle().clamp(min=0.0)
+        return torch.polar(mag_out, phase_out)
+
+
+class wFMConvStrict2d(nn.Module):
+    r"""
+    Strict 2-D Weighted Fréchet Mean Convolution (SurReal Eq. 14-16)
+    -----------------------------------------------------------------
+
+    Paper-faithful wFM convolution on the :math:`\mathbb{R}^+ \times SO(2)`
+    manifold. For each output channel :math:`o`, a single convex weight
+    vector :math:`\{w_{o,i}\}_{i=1}^{C_\text{in} \cdot K_h \cdot K_w}` is
+    learned, satisfying the convexity constraint of Eq. (16):
+
+    .. math::
+
+        \sum_i w_{o, i} = 1, \qquad w_{o, i} \geq 0
+
+    enforced by parameterising :math:`w_{o, i} = \tilde{w}_{o, i}^2 / \sum_k \tilde{w}_{o, k}^2`
+    where :math:`\tilde{w}` is the unconstrained learnable tensor.
+
+    For each output position the closed-form wFM on the manifold is applied:
+
+    .. math::
+
+        |y_o| = \exp\!\Bigl(\sum_i w_{o, i} \log |z_i|\Bigr), \qquad
+        \arg y_o = \sum_i w_{o, i} \arg z_i
+
+    where :math:`\{z_i\}` are the complex inputs from the kernel window
+    (across all input channels and spatial positions).
+
+    Differences from :class:`wFMConv2d`
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+    :class:`wFMConv2d` follows RotLieNet's experimental
+    ``ComplexConv2Deffgroup`` variant, which adds a per-position
+    bias/scale modulation **before** the inner wFM operation and routes
+    the result through ``fold(unfold(·))`` — accumulating contributions
+    from overlapping kernel windows. That construction is not part of the
+    paper. It also factors the weight tensor as
+    :math:`(C_\text{in}, K^2) \otimes (C_\text{out}, C_\text{in})`
+    (separable), restricting the expressive space.
+
+    :class:`wFMConvStrict2d` removes both deviations:
+
+    - one full weight tensor per output channel (no separable factoring),
+    - no pre-modulation or fold/unfold smear, and
+    - exact compliance with Eq. (16) by construction.
+
+    The result: a clean, **U(1)-equivariant** convolution. Rotating the input
+    by :math:`e^{j\psi}` rotates the output by exactly the same angle
+    (verified in ``tests/invariants/test_equivariance.py``).
+
+    .. note::
+        Strict equivariance assumes ``padding=0``. With ``padding > 0`` the
+        zero-padded boundary positions cannot be transformed faithfully —
+        a complex zero ``z = 0`` cannot be represented as ``(\log |z|, \arg z)``
+        and does not transform as ``0 \mapsto 0 \cdot e^{j\psi}`` under input
+        rotation. The result is still well-defined; only exact equivariance
+        degrades near the boundary.
+
+    Args:
+        in_channels: number of complex input channels.
+        out_channels: number of complex output channels.
+        kernel_size: 2-tuple ``(K_h, K_w)`` or int (expanded to ``(k, k)``).
+        stride: 2-tuple or int.
+        padding: 2-tuple or int (zero-padding on the magnitude/phase).
+        eps: numerical floor for ``log |z|`` and weight normalisation.
+
+    Based on work from the following paper:
+
+        **R Chakraborty, Y Xing, S Yu. SurReal: Complex-Valued Learning as Principled Transformations on a Scaling and Rotation Manifold**
+
+            - Eqs. (14)-(16)
+
+            - https://arxiv.org/abs/1910.11334
+    """
+
+    def __init__(
+        self,
+        in_channels: int,
+        out_channels: int,
+        kernel_size: _size_2_t,
+        stride: _size_2_t = (1, 1),
+        padding: _size_2_t = (0, 0),
+        eps: float = 1e-6,
+    ) -> None:
+        super().__init__()
+
+        def _pair(v):
+            return (v, v) if isinstance(v, int) else tuple(v)
+
+        self.in_channels = in_channels
+        self.out_channels = out_channels
+        self.kernel_size = _pair(kernel_size)
+        self.stride = _pair(stride)
+        self.padding = _pair(padding)
+        self.eps = eps
+
+        kh, kw = self.kernel_size
+        # Unconstrained weights; convex normalisation in `_convex_weights()`.
+        self.weight = nn.Parameter(torch.rand(out_channels, in_channels * kh * kw))
+        self.unfold = nn.Unfold(
+            kernel_size=self.kernel_size, stride=self.stride, padding=self.padding
+        )
+
+    def _convex_weights(self) -> torch.Tensor:
+        r"""Squared-then-normalised: :math:`w_{o,i} = \tilde{w}_{o,i}^2 / \sum_k \tilde{w}_{o,k}^2`.
+
+        Output is non-negative and sums to 1 along the kernel × channel axis,
+        satisfying SurReal Eq. (16).
+        """
+        w_sq = self.weight**2
+        return w_sq / (w_sq.sum(dim=1, keepdim=True) + self.eps)
+
+    def forward(self, input: torch.Tensor) -> torch.Tensor:
+        if not input.is_complex():
+            input = input.to(torch.cfloat)
+        if input.dim() != 4:
+            raise ValueError(
+                f"wFMConvStrict2d expects 4-D input (B, C, H, W), got "
+                f"{tuple(input.shape)}"
+            )
+        B, C, H, W = input.shape
+        if self.in_channels != C:
+            raise ValueError(
+                f"expected in_channels={self.in_channels}, got C={C}"
+            )
+
+        kh, kw = self.kernel_size
+        sh, sw = self.stride
+        ph, pw = self.padding
+        out_h = (H + 2 * ph - kh) // sh + 1
+        out_w = (W + 2 * pw - kw) // sw + 1
+
+        log_mag = torch.log(input.abs() + self.eps)  # [B, C, H, W]
+        phase = input.angle()  # [B, C, H, W]
+
+        # Unfold -> [B, C*kh*kw, L] where L = out_h * out_w.
+        log_mag_unf = self.unfold(log_mag)
+        phase_unf = self.unfold(phase)
+
+        # Convex weights [O, C*kh*kw]; contract with the unfolded windows.
+        w = self._convex_weights()
+        log_mag_out = torch.einsum("oj,bjl->bol", w, log_mag_unf)
+        phase_out = torch.einsum("oj,bjl->bol", w, phase_unf)
+
+        log_mag_out = log_mag_out.view(B, self.out_channels, out_h, out_w)
+        phase_out = phase_out.view(B, self.out_channels, out_h, out_w)
+        return torch.polar(torch.exp(log_mag_out), phase_out)
+
+    def extra_repr(self) -> str:
+        return (
+            f"in_channels={self.in_channels}, out_channels={self.out_channels}, "
+            f"kernel_size={self.kernel_size}, stride={self.stride}, "
+            f"padding={self.padding}"
+        )

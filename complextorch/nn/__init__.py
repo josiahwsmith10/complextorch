@@ -67,8 +67,10 @@ from complextorch.nn.modules.conv import (
 from complextorch.nn.modules.manifold import (
     wFMConv1d,
     wFMConv2d,
+    wFMConvStrict2d,
     wFMReLU,
     wFMDistanceLinear,
+    tReLU,
 )
 
 from complextorch.nn.modules.dropout import Dropout, Dropout1d, Dropout2d, Dropout3d
@@ -293,10 +295,12 @@ __all__ = [
     "masked",
     "modReLU",
     "relevance",
+    "tReLU",
     "utils",
     # manifold
     "wFMConv1d",
     "wFMConv2d",
+    "wFMConvStrict2d",
     "wFMDistanceLinear",
     "wFMReLU",
     "zAbsReLU",
