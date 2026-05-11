@@ -40,8 +40,14 @@ def test_cds_mstar_forward_backward():
 def test_cds_models_accept_real_input():
     """All three CDS models auto-cast a real input to cfloat in forward."""
     for cls, x in [
-        (CDSInvariant(input_channels=2, num_classes=4, prototype_size=8), torch.randn(2, 2, 32, 32)),
-        (CDSEquivariant(input_channels=2, num_classes=4, prototype_size=8), torch.randn(2, 2, 32, 32)),
+        (
+            CDSInvariant(input_channels=2, num_classes=4, prototype_size=8),
+            torch.randn(2, 2, 32, 32),
+        ),
+        (
+            CDSEquivariant(input_channels=2, num_classes=4, prototype_size=8),
+            torch.randn(2, 2, 32, 32),
+        ),
         (CDSMSTAR(num_classes=4), torch.randn(2, 1, 88, 88) + 0.1),
     ]:
         out = cls(x)
