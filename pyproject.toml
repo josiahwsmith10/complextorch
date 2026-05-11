@@ -29,14 +29,28 @@ dependencies = [
 
 [project.urls]
 Homepage = "https://github.com/josiahwsmith10/complextorch"
-Documentation = "https://complextorch.readthedocs.io/en/latest/index.html"
+Documentation = "https://josiahwsmith10.github.io/complextorch/latest/"
 Repository = "https://github.com/josiahwsmith10/complextorch"
 "Bug Tracker" = "https://github.com/josiahwsmith10/complextorch/issues"
+Changelog = "https://github.com/josiahwsmith10/complextorch/blob/main/CHANGELOG.md"
 
 [project.optional-dependencies]
 docs = [
-    "sphinx>=7.0",
-    "sphinx_rtd_theme>=2.0",
+    # The whole stack is pinned to Sphinx 7 because sphinx-multiversion 0.2.4
+    # is incompatible with Sphinx >= 8 (Config.read signature changed).
+    # myst-parser >= 5 / myst-nb >= 2 require Sphinx >= 8, so they are also
+    # pinned. Migrate to sphinx-polyversion to unblock these floors.
+    "sphinx>=7.3,<8",
+    "pydata-sphinx-theme>=0.15,<0.16",
+    "myst-parser>=3.0,<5",
+    "myst-nb>=1.1,<2",
+    "sphinx-autoapi>=3.3,<4",
+    "sphinx-copybutton>=0.5",
+    "sphinx-design>=0.6,<0.7",
+    "sphinx-multiversion>=0.2",
+    "sphinx-sitemap>=2.6",
+    "sphinxext-opengraph>=0.9",
+    "matplotlib>=3.7",
 ]
 test = [
     "pytest>=8",

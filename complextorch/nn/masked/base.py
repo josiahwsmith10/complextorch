@@ -23,10 +23,10 @@ class BaseMasked(nn.Module):
     r"""
     Base for layers with a fixed binary mask buffer applied to ``self.weight``.
 
-    Attributes:
-        is_sparse: ``True`` if a mask is currently set.
-        mask: a real-valued tensor of the same shape as the parameter, with
-            ``0`` marking a dropped weight and ``1`` marking a kept weight.
+    The mask buffer (``self.mask``) is a real-valued tensor of the same shape
+    as the parameter, with ``0`` marking a dropped weight and ``1`` marking a
+    kept weight. The :attr:`is_sparse` property returns ``True`` when a mask
+    is currently set.
     """
 
     def __init__(self) -> None:

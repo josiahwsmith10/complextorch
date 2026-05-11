@@ -24,7 +24,7 @@ class AdaptiveAvgPool1d(nn.AdaptiveAvgPool1d):
     1-D Complex-Valued Adaptive Average Pooling
     -------------------------------------------
 
-    Applies adaptive average pooling using `torch.nn.AdaptiveAvgPool1d <https://pytorch.org/docs/stable/generated/torch.nn.AdaptiveAvgPool1d.html>`_ to the real and imaginary parts of the input tensor separately.
+    Applies adaptive average pooling using :class:`torch.nn.AdaptiveAvgPool1d` to the real and imaginary parts of the input tensor separately.
 
     Implements the following operation:
 
@@ -39,7 +39,7 @@ class AdaptiveAvgPool1d(nn.AdaptiveAvgPool1d):
         super().__init__(output_size)
 
     def forward(self, input: torch.Tensor) -> torch.Tensor:
-        r"""Applies adaptive average pooling using `torch.nn.AdaptiveAvgPool1d <https://pytorch.org/docs/stable/generated/torch.nn.AdaptiveAvgPool1d.html>`_ to the real and imaginary parts of the input tensor separately.
+        r"""Applies adaptive average pooling using :class:`torch.nn.AdaptiveAvgPool1d` to the real and imaginary parts of the input tensor separately.
 
         Args:
             input (torch.Tensor): input tensor
@@ -55,7 +55,7 @@ class AdaptiveAvgPool2d(nn.AdaptiveAvgPool2d):
     2-D Complex-Valued Adaptive Average Pooling
     -------------------------------------------
 
-    Applies adaptive average pooling using `torch.nn.AdaptiveAvgPool2d <https://pytorch.org/docs/stable/generated/torch.nn.AdaptiveAvgPool2d.html>`_ to the real and imaginary parts of the input tensor separately.
+    Applies adaptive average pooling using :class:`torch.nn.AdaptiveAvgPool2d` to the real and imaginary parts of the input tensor separately.
 
     Implements the following operation:
 
@@ -70,7 +70,7 @@ class AdaptiveAvgPool2d(nn.AdaptiveAvgPool2d):
         super().__init__(output_size)
 
     def forward(self, input: torch.Tensor) -> torch.Tensor:
-        r"""Applies adaptive average pooling using `torch.nn.AdaptiveAvgPool2d <https://pytorch.org/docs/stable/generated/torch.nn.AdaptiveAvgPool2d.html>`_ to the real and imaginary parts of the input tensor separately.
+        r"""Applies adaptive average pooling using :class:`torch.nn.AdaptiveAvgPool2d` to the real and imaginary parts of the input tensor separately.
 
         Args:
             input (torch.Tensor): input tensor
@@ -86,7 +86,7 @@ class AdaptiveAvgPool3d(nn.AdaptiveAvgPool3d):
     3-D Complex-Valued Adaptive Average Pooling
     -------------------------------------------
 
-    Applies adaptive average pooling using `torch.nn.AdaptiveAvgPool3d <https://pytorch.org/docs/stable/generated/torch.nn.AdaptiveAvgPool3d.html>`_ to the real and imaginary parts of the input tensor separately.
+    Applies adaptive average pooling using :class:`torch.nn.AdaptiveAvgPool3d` to the real and imaginary parts of the input tensor separately.
 
     Implements the following operation:
 
@@ -101,7 +101,7 @@ class AdaptiveAvgPool3d(nn.AdaptiveAvgPool3d):
         super().__init__(output_size)
 
     def forward(self, input: torch.Tensor) -> torch.Tensor:
-        r"""Applies adaptive average pooling using `torch.nn.AdaptiveAvgPool3d <https://pytorch.org/docs/stable/generated/torch.nn.AdaptiveAvgPool3d.html>`_ to the real and imaginary parts of the input tensor separately.
+        r"""Applies adaptive average pooling using :class:`torch.nn.AdaptiveAvgPool3d` to the real and imaginary parts of the input tensor separately.
 
         Args:
             input (torch.Tensor): input tensor

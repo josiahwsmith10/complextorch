@@ -17,7 +17,7 @@ class ComplexRatioMask(nn.Module):
 
         \texttt{ComplexRatioMask}(\mathbf{z}) = \texttt{Sigmoid}(|\mathbf{z}|) \odot \frac{\mathbf{z}}{|\mathbf{z}|}
 
-    Retains phase and squeezes magnitude using `sigmoid function <https://pytorch.org/docs/stable/generated/torch.nn.Sigmoid.html>`_.
+    Retains phase and squeezes magnitude using :class:`torch.nn.Sigmoid`.
 
     Based on work from the following paper:
 
@@ -53,7 +53,7 @@ class PhaseSigmoid(nn.Module):
 
         \texttt{PhaseSigmoid}(\mathbf{z}) = \texttt{Sigmoid}(|\mathbf{z}|) \odot \frac{\mathbf{z}}{|\mathbf{z}|}
 
-    Retains phase and squeezes magnitude using `sigmoid function <https://pytorch.org/docs/stable/generated/torch.nn.Sigmoid.html>`_.
+    Retains phase and squeezes magnitude using :class:`torch.nn.Sigmoid`.
 
     Based on work from the following paper:
 

@@ -1,13 +1,11 @@
 # Configuration file for the Sphinx documentation builder.
 #
-# For the full list of built-in configuration values, see the documentation:
 # https://www.sphinx-doc.org/en/master/usage/configuration.html
-
-# -- Project information -----------------------------------------------------
-# https://www.sphinx-doc.org/en/master/usage/configuration.html#project-information
 
 import re
 from pathlib import Path
+
+# -- Project information -----------------------------------------------------
 
 project = "complextorch"
 copyright = "2025, Josiah W. Smith"
@@ -28,23 +26,141 @@ release = _read_version()
 version = release
 
 # -- General configuration ---------------------------------------------------
-# https://www.sphinx-doc.org/en/master/usage/configuration.html#general-configuration
 
 extensions = [
-    "sphinx.ext.autodoc",
-    "sphinx.ext.autosummary",
-    "sphinx.ext.coverage",
+    "myst_nb",
+    "autoapi.extension",
+    "sphinx.ext.intersphinx",
     "sphinx.ext.napoleon",
     "sphinx.ext.mathjax",
+    "sphinx.ext.viewcode",
+    "sphinx_copybutton",
+    "sphinx_design",
+    "sphinx_sitemap",
+    "sphinxext.opengraph",
 ]
 
 templates_path = ["_templates"]
-exclude_patterns = ["_build", "Thumbs.db", ".DS_Store"]
+exclude_patterns = ["_build", "Thumbs.db", ".DS_Store", "**.ipynb_checkpoints"]
 
-language = "python"
+# -- Source files ------------------------------------------------------------
 
-# -- Options for HTML output -------------------------------------------------
-# https://www.sphinx-doc.org/en/master/usage/configuration.html#options-for-html-output
+# myst-nb owns .md and .ipynb (it subsumes myst-parser for Markdown).
+source_suffix = {
+    ".rst": "restructuredtext",
+    ".md": "myst-nb",
+    ".ipynb": "myst-nb",
+}
 
-html_theme = "sphinx_rtd_theme"
+# -- MyST / MyST-NB ----------------------------------------------------------
+
+myst_enable_extensions = [
+    "amsmath",
+    "colon_fence",
+    "deflist",
+    "dollarmath",
+    "substitution",
+    "tasklist",
+]
+myst_heading_anchors = 3
+
+nb_execution_mode = "auto"
+nb_execution_timeout = 120
+nb_execution_allow_errors = False
+nb_execution_excludepatterns = []
+
+# -- Autoapi -----------------------------------------------------------------
+
+autoapi_type = "python"
+autoapi_dirs = [str(Path(__file__).resolve().parents[2] / "complextorch")]
+autoapi_root = "api"
+autoapi_keep_files = False
+# We wire the API tree into our own toctree in index.md, so don't let
+# autoapi inject a second top-level entry.
+autoapi_add_toctree_entry = False
+autoapi_python_class_content = "both"  # merge class + __init__ docstrings
+autoapi_member_order = "groupwise"
+# ``imported-members`` would cause every re-exported symbol to appear twice
+# (once in the source module, once in the re-exporting __init__). Leaving
+# it off relies on users following the canonical source module link.
+autoapi_options = [
+    "members",
+    "undoc-members",
+    "show-inheritance",
+    "show-module-summary",
+    "special-members",
+]
+autoapi_ignore = ["*/_build/*", "*/tests/*"]
+
+# -- Napoleon (docstring parsing) --------------------------------------------
+
+napoleon_google_docstring = True
+napoleon_numpy_docstring = True
+napoleon_include_init_with_doc = True
+napoleon_use_admonition_for_examples = False
+napoleon_use_rtype = False
+
+# -- Intersphinx -------------------------------------------------------------
+
+intersphinx_mapping = {
+    "python": ("https://docs.python.org/3", None),
+    "torch": ("https://pytorch.org/docs/stable", None),
+    "numpy": ("https://numpy.org/doc/stable", None),
+    "scipy": ("https://docs.scipy.org/doc/scipy", None),
+}
+
+# -- HTML output -------------------------------------------------------------
+
+html_theme = "pydata_sphinx_theme"
 html_static_path = ["_static"]
+html_baseurl = "https://josiahwsmith10.github.io/complextorch/"
+html_title = f"complextorch {release}"
+
+html_context = {
+    "github_user": "josiahwsmith10",
+    "github_repo": "complextorch",
+    "github_version": "main",
+    "doc_path": "docs/source",
+}
+
+html_theme_options = {
+    "github_url": "https://github.com/josiahwsmith10/complextorch",
+    "use_edit_page_button": True,
+    "navigation_with_keys": False,
+    "show_toc_level": 2,
+    "show_nav_level": 2,
+    "navbar_align": "left",
+    "header_links_before_dropdown": 6,
+    "icon_links": [
+        {
+            "name": "PyPI",
+            "url": "https://pypi.org/project/complextorch/",
+            "icon": "fa-brands fa-python",
+        },
+    ],
+    "switcher": {
+        "json_url": "https://josiahwsmith10.github.io/complextorch/_static/switcher.json",
+        "version_match": release,
+    },
+    "navbar_end": ["version-switcher", "theme-switcher", "navbar-icon-links"],
+    "footer_start": ["copyright", "sphinx-version"],
+    "footer_end": ["theme-version"],
+}
+
+# -- OpenGraph & sitemap -----------------------------------------------------
+
+ogp_site_url = html_baseurl
+ogp_image = None  # add a social card later if a logo is created
+sitemap_url_scheme = "{link}"
+
+# -- sphinx-multiversion -----------------------------------------------------
+
+# Whitelist only post-migration releases. Older tags (pre-2.1) used a different
+# conf.py and dependency set; they remain accessible via PyPI but are not
+# re-rendered here.
+smv_tag_whitelist = r"^2\.[1-9]\d*\.\d+$"
+smv_branch_whitelist = r"^main$"
+smv_remote_whitelist = None
+smv_released_pattern = r"^refs/tags/.*$"
+smv_outputdir_format = "{ref.name}"
+smv_prefer_remote_refs = False

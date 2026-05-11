@@ -49,7 +49,12 @@ __all__ = [
 
 
 class ToTensor(nn.Module):
-    r"""Casts input to a ``torch.Tensor`` of the requested ``dtype``."""
+    r"""Cast input to a :class:`torch.Tensor` of the requested ``dtype``.
+
+    Args:
+        dtype: target dtype. Defaults to ``torch.cfloat`` since most
+            :mod:`complextorch` workflows expect complex inputs.
+    """
 
     def __init__(self, dtype: torch.dtype = torch.cfloat) -> None:
         super().__init__()
@@ -64,7 +69,14 @@ class ToTensor(nn.Module):
 
 
 class Unsqueeze(nn.Module):
-    r"""Insert a size-1 dimension at ``dim``."""
+    r"""Insert a size-1 dimension at ``dim``.
+
+    Thin :class:`torch.nn.Module` wrapper around :meth:`torch.Tensor.unsqueeze`,
+    intended for use inside a :class:`torchvision.transforms.Compose` pipeline.
+
+    Args:
+        dim: position at which the new axis is inserted.
+    """
 
     def __init__(self, dim: int) -> None:
         super().__init__()
@@ -78,7 +90,11 @@ class Unsqueeze(nn.Module):
 
 
 class HWC2CHW(nn.Module):
-    r"""Permute ``(H, W, C)`` -> ``(C, H, W)``."""
+    r"""Permute ``(H, W, C)`` to ``(C, H, W)``.
+
+    PIL / NumPy image conventions store channels-last; PyTorch expects
+    channels-first. Raises :class:`ValueError` on inputs that are not 3-D.
+    """
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
         if x.dim() != 3:
@@ -116,14 +132,22 @@ class Amplitude(nn.Module):
 
 
 class ToReal(nn.Module):
-    r"""Returns ``Re(x)`` (complex -> real)."""
+    r"""Return :math:`\Re(x)`, i.e. the real part of a complex tensor.
+
+    No-op for inputs that are already real (returned unchanged), so the
+    transform is safe to use unconditionally in a preprocessing pipeline.
+    """
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
         return x.real if x.is_complex() else x
 
 
 class ToImaginary(nn.Module):
-    r"""Returns ``Im(x)`` (complex -> real)."""
+    r"""Return :math:`\Im(x)`, i.e. the imaginary part of a complex tensor.
+
+    For real-valued inputs, returns a tensor of zeros with the same shape
+    and dtype so the transform composes cleanly with mixed pipelines.
+    """
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
         return x.imag if x.is_complex() else torch.zeros_like(x)

@@ -5,7 +5,7 @@
 </p>
 <h3>
 
-[Homepage](https://github.com/josiahwsmith10/complextorch) | [Documentation](https://complextorch.readthedocs.io/en/latest/)
+[Homepage](https://github.com/josiahwsmith10/complextorch) | [Documentation](https://josiahwsmith10.github.io/complextorch/latest/) | [Changelog](CHANGELOG.md)
 
 </h3>
 
@@ -21,18 +21,20 @@ Notably, we include efficient implementations for linear, convolution, and atten
 
 Although there is an emphasis on 1-D data tensors, due to a focus on signal processing, communications, and radar data, many of the routines are implemented for 2-D and 3-D data as well.
 
-### Version 1.2 Release Notes:
-- The legacy `CVTensor` API and its supporting helpers (`cat`, `roll`, `from_polar`, `randn`, and the `torch.Tensor.rect` / `torch.Tensor.polar` monkey-patch) have been removed. The package now operates exclusively on complex-dtype `torch.Tensor` (typically `torch.cfloat`). Use `torch.polar(abs, angle)` and `torch.randn(..., dtype=torch.cfloat)` directly.
-- Correctness fixes in `SlowLinear` / `SlowConv*` / `SlowConvTranspose*` — the Gauss-trick bias was previously off by `b_i * (1 + j)` when `bias=True`. `SlowConv*` and `SlowConvTranspose*` now correctly forward `dilation` and `output_padding` too. The fast (native-cfloat) wrappers were unaffected.
-- Complex-valued `BatchNorm*` eval-mode no longer broadcasts `running_mean` against the wrong axes.
-- `PhaseSigmoid` is now implemented (previously was an empty class). `MagMinMaxNorm` now correctly preserves phase.
-- Fast `ConvTranspose1d` / `ConvTranspose2d` / `ConvTranspose3d` are now exported from `complextorch.nn`. Their `output_padding` default matches PyTorch's (`0`).
-- Complex-valued losses (`CVQuadError`, `CVFourthPowError`, `CVCauchyError`, `CVLogCoshError`, `CVLogError`) now accept a `reduction` argument (`'mean'` | `'sum'` | `'none'`), defaulting to `'mean'`.
-- `complextorch.nn.Conv1d` (and its 2-D / 3-D / transposed siblings) wrap `torch.nn.Conv1d` with `dtype=torch.cfloat` for maximum efficiency. The hand-rolled real/imag-split convolutions remain available under the `Slow` prefix.
+## What's new
+
+See [CHANGELOG.md](CHANGELOG.md) for the full release history. Version 2.0
+brings major feature-parity expansion (RNN/LSTM, Transformer, ARD/Variational
+Dropout, masked layers, transforms, signal, datasets, models subpackages); see
+the changelog for the breaking changes around `MultiheadAttention` and
+default `bias=True`.
 
 ## Documentation
 
-Please see [Read the Docs](https://complextorch.readthedocs.io/en/latest/index.html) or our [arXiv](https://github.com/josiahwsmith10/complextorch) paper, which is also located at ```docs/complextorch_paper.pdf```.
+Live docs: <https://josiahwsmith10.github.io/complextorch/latest/> — including
+an executable [Getting Started notebook](https://josiahwsmith10.github.io/complextorch/latest/examples/getting_started.html)
+and a full API reference auto-generated from docstrings. The accompanying
+paper is at `docs/complextorch_paper.pdf`.
 
 ## Dependencies
 

@@ -32,7 +32,7 @@ __all__ = [
 class InterleavedToComplex(nn.Module):
     r"""
     Interleaved Real Layout → Complex
-    ---------------------------------
+    -----------------------------------
 
     Maps ``[..., 2D]`` with real/imag interleaved along the last dim to a
     complex tensor of shape ``[..., D]``.
@@ -52,7 +52,7 @@ class InterleavedToComplex(nn.Module):
 class ComplexToInterleaved(nn.Module):
     r"""
     Complex → Interleaved Real Layout
-    ---------------------------------
+    -----------------------------------
 
     Inverse of :class:`InterleavedToComplex`. Maps complex ``[..., D]`` to real
     ``[..., 2D]`` with real/imag interleaved.
@@ -70,7 +70,7 @@ class ComplexToInterleaved(nn.Module):
 class ConcatenatedToComplex(nn.Module):
     r"""
     Concatenated Real Layout → Complex
-    ----------------------------------
+    ------------------------------------
 
     Maps ``[..., 2D]`` with the first ``D`` slots being real parts and the last
     ``D`` slots being imaginary parts to a complex tensor of shape ``[..., D]``.
@@ -90,7 +90,7 @@ class ConcatenatedToComplex(nn.Module):
 class ComplexToConcatenated(nn.Module):
     r"""
     Complex → Concatenated Real Layout
-    ----------------------------------
+    ------------------------------------
 
     Inverse of :class:`ConcatenatedToComplex`. Maps complex ``[..., D]`` to
     real ``[..., 2D]`` with all real parts followed by all imaginary parts.
@@ -107,7 +107,7 @@ class ComplexToConcatenated(nn.Module):
 class RealToComplex(nn.Module):
     r"""
     Real → Complex (Zero Imaginary)
-    -------------------------------
+    ---------------------------------
 
     Lifts a real tensor into a complex tensor by setting the imaginary part to
     zero. Useful as the first layer of a network whose input is a real signal
