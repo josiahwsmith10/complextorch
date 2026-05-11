@@ -10,7 +10,7 @@ For more information see: https://pypi.org/project/complextorch or https://githu
 
 __author__ = "Josiah W. Smith"
 
-__version__ = "2.0.0"
+__version__ = "2.0.1"
 
 __all__ = ["datasets", "models", "nn", "signal", "transforms"]
 
