@@ -66,13 +66,36 @@ class Linear(nn.Module):
 
     @property
     def weight(self) -> torch.Tensor:
+        r"""Complex weight view.
+
+        Returns a freshly allocated complex tensor; it does **not** share
+        storage with the underlying ``linear_r.weight`` / ``linear_i.weight``
+        parameters. To mutate the underlying parameters, assign through the
+        setter (``layer.weight = value``) — patterns like
+        ``layer.weight.data.copy_(...)`` or ``nn.init.*_(layer.weight)``
+        silently no-op.
+        """
         return torch.complex(self.linear_r.weight, self.linear_i.weight)
+
+    @weight.setter
+    def weight(self, value: torch.Tensor) -> None:
+        self.linear_r.weight.data.copy_(value.real)
+        self.linear_i.weight.data.copy_(value.imag)
 
     @property
     def bias(self) -> torch.Tensor:
         if self.bias_r is None:
             return None
         return torch.complex(self.bias_r, self.bias_i)
+
+    @bias.setter
+    def bias(self, value: torch.Tensor) -> None:
+        if self.bias_r is None:
+            raise RuntimeError(
+                "Cannot assign bias: layer was constructed with bias=False"
+            )
+        self.bias_r.data.copy_(value.real)
+        self.bias_i.data.copy_(value.imag)
 
     def forward(self, input: torch.Tensor) -> torch.Tensor:
         r"""

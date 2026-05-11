@@ -43,7 +43,7 @@ CI lives in `.github/workflows/`: `test.yml` (pytest on 3.10/3.11/3.12 with `--c
 
 `complextorch/__init__.py:__version__` is the single source of truth. `pyproject.toml` reads it via `[tool.setuptools.dynamic] version = {attr = "complextorch.__version__"}` and `docs/source/conf.py` parses it via regex. To bump the version, edit `__init__.py`, add an entry under `## [Unreleased]` in `CHANGELOG.md`, then `git tag X.Y.Z && git push --tags` to trigger `pypi.yml`.
 
-Release notes live in `CHANGELOG.md` (keepachangelog format) and are surfaced in the docs via `docs/source/changelog.md`. The `sphinx-multiversion` whitelist in `conf.py` is `^2\.[1-9]\d*\.\d+$` — bump the regex when cutting a 3.x.
+Release notes live in `CHANGELOG.md` (keepachangelog format) and are surfaced in the docs via `docs/source/changelog.md`. The `sphinx-multiversion` whitelist in `conf.py` is `^2\.\d+\.\d+$` — bump the regex when cutting a 3.x.
 
 ## Architecture
 

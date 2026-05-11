@@ -5,7 +5,21 @@ All notable changes to `complextorch` are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [2.0.0]
+## [2.0.1]
+
+### Fixed
+
+- `complextorch.nn.gauss.{Conv1d, Conv2d, Conv3d, ConvTranspose1d,
+  ConvTranspose2d, ConvTranspose3d, Linear}` now support assignment through
+  the `.weight` and `.bias` properties: `layer.weight = complex_tensor` fans
+  out to the underlying real `*_r.weight` / `*_i.weight` parameters (and
+  likewise for `bias_r` / `bias_i`). Previously the getters returned a
+  freshly allocated complex tensor unbacked by the real parameters, so
+  patterns such as `ct.nn.init.kaiming_normal_(layer.weight)` or
+  `layer.weight.data.copy_(W)` silently no-opped. The fresh-storage
+  behaviour of the getter is unchanged and now documented; the new setter
+  is the supported write path. `layer.bias = value` raises
+  `RuntimeError` if the layer was constructed with `bias=False`.
 
 ### Added
 
@@ -138,6 +152,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   hand-rolled real/imag-split convolutions remain available under the
   `Slow` prefix.
 
-[Unreleased]: https://github.com/josiahwsmith10/complextorch/compare/2.0.0...HEAD
+[Unreleased]: https://github.com/josiahwsmith10/complextorch/compare/2.0.1...HEAD
+[2.0.1]: https://github.com/josiahwsmith10/complextorch/releases/tag/2.0.1
 [2.0.0]: https://github.com/josiahwsmith10/complextorch/releases/tag/2.0.0
 [1.2.0]: https://github.com/josiahwsmith10/complextorch/releases/tag/1.2.0

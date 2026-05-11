@@ -100,13 +100,36 @@ class _Conv(nn.Module):
 
     @property
     def weight(self) -> torch.Tensor:
+        r"""Complex weight view.
+
+        Returns a freshly allocated complex tensor; it does **not** share
+        storage with the underlying ``conv_r.weight`` / ``conv_i.weight``
+        parameters. To mutate the underlying parameters, assign through the
+        setter (``layer.weight = value``) — patterns like
+        ``layer.weight.data.copy_(...)`` or ``nn.init.*_(layer.weight)``
+        silently no-op.
+        """
         return torch.complex(self.conv_r.weight, self.conv_i.weight)
+
+    @weight.setter
+    def weight(self, value: torch.Tensor) -> None:
+        self.conv_r.weight.data.copy_(value.real)
+        self.conv_i.weight.data.copy_(value.imag)
 
     @property
     def bias(self) -> torch.Tensor:
         if self.bias_r is None:
             return None
         return torch.complex(self.bias_r, self.bias_i)
+
+    @bias.setter
+    def bias(self, value: torch.Tensor) -> None:
+        if self.bias_r is None:
+            raise RuntimeError(
+                "Cannot assign bias: layer was constructed with bias=False"
+            )
+        self.bias_r.data.copy_(value.real)
+        self.bias_i.data.copy_(value.imag)
 
     def forward(self, input: torch.Tensor) -> torch.Tensor:
         r"""
@@ -413,13 +436,36 @@ class _ConvTranspose(nn.Module):
 
     @property
     def weight(self) -> torch.Tensor:
+        r"""Complex weight view.
+
+        Returns a freshly allocated complex tensor; it does **not** share
+        storage with the underlying ``convt_r.weight`` / ``convt_i.weight``
+        parameters. To mutate the underlying parameters, assign through the
+        setter (``layer.weight = value``) — patterns like
+        ``layer.weight.data.copy_(...)`` or ``nn.init.*_(layer.weight)``
+        silently no-op.
+        """
         return torch.complex(self.convt_r.weight, self.convt_i.weight)
+
+    @weight.setter
+    def weight(self, value: torch.Tensor) -> None:
+        self.convt_r.weight.data.copy_(value.real)
+        self.convt_i.weight.data.copy_(value.imag)
 
     @property
     def bias(self) -> torch.Tensor:
         if self.bias_r is None:
             return None
         return torch.complex(self.bias_r, self.bias_i)
+
+    @bias.setter
+    def bias(self, value: torch.Tensor) -> None:
+        if self.bias_r is None:
+            raise RuntimeError(
+                "Cannot assign bias: layer was constructed with bias=False"
+            )
+        self.bias_r.data.copy_(value.real)
+        self.bias_i.data.copy_(value.imag)
 
     def forward(self, input: torch.Tensor) -> torch.Tensor:
         r"""

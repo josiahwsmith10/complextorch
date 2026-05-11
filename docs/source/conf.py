@@ -8,7 +8,7 @@ from pathlib import Path
 # -- Project information -----------------------------------------------------
 
 project = "complextorch"
-copyright = "2025, Josiah W. Smith"
+copyright = "2026, Josiah W. Smith"
 author = "Josiah W. Smith"
 
 
@@ -158,10 +158,10 @@ sitemap_url_scheme = "{link}"
 
 # -- sphinx-multiversion -----------------------------------------------------
 
-# Whitelist only post-migration releases. Older tags (pre-2.1) used a different
-# conf.py and dependency set; they remain accessible via PyPI but are not
-# re-rendered here.
-smv_tag_whitelist = r"^2\.[1-9]\d*\.\d+$"
+# Whitelist any 2.x.y release. Older tags from before the migration to this
+# conf.py / dependency set remain accessible via PyPI but are not re-rendered
+# here. Bump the major when cutting a 3.x.
+smv_tag_whitelist = r"^2\.\d+\.\d+$"
 smv_branch_whitelist = r"^main$"
 smv_remote_whitelist = None
 smv_released_pattern = r"^refs/tags/.*$"
