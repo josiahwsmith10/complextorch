@@ -63,7 +63,7 @@ class MaskedChannelAttention1d(_MaskedChannelAttention):
     1-D Complex-Valued Masked Channel Attention (MCA) Module
     --------------------------------------------------------
 
-    Generalized for arbitrary masking function (see :doc:`mask <../mask>` for implemented masking functions)
+    Generalized for arbitrary masking function (see :mod:`mask <complextorch.nn.modules.mask>` for implemented masking functions)
 
     Implements the operation:
 
@@ -98,14 +98,14 @@ class MaskedChannelAttention1d(_MaskedChannelAttention):
 
         self.avg_pool = cvnn.AdaptiveAvgPool1d(1)
 
-        self.conv_down = cvnn.SlowConv1d(
+        self.conv_down = cvnn.Conv1d(
             in_channels=channels,
             out_channels=self.reduced_channels,
             kernel_size=1,
             bias=False,
         )
 
-        self.conv_up = cvnn.SlowConv1d(
+        self.conv_up = cvnn.Conv1d(
             in_channels=self.reduced_channels,
             out_channels=channels,
             kernel_size=1,
@@ -126,7 +126,7 @@ class MaskedChannelAttention2d(_MaskedChannelAttention):
 
     where :math:`\mathcal{M}(\cdot)` is the masking function (by default, ComplexRatioMask is used) and :math:`H_\text{ConvUp}(\cdot)` and :math:`H_\text{ConvDown}(\cdot)` are 2-D convolution layers with kernel sizes of 1 that reduce the channel dimension by a factor :math:`r`.
 
-    Generalized for arbitrary masking function (see :doc:`mask <../mask>` for implemented masking functions)
+    Generalized for arbitrary masking function (see :mod:`mask <complextorch.nn.modules.mask>` for implemented masking functions)
 
     Based on work from the following paper:
 
@@ -153,14 +153,14 @@ class MaskedChannelAttention2d(_MaskedChannelAttention):
 
         self.avg_pool = cvnn.AdaptiveAvgPool2d(1)
 
-        self.conv_down = cvnn.SlowConv2d(
+        self.conv_down = cvnn.Conv2d(
             in_channels=channels,
             out_channels=self.reduced_channels,
             kernel_size=1,
             bias=False,
         )
 
-        self.conv_up = cvnn.SlowConv2d(
+        self.conv_up = cvnn.Conv2d(
             in_channels=self.reduced_channels,
             out_channels=channels,
             kernel_size=1,
@@ -173,7 +173,7 @@ class MaskedChannelAttention3d(_MaskedChannelAttention):
     3-D Complex-Valued Masked Channel Attention (MCA) Module
     --------------------------------------------------------
 
-    Generalized for arbitrary masking function (see :doc:`mask <../mask>` for implemented masking functions)
+    Generalized for arbitrary masking function (see :mod:`mask <complextorch.nn.modules.mask>` for implemented masking functions)
 
     Implements the operation:
 
@@ -209,14 +209,14 @@ class MaskedChannelAttention3d(_MaskedChannelAttention):
 
         self.avg_pool = cvnn.AdaptiveAvgPool3d(1)
 
-        self.conv_down = cvnn.SlowConv3d(
+        self.conv_down = cvnn.Conv3d(
             in_channels=channels,
             out_channels=self.reduced_channels,
             kernel_size=1,
             bias=False,
         )
 
-        self.conv_up = cvnn.SlowConv3d(
+        self.conv_up = cvnn.Conv3d(
             in_channels=self.reduced_channels,
             out_channels=channels,
             kernel_size=1,

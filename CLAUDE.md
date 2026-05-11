@@ -35,12 +35,12 @@ The release-date string in `docs/source/index.rst` (`:Version: |release| of <dat
 
 Every module and helper in the package operates on complex-dtype `torch.Tensor` (typically `torch.cfloat`). The earlier `CVTensor` class (real/imag stored as two separate tensors) was removed when its speed advantages disappeared with PyTorch 2.1.0's native complex kernels. If you see `CVTensor` referenced in old release notes, that's historical — the type no longer exists in the public API.
 
-### Fast vs. Slow modules
+### Native vs. Gauss-trick modules
 
-Many module names appear in two variants:
+Convolution and linear layers exist in two variants:
 
-- `Conv1d`, `Conv2d`, `Conv3d`, `Linear` — thin wrappers around `torch.nn.Conv*` / `torch.nn.Linear` with `dtype=torch.cfloat`. These rely on PyTorch's native complex kernels and are the recommended path.
-- `SlowConv1d`, …, `SlowConvTranspose3d`, `SlowLinear` — the original hand-rolled real/imag-split implementations using Gauss' trick. Kept for backwards compatibility and as reference implementations; do not delete or "modernize" them without checking with the user.
+- `complextorch.nn.Conv1d`, `Conv2d`, `Conv3d`, `ConvTranspose{1,2,3}d`, `Linear` — thin wrappers around `torch.nn.Conv*` / `torch.nn.Linear` with `dtype=torch.cfloat`. These rely on PyTorch's native complex kernels and are the recommended path.
+- `complextorch.nn.gauss.Conv1d`, …, `ConvTranspose3d`, `Linear` — hand-rolled real/imag-split implementations using Gauss' multiplication trick (3 real ops instead of 4). Kept as reference implementations and for users who want explicit access to the split halves; do not delete or "modernize" them without checking with the user. (Until 2.0.0 these were exposed as top-level `SlowConv*` / `SlowLinear`; the prefix was a misleading legacy from when they were *faster* than the naive split.)
 
 When adding a new layer that has a native PyTorch complex equivalent, follow the `Conv1d` pattern (wrap `torch.nn.X` with `dtype=torch.cfloat`) rather than reimplementing the real/imag split.
 
