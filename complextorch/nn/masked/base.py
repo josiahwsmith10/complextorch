@@ -88,11 +88,8 @@ class BaseMasked(nn.Module):
             if mask_in_missing:
                 missing_keys.remove(mask_key)
             self.mask_(state_dict[mask_key])
-        elif strict:
-            if not mask_in_missing:
-                missing_keys.append(mask_key)
-        elif mask_in_missing:
-            missing_keys.remove(mask_key)
+        elif strict and not mask_in_missing:
+            missing_keys.append(mask_key)
 
 
 class MaskedWeightMixin(SparsityStats):
@@ -116,6 +113,4 @@ class MaskedWeightMixin(SparsityStats):
             n_dropped = float((self.mask == 0).sum().item())
         else:
             n_dropped = 0.0
-        if weight.is_complex():
-            return [(id(weight), n_dropped)]
         return [(id(weight), n_dropped)]

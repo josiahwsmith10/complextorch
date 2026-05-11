@@ -280,7 +280,7 @@ class PerpLossSSIM(nn.Module):
             mag_target[aligned_mask] - ploss[aligned_mask]
         )
         final_term[~aligned_mask] = ploss[~aligned_mask]
-        ssim_loss = (1 - self.ssim(x, y)) / mag_input.shape[0]
+        ssim_loss = (1 - self.ssim(mag_input, mag_target)) / mag_input.shape[0]
 
         return (
             final_term.mean() * torch.clamp(self.param, 0, 1)

@@ -30,10 +30,6 @@ from complextorch.nn.modules.linear import Linear
 __all__ = ["GRUCell", "GRU", "LSTMCell", "LSTM"]
 
 
-def _maybe_bn(features: int, enabled: bool) -> nn.Module:
-    return BatchNorm1d(features) if enabled else nn.Identity()
-
-
 class GRUCell(nn.Module):
     r"""
     Complex-Valued GRU Cell

@@ -303,7 +303,7 @@ class FFTResize(nn.Module):
 
 
 def _resize_spectrum(spec: torch.Tensor, h: int, w: int) -> torch.Tensor:
-    """Centre-crop or zero-pad the trailing (H, W) of ``spec`` to ``(h, w)``."""
+    """Centre-crop or zero-pad the trailing (H, W) of the complex ``spec`` to ``(h, w)``."""
     H, W = spec.shape[-2], spec.shape[-1]
     # Vertical
     if h <= H:
@@ -312,12 +312,9 @@ def _resize_spectrum(spec: torch.Tensor, h: int, w: int) -> torch.Tensor:
     else:
         pad_top = (h - H) // 2
         pad_bot = h - H - pad_top
-        if spec.is_complex():
-            pad_r = torch.nn.functional.pad(spec.real, (0, 0, pad_top, pad_bot))
-            pad_i = torch.nn.functional.pad(spec.imag, (0, 0, pad_top, pad_bot))
-            spec = torch.complex(pad_r, pad_i)
-        else:
-            spec = torch.nn.functional.pad(spec, (0, 0, pad_top, pad_bot))
+        pad_r = torch.nn.functional.pad(spec.real, (0, 0, pad_top, pad_bot))
+        pad_i = torch.nn.functional.pad(spec.imag, (0, 0, pad_top, pad_bot))
+        spec = torch.complex(pad_r, pad_i)
     # Horizontal
     if w <= W:
         left = (W - w) // 2
@@ -325,12 +322,9 @@ def _resize_spectrum(spec: torch.Tensor, h: int, w: int) -> torch.Tensor:
     else:
         pad_l = (w - W) // 2
         pad_r = w - W - pad_l
-        if spec.is_complex():
-            pad_re = torch.nn.functional.pad(spec.real, (pad_l, pad_r, 0, 0))
-            pad_im = torch.nn.functional.pad(spec.imag, (pad_l, pad_r, 0, 0))
-            spec = torch.complex(pad_re, pad_im)
-        else:
-            spec = torch.nn.functional.pad(spec, (pad_l, pad_r, 0, 0))
+        pad_re = torch.nn.functional.pad(spec.real, (pad_l, pad_r, 0, 0))
+        pad_im = torch.nn.functional.pad(spec.imag, (pad_l, pad_r, 0, 0))
+        spec = torch.complex(pad_re, pad_im)
     return spec
 
 
