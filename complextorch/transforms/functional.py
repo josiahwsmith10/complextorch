@@ -7,8 +7,6 @@ Lower-level helpers backing the class transforms in
 (``_``-prefixed); the public ones are listed in ``__all__``.
 """
 
-from typing import Dict, Optional, Tuple
-
 import torch
 import torch.nn.functional as F
 
@@ -21,7 +19,7 @@ __all__ = ["polsar_dict_to_array", "rescale_intensity"]
 
 
 def polsar_dict_to_array(
-    d: Dict[str, torch.Tensor], order: Tuple[str, ...] = ("HH", "HV", "VH", "VV")
+    d: dict[str, torch.Tensor], order: tuple[str, ...] = ("HH", "HV", "VH", "VV")
 ) -> torch.Tensor:
     r"""
     Stack a polarimetric SAR channel dictionary into a tensor.
@@ -45,8 +43,8 @@ def polsar_dict_to_array(
 
 def rescale_intensity(
     x: torch.Tensor,
-    in_range: Optional[Tuple[float, float]] = None,
-    out_range: Tuple[float, float] = (0.0, 1.0),
+    in_range: tuple[float, float] | None = None,
+    out_range: tuple[float, float] = (0.0, 1.0),
 ) -> torch.Tensor:
     r"""
     Linearly remap intensity values from ``in_range`` to ``out_range``.
@@ -84,8 +82,7 @@ def _log_normalize_amplitude(
     x: torch.Tensor, scale: float = 1.0, preserve_phase: bool = True
 ) -> torch.Tensor:
     """``log1p(|x| / scale) * exp(j * arg x)`` when ``preserve_phase``; else real magnitude."""
-    mag = x.abs() if x.is_complex() else x.abs()
-    out_mag = torch.log1p(mag / scale)
+    out_mag = torch.log1p(x.abs() / scale)
     if preserve_phase and x.is_complex():
         return torch.polar(out_mag, x.angle())
     return out_mag
@@ -100,8 +97,8 @@ def _applyifft2(x: torch.Tensor) -> torch.Tensor:
 
 
 def _get_padding(
-    shape: Tuple[int, int], target: Tuple[int, int]
-) -> Tuple[int, int, int, int]:
+    shape: tuple[int, int], target: tuple[int, int]
+) -> tuple[int, int, int, int]:
     """Symmetric (left, right, top, bottom) pad amounts to bring (H, W) up to target."""
     h, w = shape
     th, tw = target
@@ -130,7 +127,7 @@ def _padifneeded(
 
 def _center_crop(x: torch.Tensor, h: int, w: int) -> torch.Tensor:
     H, W = x.shape[-2], x.shape[-1]
-    if H < h or W < w:
+    if h > H or w > W:
         raise ValueError(f"center_crop: target {(h, w)} larger than input {(H, W)}")
     top = (H - h) // 2
     left = (W - w) // 2

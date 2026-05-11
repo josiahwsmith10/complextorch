@@ -1,9 +1,7 @@
-from typing import Optional
-
-import torch.nn as nn
 import torch
+import torch.nn as nn
 
-__all__ = ["ComplexRatioMask", "PhaseSigmoid", "MagMinMaxNorm"]
+__all__ = ["ComplexRatioMask", "MagMinMaxNorm", "PhaseSigmoid"]
 
 _EPS = 1e-12
 
@@ -29,7 +27,7 @@ class ComplexRatioMask(nn.Module):
     """
 
     def __init__(self) -> None:
-        super(ComplexRatioMask, self).__init__()
+        super().__init__()
 
     def forward(self, input: torch.Tensor) -> torch.Tensor:
         r"""Computes complex ratio mask on complex-valued input tensor.
@@ -65,7 +63,7 @@ class PhaseSigmoid(nn.Module):
     """
 
     def __init__(self) -> None:
-        super(PhaseSigmoid, self).__init__()
+        super().__init__()
 
     def forward(self, input: torch.Tensor) -> torch.Tensor:
         r"""Computes phase-preserving sigmoid mask on a complex-valued input tensor.
@@ -96,8 +94,8 @@ class MagMinMaxNorm(nn.Module):
         \texttt{MagMinMaxNorm}(\mathbf{z}) = \frac{|\mathbf{z}| - |\mathbf{z}|_{min}}{|\mathbf{z}|_{max} - |\mathbf{z}|_{min}} \odot \exp(j \angle\mathbf{z})
     """
 
-    def __init__(self, dim: Optional[int] = None) -> None:
-        super(MagMinMaxNorm, self).__init__()
+    def __init__(self, dim: int | None = None) -> None:
+        super().__init__()
 
         self.dim = dim
 

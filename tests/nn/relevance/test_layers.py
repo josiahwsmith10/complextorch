@@ -18,7 +18,6 @@ from complextorch.nn.relevance import (
     LinearVD,
 )
 
-
 # ---------- LinearVD/ARD ----------
 
 
@@ -102,7 +101,7 @@ def test_bilinear_vd_no_conjugate():
 
 
 @pytest.mark.parametrize(
-    "cls, shape",
+    ("cls", "shape"),
     [
         (Conv1dVD, (1, 2, 8)),
         (Conv2dVD, (1, 2, 6, 6)),

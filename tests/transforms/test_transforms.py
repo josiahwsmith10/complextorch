@@ -2,17 +2,16 @@
 
 from __future__ import annotations
 
-
 import pytest
 import torch
 
 from complextorch.transforms import (
-    Amplitude,
-    CenterCrop,
     FFT2,
-    FFTResize,
     HWC2CHW,
     IFFT2,
+    Amplitude,
+    CenterCrop,
+    FFTResize,
     LogAmplitude,
     Normalize,
     PadIfNeeded,
@@ -25,7 +24,6 @@ from complextorch.transforms import (
     ToTensor,
     Unsqueeze,
 )
-
 
 # ---------- Casting / shape ----------
 
@@ -254,7 +252,7 @@ def test_fft_resize_real_input():
 
 
 @pytest.mark.parametrize(
-    "in_c, out_c",
+    ("in_c", "out_c"),
     [
         (1, 1),
         (2, 1),

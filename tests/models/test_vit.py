@@ -7,7 +7,6 @@ import torch
 
 from complextorch.models import ViT, ViTLayer, vit_b, vit_h, vit_l, vit_s, vit_t
 
-
 # ---------- ViTLayer ----------
 
 

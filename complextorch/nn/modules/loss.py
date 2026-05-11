@@ -1,22 +1,20 @@
-from typing import Optional
-
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
 __all__ = [
-    "GeneralizedSplitLoss",
-    "SplitL1",
-    "SplitMSE",
     "SSIM",
-    "SplitSSIM",
-    "PerpLossSSIM",
-    "CVQuadError",
-    "CVFourthPowError",
     "CVCauchyError",
+    "CVFourthPowError",
     "CVLogCoshError",
     "CVLogError",
+    "CVQuadError",
+    "GeneralizedSplitLoss",
     "MSELoss",
+    "PerpLossSSIM",
+    "SplitL1",
+    "SplitMSE",
+    "SplitSSIM",
 ]
 
 
@@ -46,7 +44,7 @@ class GeneralizedSplitLoss(nn.Module):
     """
 
     def __init__(self, loss_r: nn.Module, loss_i: nn.Module) -> None:
-        super(GeneralizedSplitLoss, self).__init__()
+        super().__init__()
         self.loss_r = loss_r
         self.loss_i = loss_i
 
@@ -84,7 +82,7 @@ class GeneralizedPolarLoss(nn.Module):
         weight_mag: float = 1.0,
         weight_phase: float = 1.0,
     ) -> None:
-        super(GeneralizedPolarLoss, self).__init__()
+        super().__init__()
         self.loss_mag = loss_mag
         self.loss_phase = loss_phase
 
@@ -160,7 +158,7 @@ class SSIM(nn.Module):
         self,
         x: torch.Tensor,
         y: torch.Tensor,
-        data_range: Optional[torch.Tensor] = None,
+        data_range: torch.Tensor | None = None,
         full: bool = False,
     ) -> torch.Tensor:
         r"""Computes the SSIM metric on the real-valued tensors.
@@ -205,8 +203,7 @@ class SSIM(nn.Module):
 
         if full:
             return S
-        else:
-            return S.mean()
+        return S.mean()
 
 
 class SplitSSIM(GeneralizedSplitLoss):
@@ -224,7 +221,7 @@ class SplitSSIM(GeneralizedSplitLoss):
         self,
         x: torch.Tensor,
         y: torch.Tensor,
-        data_range: Optional[torch.Tensor] = None,
+        data_range: torch.Tensor | None = None,
         full: bool = False,
     ) -> torch.Tensor:
         return self.loss_r(
@@ -311,7 +308,7 @@ class CVQuadError(nn.Module):
     """
 
     def __init__(self, reduction: str = "mean") -> None:
-        super(CVQuadError, self).__init__()
+        super().__init__()
         self.reduction = reduction
 
     def forward(self, x: torch.Tensor, y: torch.Tensor) -> torch.Tensor:
@@ -336,7 +333,7 @@ class MSELoss(nn.Module):
     """
 
     def __init__(self, reduction: str = "mean") -> None:
-        super(MSELoss, self).__init__()
+        super().__init__()
         self.reduction = reduction
 
     def forward(self, x: torch.Tensor, y: torch.Tensor) -> torch.Tensor:
@@ -364,7 +361,7 @@ class CVFourthPowError(nn.Module):
     """
 
     def __init__(self, reduction: str = "mean") -> None:
-        super(CVFourthPowError, self).__init__()
+        super().__init__()
         self.reduction = reduction
 
     def forward(self, x: torch.Tensor, y: torch.Tensor) -> torch.Tensor:
@@ -392,7 +389,7 @@ class CVCauchyError(nn.Module):
     """
 
     def __init__(self, c: float = 1, reduction: str = "mean") -> None:
-        super(CVCauchyError, self).__init__()
+        super().__init__()
         self.c2 = c**2
         self.reduction = reduction
 
@@ -423,7 +420,7 @@ class CVLogCoshError(nn.Module):
     """
 
     def __init__(self, reduction: str = "mean") -> None:
-        super(CVLogCoshError, self).__init__()
+        super().__init__()
         self.reduction = reduction
 
     def forward(self, x: torch.Tensor, y: torch.Tensor) -> torch.Tensor:
@@ -450,7 +447,7 @@ class CVLogError(nn.Module):
     """
 
     def __init__(self, reduction: str = "mean") -> None:
-        super(CVLogError, self).__init__()
+        super().__init__()
         self.reduction = reduction
 
     def forward(self, x: torch.Tensor, y: torch.Tensor) -> torch.Tensor:

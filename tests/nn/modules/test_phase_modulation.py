@@ -17,7 +17,7 @@ from complextorch.nn.modules.phase_modulation import (
 
 
 @pytest.mark.parametrize(
-    "cls, shape, kernel",
+    ("cls", "shape", "kernel"),
     [
         (PhaseDivConv1d, (2, 4, 16), 3),
         (PhaseDivConv2d, (2, 4, 8, 8), 3),

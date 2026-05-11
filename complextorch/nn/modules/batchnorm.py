@@ -8,12 +8,12 @@ __all__ = [
     "BatchNorm1d",
     "BatchNorm2d",
     "BatchNorm3d",
-    "NaiveBatchNorm1d",
-    "NaiveBatchNorm2d",
-    "NaiveBatchNorm3d",
     "MagBatchNorm1d",
     "MagBatchNorm2d",
     "MagBatchNorm3d",
+    "NaiveBatchNorm1d",
+    "NaiveBatchNorm2d",
+    "NaiveBatchNorm3d",
 ]
 
 
@@ -85,12 +85,9 @@ class _BatchNorm(nn.Module):
     def forward(self, input: torch.Tensor) -> torch.Tensor:
         self._check_input_dim(input)
 
-        if self.momentum is None:
-            exponential_average_factor = 0.0
-        else:
-            exponential_average_factor = self.momentum
+        exponential_average_factor = 0.0 if self.momentum is None else self.momentum
 
-        if self.training and self.track_running_stats:
+        if self.training and self.track_running_stats:  # noqa: SIM102 — kept nested to mirror torch.nn.modules.batchnorm._BatchNorm.forward
             if self.num_batches_tracked is not None:
                 self.num_batches_tracked += 1
                 if self.momentum is None:  # use cumulative moving average

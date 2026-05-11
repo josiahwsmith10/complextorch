@@ -1,7 +1,7 @@
 import torch
 import torch.nn as nn
 
-__all__ = ["CVSigmoid", "zReLU", "CVCardiod", "CVSigLog", "Mod"]
+__all__ = ["CVCardiod", "CVSigLog", "CVSigmoid", "Mod", "zReLU"]
 
 
 class CVSigmoid(nn.Module):
@@ -27,7 +27,7 @@ class CVSigmoid(nn.Module):
     """
 
     def __init__(self) -> None:
-        super(CVSigmoid, self).__init__()
+        super().__init__()
 
     def forward(self, input: torch.Tensor) -> torch.Tensor:
         r"""Computes the complex-valued sigmoid activation function.
@@ -75,7 +75,7 @@ class zReLU(nn.Module):
     """
 
     def __init__(self) -> None:
-        super(zReLU, self).__init__()
+        super().__init__()
 
     def forward(self, input: torch.Tensor) -> torch.Tensor:
         r"""Computes the complex-valued Guberman ReLU.
@@ -87,7 +87,7 @@ class zReLU(nn.Module):
             torch.Tensor: :math:`\begin{cases} \mathbf{z} \quad \text{if} \quad \angle\mathbf{z} \in [0, \pi/2] \\ 0 \quad \text{else} \end{cases}`
         """
         x_angle = input.angle()
-        mask = (0 <= x_angle) & (x_angle <= torch.pi / 2)
+        mask = (x_angle >= 0) & (x_angle <= torch.pi / 2)
         return input * mask
 
 
@@ -119,7 +119,7 @@ class CVCardiod(nn.Module):
     """
 
     def __init__(self) -> None:
-        super(CVCardiod, self).__init__()
+        super().__init__()
 
     def forward(self, input: torch.Tensor) -> torch.Tensor:
         r"""Computes the complex-valued cardioid activation function.
@@ -153,7 +153,7 @@ class CVSigLog(nn.Module):
     """
 
     def __init__(self, c: float = 1.0, r: float = 1.0) -> None:
-        super(CVSigLog, self).__init__()
+        super().__init__()
 
         self.c = c
         self.r = r

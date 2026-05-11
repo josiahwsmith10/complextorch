@@ -5,18 +5,18 @@ Pre-Built Complex-Valued Architectures
 Reference architectures composed from the primitives in :mod:`complextorch.nn`.
 """
 
-from complextorch.models.vit import ViT, ViTLayer, vit_t, vit_s, vit_b, vit_l, vit_h
-from complextorch.models.cds import CDSInvariant, CDSEquivariant, CDSMSTAR
+from complextorch.models.cds import CDSMSTAR, CDSEquivariant, CDSInvariant
+from complextorch.models.vit import ViT, ViTLayer, vit_b, vit_h, vit_l, vit_s, vit_t
 
 __all__ = [
+    "CDSMSTAR",
+    "CDSEquivariant",
+    "CDSInvariant",
     "ViT",
     "ViTLayer",
-    "vit_t",
-    "vit_s",
     "vit_b",
-    "vit_l",
     "vit_h",
-    "CDSInvariant",
-    "CDSEquivariant",
-    "CDSMSTAR",
+    "vit_l",
+    "vit_s",
+    "vit_t",
 ]

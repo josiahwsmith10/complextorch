@@ -12,10 +12,6 @@ __author__ = "Josiah W. Smith"
 
 __version__ = "2.0.0"
 
-__all__ = ["nn", "signal", "transforms", "datasets", "models"]
+__all__ = ["datasets", "models", "nn", "signal", "transforms"]
 
-from complextorch import nn
-from complextorch import signal
-from complextorch import transforms
-from complextorch import datasets
-from complextorch import models
+from complextorch import datasets, models, nn, signal, transforms

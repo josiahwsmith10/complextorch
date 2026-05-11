@@ -1,11 +1,9 @@
-from typing import Tuple
-
 import numpy as np
 import torch
 import torch.nn as nn
 from torch.nn.common_types import _size_1_t, _size_2_t
 
-__all__ = ["wFMConv1d", "wFMConv2d", "wFMReLU", "wFMDistanceLinear"]
+__all__ = ["wFMConv1d", "wFMConv2d", "wFMDistanceLinear", "wFMReLU"]
 
 
 def _normalize_weights_squared(weights: torch.Tensor) -> torch.Tensor:
@@ -63,7 +61,7 @@ class _wFMConv2dHelper(nn.Module):
         weight_dropout: float = 0.0,
         eps: float = 1e-5,
     ) -> None:
-        super(_wFMConv2dHelper, self).__init__()
+        super().__init__()
         self.in_channels = in_channels
         self.out_channels = out_channels
         self.kernel_size = kernel_size
@@ -86,11 +84,11 @@ class _wFMConv2dHelper(nn.Module):
 
         self.unfold = nn.Unfold(kernel_size=kernel_size, stride=stride, padding=padding)
 
-    def compute_output_shape(self, input_shape) -> Tuple[int]:
+    def compute_output_shape(self, input_shape) -> tuple[int]:
         return tuple(
             int(np.floor((in_shape + 2 * padding - (kernel_size - 1) - 1) / stride + 1))
             for in_shape, padding, kernel_size, stride in zip(
-                input_shape, self.padding, self.kernel_size, self.stride
+                input_shape, self.padding, self.kernel_size, self.stride, strict=False
             )
         )
 
@@ -206,7 +204,7 @@ class wFMConv2d(nn.Module):
         padding: _size_2_t = (0, 0),
         weight_dropout: float = 0.0,
     ) -> None:
-        super(wFMConv2d, self).__init__()
+        super().__init__()
         self.in_channels = in_channels
         self.out_channels = out_channels
         self.kernel_size = kernel_size
@@ -238,7 +236,7 @@ class wFMConv2d(nn.Module):
 
         # Lazily built and cached by input spatial shape so we don't reallocate
         # an ``nn.Fold`` on every forward when shapes are stable.
-        self._fold_cache: "dict[tuple, nn.Fold]" = {}
+        self._fold_cache: dict[tuple, nn.Fold] = {}
 
     def _get_fold(self, input_shape) -> nn.Fold:
         key = tuple(input_shape)
@@ -253,11 +251,11 @@ class wFMConv2d(nn.Module):
             self._fold_cache[key] = fold
         return fold
 
-    def compute_output_shape(self, input_shape) -> Tuple[int]:
+    def compute_output_shape(self, input_shape) -> tuple[int]:
         return tuple(
             int(np.floor((in_shape + 2 * padding - (kernel_size - 1) - 1) / stride + 1))
             for in_shape, padding, kernel_size, stride in zip(
-                input_shape, self.padding, self.kernel_size, self.stride
+                input_shape, self.padding, self.kernel_size, self.stride, strict=False
             )
         )
 
@@ -376,7 +374,7 @@ class wFMConv1d(nn.Module):
         padding: _size_1_t = 0,
         weight_dropout: float = 0.0,
     ) -> None:
-        super(wFMConv1d, self).__init__()
+        super().__init__()
         self.in_channels = in_channels
         self.out_channels = out_channels
         self.kernel_size = kernel_size
@@ -538,7 +536,7 @@ class wFMDistanceLinear(nn.Module):
         M_phase = (phase * w).sum(dim=1) * torch.tanh(-self.bias[0])  # [B]
         log_mag = torch.log(mag + self.eps)
         M_mag = torch.exp((log_mag * w).sum(dim=1)) + torch.exp(
-            -self.bias[1] ** 2
+            -(self.bias[1] ** 2)
         )  # [B]
 
         dist_phase = (phase - M_phase.unsqueeze(1)).abs()  # [B, N]

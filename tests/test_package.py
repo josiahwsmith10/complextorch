@@ -20,4 +20,5 @@ def test_public_subpackages_importable():
 
 
 def test_author_metadata():
-    assert isinstance(complextorch.__author__, str) and complextorch.__author__
+    assert isinstance(complextorch.__author__, str)
+    assert complextorch.__author__

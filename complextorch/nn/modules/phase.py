@@ -10,12 +10,11 @@ Learnable Phase / Complex-Scaling Modules
 """
 
 import math
-from typing import Tuple, Union
 
 import torch
 import torch.nn as nn
 
-__all__ = ["PhaseShift", "ComplexScaling"]
+__all__ = ["ComplexScaling", "PhaseShift"]
 
 
 class PhaseShift(nn.Module):
@@ -46,12 +45,12 @@ class PhaseShift(nn.Module):
 
     def __init__(
         self,
-        num_features: Union[int, Tuple[int, ...]] = 1,
+        num_features: int | tuple[int, ...] = 1,
         broadcast_dim: int = 1,
     ) -> None:
         super().__init__()
         if isinstance(num_features, int):
-            shape: Tuple[int, ...] = (num_features,) if num_features != 1 else ()
+            shape: tuple[int, ...] = (num_features,) if num_features != 1 else ()
         else:
             shape = tuple(num_features)
         self.num_features = num_features
@@ -125,12 +124,12 @@ class ComplexScaling(nn.Module):
 
     def __init__(
         self,
-        num_features: Union[int, Tuple[int, ...]] = 1,
+        num_features: int | tuple[int, ...] = 1,
         broadcast_dim: int = 1,
     ) -> None:
         super().__init__()
         if isinstance(num_features, int):
-            shape: Tuple[int, ...] = (num_features,) if num_features != 1 else ()
+            shape: tuple[int, ...] = (num_features,) if num_features != 1 else ()
         else:
             shape = tuple(num_features)
         self.num_features = num_features

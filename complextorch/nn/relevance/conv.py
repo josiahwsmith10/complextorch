@@ -6,7 +6,6 @@ Adapted from :mod:`cplxmodule.nn.relevance.complex` for native ``torch.cfloat``.
 """
 
 import math
-from typing import Tuple
 
 import torch
 import torch.nn as nn
@@ -21,16 +20,16 @@ from complextorch.nn.relevance.linear import (
 )
 
 __all__ = [
-    "Conv1dVD",
-    "Conv2dVD",
-    "Conv3dVD",
     "Conv1dARD",
+    "Conv1dVD",
     "Conv2dARD",
+    "Conv2dVD",
     "Conv3dARD",
+    "Conv3dVD",
 ]
 
 
-def _to_tuple(x, n: int) -> Tuple[int, ...]:
+def _to_tuple(x, n: int) -> tuple[int, ...]:
     if isinstance(x, int):
         return (x,) * n
     return tuple(x)
@@ -69,7 +68,7 @@ class _ConvNdGaussian(_GaussianMixin, nn.Module):
         self.dilation = _to_tuple(dilation, self._nd)
         self.groups = groups
 
-        weight_shape = (out_channels, in_channels // groups) + self.kernel_size
+        weight_shape = (out_channels, in_channels // groups, *self.kernel_size)
         self.weight = nn.Parameter(torch.empty(*weight_shape, dtype=torch.cfloat))
         if bias:
             self.bias = nn.Parameter(torch.empty(out_channels, dtype=torch.cfloat))

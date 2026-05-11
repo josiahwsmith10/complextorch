@@ -33,7 +33,7 @@ class Dropout(nn.Module):
     """
 
     def __init__(self, p: float = 0.5, inplace: bool = False) -> None:
-        super(Dropout, self).__init__()
+        super().__init__()
 
         self.dropout_r = nn.Dropout(p, inplace)
         self.dropout_i = nn.Dropout(p, inplace)

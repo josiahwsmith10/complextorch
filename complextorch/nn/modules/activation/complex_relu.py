@@ -6,13 +6,13 @@ import torch.nn as nn
 from complextorch.nn.modules.activation.split_type_A import GeneralizedSplitActivation
 
 __all__ = [
-    "CVSplitReLU",
-    "CReLU",
     "CPReLU",
+    "CReLU",
+    "CVSplitReLU",
+    "EquivariantPhaseReLU",
+    "GTReLU",
     "zAbsReLU",
     "zLeakyReLU",
-    "GTReLU",
-    "EquivariantPhaseReLU",
 ]
 
 
@@ -37,7 +37,7 @@ class CVSplitReLU(GeneralizedSplitActivation):
     """
 
     def __init__(self, inplace: bool = True) -> None:
-        super(CVSplitReLU, self).__init__(nn.ReLU(inplace), nn.ReLU(inplace))
+        super().__init__(nn.ReLU(inplace), nn.ReLU(inplace))
 
 
 class CReLU(CVSplitReLU):
@@ -53,8 +53,6 @@ class CReLU(CVSplitReLU):
 
     Alias for :class:`CVSplitReLU`. The nomenclature CReLU is used only in certain literature to denote the split complex-valued rectified linear unit.
     """
-
-    pass
 
 
 class CPReLU(GeneralizedSplitActivation):
@@ -80,7 +78,7 @@ class CPReLU(GeneralizedSplitActivation):
     """
 
     def __init__(self) -> None:
-        super(CPReLU, self).__init__(nn.PReLU(), nn.PReLU())
+        super().__init__(nn.PReLU(), nn.PReLU())
 
 
 class zAbsReLU(nn.Module):

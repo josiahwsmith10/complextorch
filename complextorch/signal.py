@@ -10,8 +10,6 @@ A small set of complex-aware signal helpers that don't fit naturally in
   differentiable end-to-end.
 """
 
-from typing import Optional, Tuple, Union
-
 import torch
 
 __all__ = ["pwelch"]
@@ -26,13 +24,13 @@ def _window_view(x: torch.Tensor, dim: int, size: int, stride: int = 1) -> torch
 
 def pwelch(
     x: torch.Tensor,
-    window: Union[int, torch.Tensor] = 256,
+    window: int | torch.Tensor = 256,
     fs: float = 1.0,
     scaling: str = "density",
-    n_overlap: Optional[int] = None,
+    n_overlap: int | None = None,
     detrend: str = "constant",
-    return_onesided: Optional[bool] = None,
-) -> Tuple[torch.Tensor, torch.Tensor]:
+    return_onesided: bool | None = None,
+) -> tuple[torch.Tensor, torch.Tensor]:
     r"""
     Welch Power Spectral Density (torch).
 

@@ -13,40 +13,40 @@ Adapted from :mod:`cplxmodule.nn.relevance.complex` for native ``torch.cfloat``.
 
 from complextorch.nn.relevance.base import (
     BaseARD,
-    named_penalties,
-    penalties,
-    named_relevance,
     compute_ard_masks,
-)
-from complextorch.nn.relevance.linear import (
-    LinearVD,
-    BilinearVD,
-    LinearARD,
-    BilinearARD,
+    named_penalties,
+    named_relevance,
+    penalties,
 )
 from complextorch.nn.relevance.conv import (
-    Conv1dVD,
-    Conv2dVD,
-    Conv3dVD,
     Conv1dARD,
+    Conv1dVD,
     Conv2dARD,
+    Conv2dVD,
     Conv3dARD,
+    Conv3dVD,
+)
+from complextorch.nn.relevance.linear import (
+    BilinearARD,
+    BilinearVD,
+    LinearARD,
+    LinearVD,
 )
 
 __all__ = [
     "BaseARD",
-    "named_penalties",
-    "penalties",
-    "named_relevance",
-    "compute_ard_masks",
-    "LinearVD",
-    "BilinearVD",
-    "LinearARD",
     "BilinearARD",
-    "Conv1dVD",
-    "Conv2dVD",
-    "Conv3dVD",
+    "BilinearVD",
     "Conv1dARD",
+    "Conv1dVD",
     "Conv2dARD",
+    "Conv2dVD",
     "Conv3dARD",
+    "Conv3dVD",
+    "LinearARD",
+    "LinearVD",
+    "compute_ard_masks",
+    "named_penalties",
+    "named_relevance",
+    "penalties",
 ]

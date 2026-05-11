@@ -3,8 +3,6 @@ import torch.nn as nn
 import torch.nn.functional as F
 from torch.nn.common_types import _size_1_t, _size_2_t, _size_3_t
 
-from typing import Tuple, Union
-
 __all__ = [
     "Conv1d",
     "Conv2d",
@@ -27,17 +25,17 @@ class _Conv(nn.Module):
         ConvFunc,
         in_channels: int,
         out_channels: int,
-        kernel_size: Tuple[int, ...],
-        stride: Tuple[int, ...],
-        padding: Tuple[int, ...],
-        dilation: Tuple[int, ...],
+        kernel_size: tuple[int, ...],
+        stride: tuple[int, ...],
+        padding: tuple[int, ...],
+        dilation: tuple[int, ...],
         groups: int,
         bias: bool,
         padding_mode: str,
         device=None,
         dtype=None,
     ) -> None:
-        super(_Conv, self).__init__()
+        super().__init__()
 
         self.ConvFunc = ConvFunc
         self.in_channels = in_channels
@@ -172,7 +170,7 @@ class Conv1d(_Conv):
         out_channels: int,
         kernel_size: _size_1_t,
         stride: _size_1_t = 1,
-        padding: Union[str, _size_1_t] = 0,
+        padding: str | _size_1_t = 0,
         dilation: _size_1_t = 1,
         groups: int = 1,
         bias: bool = True,
@@ -180,7 +178,7 @@ class Conv1d(_Conv):
         device=None,
         dtype=None,
     ) -> None:
-        super(Conv1d, self).__init__(
+        super().__init__(
             ConvClass=nn.Conv1d,
             ConvFunc=F.conv1d,
             in_channels=in_channels,
@@ -235,7 +233,7 @@ class Conv2d(_Conv):
         out_channels: int,
         kernel_size: _size_2_t,
         stride: _size_2_t = 1,
-        padding: Union[str, _size_2_t] = 0,
+        padding: str | _size_2_t = 0,
         dilation: _size_2_t = 1,
         groups: int = 1,
         bias: bool = True,
@@ -243,7 +241,7 @@ class Conv2d(_Conv):
         device=None,
         dtype=None,
     ) -> None:
-        super(Conv2d, self).__init__(
+        super().__init__(
             ConvClass=nn.Conv2d,
             ConvFunc=F.conv2d,
             in_channels=in_channels,
@@ -298,7 +296,7 @@ class Conv3d(_Conv):
         out_channels: int,
         kernel_size: _size_3_t,
         stride: _size_3_t = 1,
-        padding: Union[str, _size_3_t] = 0,
+        padding: str | _size_3_t = 0,
         dilation: _size_3_t = 1,
         groups: int = 1,
         bias: bool = True,
@@ -306,7 +304,7 @@ class Conv3d(_Conv):
         device=None,
         dtype=None,
     ) -> None:
-        super(Conv3d, self).__init__(
+        super().__init__(
             ConvClass=nn.Conv3d,
             ConvFunc=F.conv3d,
             in_channels=in_channels,
@@ -335,18 +333,18 @@ class _ConvTranspose(nn.Module):
         ConvFunc,
         in_channels: int,
         out_channels: int,
-        kernel_size: Tuple[int, ...],
-        stride: Tuple[int, ...],
-        padding: Tuple[int, ...],
-        dilation: Tuple[int, ...],
-        output_padding: Tuple[int, ...],
+        kernel_size: tuple[int, ...],
+        stride: tuple[int, ...],
+        padding: tuple[int, ...],
+        dilation: tuple[int, ...],
+        output_padding: tuple[int, ...],
         groups: int,
         bias: bool,
         padding_mode: str,
         device=None,
         dtype=None,
     ) -> None:
-        super(_ConvTranspose, self).__init__()
+        super().__init__()
 
         self.ConvFunc = ConvFunc
         self.in_channels = in_channels
@@ -496,7 +494,7 @@ class ConvTranspose1d(_ConvTranspose):
         device=None,
         dtype=None,
     ) -> None:
-        super(ConvTranspose1d, self).__init__(
+        super().__init__(
             ConvClass=nn.ConvTranspose1d,
             ConvFunc=F.conv_transpose1d,
             in_channels=in_channels,
@@ -562,7 +560,7 @@ class ConvTranspose2d(_ConvTranspose):
         device=None,
         dtype=None,
     ) -> None:
-        super(ConvTranspose2d, self).__init__(
+        super().__init__(
             ConvClass=nn.ConvTranspose2d,
             ConvFunc=F.conv_transpose2d,
             in_channels=in_channels,
@@ -628,7 +626,7 @@ class ConvTranspose3d(_ConvTranspose):
         device=None,
         dtype=None,
     ) -> None:
-        super(ConvTranspose3d, self).__init__(
+        super().__init__(
             ConvClass=nn.ConvTranspose3d,
             ConvFunc=F.conv_transpose3d,
             in_channels=in_channels,

@@ -58,6 +58,11 @@ test = [
     "pytest-xdist>=3",
     "hypothesis>=6",
 ]
+# Tooling for contributors: linter/formatter + pre-commit driver.
+dev = [
+    "ruff>=0.15",
+    "pre-commit>=4",
+]
 # SAR + MRI dataset readers (PolSAR, MICCAI cardiac cine MRI, etc.)
 datasets = [
     "h5py>=3.7",
@@ -99,3 +104,36 @@ exclude_lines = [
     "if __name__ == .__main__.:",
     "\\.\\.\\.",
 ]
+
+[tool.ruff]
+target-version = "py310"
+line-length = 88
+extend-exclude = ["docs/source/_build"]
+
+[tool.ruff.lint]
+select = [
+    "E", "W",  # pycodestyle errors + warnings
+    "F",       # pyflakes
+    "I",       # isort
+    "B",       # flake8-bugbear (likely bugs)
+    "UP",      # pyupgrade (modern Python syntax)
+    "SIM",     # flake8-simplify
+    "RUF",     # ruff-specific
+    "C4",      # flake8-comprehensions
+    "PT",      # pytest-style
+    "PIE",     # flake8-pie
+    "RET",     # flake8-return
+    "TCH",     # flake8-type-checking
+]
+ignore = [
+    "E501",    # line-too-long — handled by the formatter
+]
+# `×` (U+00D7) is intentional math notation in docstrings/comments (e.g. "2×2 whitening").
+allowed-confusables = ["×"]
+
+[tool.ruff.lint.per-file-ignores]
+# Public API surface — manual import grouping is intentional; __all__ is the contract.
+"complextorch/nn/__init__.py" = ["I001"]
+"complextorch/nn/modules/activation/__init__.py" = ["I001"]
+# Sphinx conf reads version before sys.path tweaks; keep authorial layout.
+"docs/source/conf.py" = ["I001"]

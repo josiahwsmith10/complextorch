@@ -4,18 +4,18 @@ import torch.nn as nn
 from complextorch.nn import functional as cvF
 
 __all__ = [
-    "GeneralizedSplitActivation",
-    "CVSplitTanh",
-    "CTanh",
-    "CVSplitSigmoid",
-    "CSigmoid",
-    "CVSplitAbs",
-    "CVSplitELU",
-    "CELU",
-    "CVSplitCELU",
     "CCELU",
-    "CVSplitGELU",
+    "CELU",
     "CGELU",
+    "CSigmoid",
+    "CTanh",
+    "CVSplitAbs",
+    "CVSplitCELU",
+    "CVSplitELU",
+    "CVSplitGELU",
+    "CVSplitSigmoid",
+    "CVSplitTanh",
+    "GeneralizedSplitActivation",
 ]
 
 
@@ -44,7 +44,7 @@ class GeneralizedSplitActivation(nn.Module):
     """
 
     def __init__(self, activation_r: nn.Module, activation_i: nn.Module) -> None:
-        super(GeneralizedSplitActivation, self).__init__()
+        super().__init__()
         self.activation_r = activation_r
         self.activation_i = activation_i
 
@@ -81,7 +81,7 @@ class CVSplitTanh(GeneralizedSplitActivation):
     """
 
     def __init__(self) -> None:
-        super(CVSplitTanh, self).__init__(nn.Tanh(), nn.Tanh())
+        super().__init__(nn.Tanh(), nn.Tanh())
 
 
 class CTanh(CVSplitTanh):
@@ -103,8 +103,6 @@ class CTanh(CVSplitTanh):
             - https://ieeexplore.ieee.org/abstract/document/6138313
     """
 
-    pass
-
 
 class CVSplitSigmoid(GeneralizedSplitActivation):
     r"""
@@ -119,7 +117,7 @@ class CVSplitSigmoid(GeneralizedSplitActivation):
     """
 
     def __init__(self) -> None:
-        super(CVSplitSigmoid, self).__init__(nn.Sigmoid(), nn.Sigmoid())
+        super().__init__(nn.Sigmoid(), nn.Sigmoid())
 
 
 class CSigmoid(CVSplitSigmoid):
@@ -132,8 +130,6 @@ class CSigmoid(CVSplitSigmoid):
 
         G(\mathbf{z}) = \text{sigmoid}(\mathbf{x}) + j \text{sigmoid}(\mathbf{y})
     """
-
-    pass
 
 
 class CVSplitAbs(nn.Module):
@@ -156,7 +152,7 @@ class CVSplitAbs(nn.Module):
     """
 
     def __init__(self) -> None:
-        super(CVSplitAbs, self).__init__()
+        super().__init__()
 
     def forward(self, input: torch.Tensor) -> torch.Tensor:
         r"""Computes the Type-A split abs() activation function.
@@ -195,8 +191,6 @@ class CELU(CVSplitELU):
     :class:`CCELU`.
     """
 
-    pass
-
 
 class CVSplitCELU(GeneralizedSplitActivation):
     r"""
@@ -216,8 +210,6 @@ class CVSplitCELU(GeneralizedSplitActivation):
 
 class CCELU(CVSplitCELU):
     r"""Alias for :class:`CVSplitCELU`."""
-
-    pass
 
 
 class CVSplitGELU(GeneralizedSplitActivation):
@@ -240,5 +232,3 @@ class CVSplitGELU(GeneralizedSplitActivation):
 
 class CGELU(CVSplitGELU):
     r"""Alias for :class:`CVSplitGELU`."""
-
-    pass

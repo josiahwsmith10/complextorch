@@ -9,7 +9,6 @@ import torch
 
 from complextorch.nn import init
 
-
 # ---------- _get_fans + _check_complex via public functions ----------
 
 

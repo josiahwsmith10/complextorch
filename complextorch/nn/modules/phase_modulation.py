@@ -37,24 +37,22 @@ Based on work from the following paper:
         - https://openaccess.thecvf.com/content/CVPR2022/papers/Singhal_Co-Domain_Symmetry_for_Complex-Valued_Deep_Learning_CVPR_2022_paper.pdf
 """
 
-from typing import Tuple
-
 import torch
 import torch.nn as nn
 
 from complextorch.nn.modules.conv import Conv1d, Conv2d, Conv3d
 
 __all__ = [
-    "PhaseDivConv1d",
-    "PhaseDivConv2d",
-    "PhaseDivConv3d",
     "PhaseConjConv1d",
     "PhaseConjConv2d",
     "PhaseConjConv3d",
+    "PhaseDivConv1d",
+    "PhaseDivConv2d",
+    "PhaseDivConv3d",
 ]
 
 
-def _center_crop(x: torch.Tensor, target_spatial: Tuple[int, ...]) -> torch.Tensor:
+def _center_crop(x: torch.Tensor, target_spatial: tuple[int, ...]) -> torch.Tensor:
     """Center-crop the trailing spatial dims of ``x`` to ``target_spatial``.
 
     Used when the inner conv ``g`` has a kernel larger than 1 and no padding,
@@ -65,7 +63,7 @@ def _center_crop(x: torch.Tensor, target_spatial: Tuple[int, ...]) -> torch.Tens
     if tuple(spatial_in) == tuple(target_spatial):
         return x
     slices = [slice(None), slice(None)]
-    for in_size, out_size in zip(spatial_in, target_spatial):
+    for in_size, out_size in zip(spatial_in, target_spatial, strict=False):
         start = (in_size - out_size) // 2
         slices.append(slice(start, start + out_size))
     return x[tuple(slices)]

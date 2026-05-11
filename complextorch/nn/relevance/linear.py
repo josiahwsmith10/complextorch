@@ -18,7 +18,7 @@ from complextorch.nn.relevance._expi import torch_expi
 from complextorch.nn.relevance.base import BaseARD
 from complextorch.nn.utils.sparsity import SparsityStats
 
-__all__ = ["LinearVD", "BilinearVD", "LinearARD", "BilinearARD"]
+__all__ = ["BilinearARD", "BilinearVD", "LinearARD", "LinearVD"]
 
 
 def _init_complex_weight(weight: torch.Tensor, in_features: int) -> None:
@@ -127,13 +127,9 @@ class _LinearGaussian(_GaussianMixin, nn.Module):
 class LinearVD(_CplxVDMixin, _RelevanceMixin, _LinearGaussian, BaseARD):
     r"""Complex Linear with Variational Dropout (log-uniform prior, exact KL via Ei)."""
 
-    pass
-
 
 class LinearARD(_CplxARDMixin, _RelevanceMixin, _LinearGaussian, BaseARD):
     r"""Complex Linear with Automatic Relevance Determination (softplus penalty)."""
-
-    pass
 
 
 # ---------------------------------------------------------------------------

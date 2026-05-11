@@ -1,6 +1,6 @@
 import numpy as np
-import torch.nn as nn
 import torch
+import torch.nn as nn
 
 from complextorch import nn as cvnn
 
@@ -34,7 +34,7 @@ class _EfficientChannelAttention(nn.Module):
         gamma: int = 2,
         dtype=torch.cfloat,
     ) -> None:
-        super(_EfficientChannelAttention, self).__init__()
+        super().__init__()
         self.channels = channels
         self.b = b
         self.gamma = gamma
@@ -51,8 +51,7 @@ class _EfficientChannelAttention(nn.Module):
 
     def kernel_size(self) -> int:
         k = int(abs((np.log2(self.channels) / self.gamma) + self.b / self.gamma))
-        out = k if k % 2 else k + 1
-        return out
+        return k if k % 2 else k + 1
 
     def forward(self, input: torch.Tensor) -> torch.Tensor:
         batch_size, channels, *im_size = input.shape
@@ -101,7 +100,7 @@ class EfficientChannelAttention1d(_EfficientChannelAttention):
         gamma: int = 2,
         dtype=torch.cfloat,
     ) -> None:
-        super(EfficientChannelAttention1d, self).__init__(
+        super().__init__(
             channels=channels,
             MaskingClass=MaskingClass,
             AvgPoolClass=cvnn.AdaptiveAvgPool1d,
@@ -141,7 +140,7 @@ class EfficientChannelAttention2d(_EfficientChannelAttention):
         gamma: int = 2,
         dtype=torch.cfloat,
     ) -> None:
-        super(EfficientChannelAttention2d, self).__init__(
+        super().__init__(
             channels=channels,
             MaskingClass=MaskingClass,
             AvgPoolClass=cvnn.AdaptiveAvgPool2d,
@@ -181,7 +180,7 @@ class EfficientChannelAttention3d(_EfficientChannelAttention):
         gamma: int = 2,
         dtype=torch.cfloat,
     ) -> None:
-        super(EfficientChannelAttention3d, self).__init__(
+        super().__init__(
             channels=channels,
             MaskingClass=MaskingClass,
             AvgPoolClass=cvnn.AdaptiveAvgPool3d,

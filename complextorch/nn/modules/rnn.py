@@ -17,17 +17,15 @@ Each cell accepts ``batchnorm=False``; setting it to ``True`` inserts a
 *Recurrent Batch Normalization* (Cooijmans et al., 2017) for the complex case).
 """
 
-from typing import List, Optional, Tuple
-
 import torch
 import torch.nn as nn
 
-from complextorch.nn.modules.activation.split_type_A import CTanh, CSigmoid
+from complextorch.nn.modules.activation.split_type_A import CSigmoid, CTanh
 from complextorch.nn.modules.batchnorm import BatchNorm1d
 from complextorch.nn.modules.dropout import Dropout
 from complextorch.nn.modules.linear import Linear
 
-__all__ = ["GRUCell", "GRU", "LSTMCell", "LSTM"]
+__all__ = ["GRU", "LSTM", "GRUCell", "LSTMCell"]
 
 
 class GRUCell(nn.Module):
@@ -93,7 +91,7 @@ class GRUCell(nn.Module):
         return getattr(self, name)(x)
 
     def forward(
-        self, input: torch.Tensor, hx: Optional[torch.Tensor] = None
+        self, input: torch.Tensor, hx: torch.Tensor | None = None
     ) -> torch.Tensor:
         if hx is None:
             hx = torch.zeros(
@@ -170,8 +168,8 @@ class LSTMCell(nn.Module):
     def forward(
         self,
         input: torch.Tensor,
-        hx: Optional[Tuple[torch.Tensor, torch.Tensor]] = None,
-    ) -> Tuple[torch.Tensor, torch.Tensor]:
+        hx: tuple[torch.Tensor, torch.Tensor] | None = None,
+    ) -> tuple[torch.Tensor, torch.Tensor]:
         if hx is None:
             zero_h = torch.zeros(
                 input.shape[0], self.hidden_size, dtype=input.dtype, device=input.device
@@ -229,8 +227,8 @@ class _RNNBase(nn.Module):
         self.bidirectional = bidirectional
         self.num_directions = 2 if bidirectional else 1
 
-        cells_fwd: List[nn.Module] = []
-        cells_bwd: List[nn.Module] = []
+        cells_fwd: list[nn.Module] = []
+        cells_bwd: list[nn.Module] = []
         for layer in range(num_layers):
             in_size = input_size if layer == 0 else hidden_size * self.num_directions
             cells_fwd.append(
@@ -267,8 +265,8 @@ class GRU(_RNNBase):
     def forward(
         self,
         input: torch.Tensor,
-        hx: Optional[torch.Tensor] = None,
-    ) -> Tuple[torch.Tensor, torch.Tensor]:
+        hx: torch.Tensor | None = None,
+    ) -> tuple[torch.Tensor, torch.Tensor]:
         if self.batch_first:
             input = input.transpose(0, 1)  # -> (T, B, F)
         seq_len, batch, _ = input.shape
@@ -283,12 +281,12 @@ class GRU(_RNNBase):
             )
 
         outputs = input
-        layer_states: List[torch.Tensor] = []
+        layer_states: list[torch.Tensor] = []
 
         for layer in range(self.num_layers):
             fwd_cell = self.cells_fwd[layer]
             h_f = hx[layer * self.num_directions]
-            outs_f: List[torch.Tensor] = []
+            outs_f: list[torch.Tensor] = []
             for t in range(seq_len):
                 h_f = fwd_cell(outputs[t], h_f)
                 outs_f.append(h_f)
@@ -297,7 +295,7 @@ class GRU(_RNNBase):
             if self.bidirectional:
                 bwd_cell = self.cells_bwd[layer]
                 h_b = hx[layer * self.num_directions + 1]
-                outs_b: List[torch.Tensor] = []
+                outs_b: list[torch.Tensor] = []
                 for t in range(seq_len - 1, -1, -1):
                     h_b = bwd_cell(outputs[t], h_b)
                     outs_b.append(h_b)
@@ -333,8 +331,8 @@ class LSTM(_RNNBase):
     def forward(
         self,
         input: torch.Tensor,
-        hx: Optional[Tuple[torch.Tensor, torch.Tensor]] = None,
-    ) -> Tuple[torch.Tensor, Tuple[torch.Tensor, torch.Tensor]]:
+        hx: tuple[torch.Tensor, torch.Tensor] | None = None,
+    ) -> tuple[torch.Tensor, tuple[torch.Tensor, torch.Tensor]]:
         if self.batch_first:
             input = input.transpose(0, 1)
         seq_len, batch, _ = input.shape
@@ -348,13 +346,13 @@ class LSTM(_RNNBase):
             h0, c0 = hx
 
         outputs = input
-        new_h: List[torch.Tensor] = []
-        new_c: List[torch.Tensor] = []
+        new_h: list[torch.Tensor] = []
+        new_c: list[torch.Tensor] = []
 
         for layer in range(self.num_layers):
             fwd_cell = self.cells_fwd[layer]
             h_f, c_f = h0[layer * n_dir], c0[layer * n_dir]
-            outs_f: List[torch.Tensor] = []
+            outs_f: list[torch.Tensor] = []
             for t in range(seq_len):
                 h_f, c_f = fwd_cell(outputs[t], (h_f, c_f))
                 outs_f.append(h_f)
@@ -363,7 +361,7 @@ class LSTM(_RNNBase):
             if self.bidirectional:
                 bwd_cell = self.cells_bwd[layer]
                 h_b, c_b = h0[layer * n_dir + 1], c0[layer * n_dir + 1]
-                outs_b: List[torch.Tensor] = []
+                outs_b: list[torch.Tensor] = []
                 for t in range(seq_len - 1, -1, -1):
                     h_b, c_b = bwd_cell(outputs[t], (h_b, c_b))
                     outs_b.append(h_b)

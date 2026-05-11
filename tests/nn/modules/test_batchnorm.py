@@ -17,12 +17,11 @@ from complextorch.nn.modules.batchnorm import (
     NaiveBatchNorm3d,
 )
 
-
 # ---------- Trabelsi BN (2x2 whitening) ----------
 
 
 @pytest.mark.parametrize(
-    "cls, shape",
+    ("cls", "shape"),
     [
         (BatchNorm1d, (16, 4, 10)),
         (BatchNorm2d, (16, 4, 8, 8)),
@@ -71,7 +70,8 @@ def test_batchnorm3d_invalid_dim():
 
 def test_batchnorm_no_affine_no_track():
     bn = BatchNorm2d(4, affine=False, track_running_stats=False)
-    assert bn.weight is None and bn.bias is None
+    assert bn.weight is None
+    assert bn.bias is None
     assert bn.running_mean is None
     x = torch.randn(8, 4, 6, 6, dtype=torch.cfloat)
     out = bn(x)
@@ -107,7 +107,7 @@ def test_batchnorm_reset_parameters_no_op_no_affine():
 
 
 @pytest.mark.parametrize(
-    "cls, shape",
+    ("cls", "shape"),
     [
         (NaiveBatchNorm1d, (16, 4, 10)),
         (NaiveBatchNorm2d, (16, 4, 8, 8)),
@@ -131,7 +131,7 @@ def test_naive_batchnorm_extra_repr():
 
 
 @pytest.mark.parametrize(
-    "cls, shape",
+    ("cls", "shape"),
     [
         (MagBatchNorm1d, (16, 4, 10)),
         (MagBatchNorm2d, (16, 4, 8, 8)),

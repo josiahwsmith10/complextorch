@@ -34,7 +34,7 @@ from complextorch.nn import (
     PrototypeDistance,
 )
 
-__all__ = ["CDSInvariant", "CDSEquivariant", "CDSMSTAR"]
+__all__ = ["CDSMSTAR", "CDSEquivariant", "CDSInvariant"]
 
 
 def _complex_to_real_flat(z: torch.Tensor) -> torch.Tensor:

@@ -23,21 +23,20 @@ Functions
 """
 
 import math
-from typing import Tuple
 
 import torch
 
 __all__ = [
     "kaiming_normal_",
     "kaiming_uniform_",
+    "trabelsi_independent_",
+    "trabelsi_standard_",
     "xavier_normal_",
     "xavier_uniform_",
-    "trabelsi_standard_",
-    "trabelsi_independent_",
 ]
 
 
-def _get_fans(tensor: torch.Tensor) -> Tuple[int, int]:
+def _get_fans(tensor: torch.Tensor) -> tuple[int, int]:
     """Compute fan-in / fan-out for a complex tensor (same as the real form)."""
     if tensor.dim() < 2:
         # Linear bias or 1-D weight: treat as (fan_in,), fan_out = 1.

@@ -7,7 +7,7 @@ Walk a module tree and report sparsity stats for layers that subclass
 :mod:`complextorch.nn.relevance` layer).
 """
 
-from typing import Iterator, Tuple
+from collections.abc import Iterator
 
 import torch
 
@@ -33,7 +33,7 @@ class SparsityStats(torch.nn.Module):
 
 def named_sparsity(
     module: torch.nn.Module, *, prefix: str = "", **kwargs
-) -> Iterator[Tuple[str, Tuple[int, int]]]:
+) -> Iterator[tuple[str, tuple[int, int]]]:
     r"""
     Yield ``(param_name, (n_zeros, n_total))`` for each parameter of every
     :class:`SparsityStats` submodule.
@@ -51,7 +51,7 @@ def named_sparsity(
             pid_to_total[id(p)] = p.numel()
 
     seen = set()
-    for mod_name, mod in module.named_modules(prefix=prefix):
+    for _mod_name, mod in module.named_modules(prefix=prefix):
         if not isinstance(mod, SparsityStats):
             continue
         for pid, n_dropped in mod.sparsity(**kwargs):

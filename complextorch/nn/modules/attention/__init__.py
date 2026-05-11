@@ -3,7 +3,7 @@ import torch.nn as nn
 
 from complextorch import nn as cvnn
 
-__all__ = ["ScaledDotProductAttention", "MultiheadAttention"]
+__all__ = ["MultiheadAttention", "ScaledDotProductAttention"]
 
 
 class ScaledDotProductAttention(nn.Module):
@@ -34,7 +34,7 @@ class ScaledDotProductAttention(nn.Module):
         SoftMaxClass: nn.Module = cvnn.CVSoftMax,
         softmax_on: str = "complex",
     ) -> None:
-        super(ScaledDotProductAttention, self).__init__()
+        super().__init__()
         if softmax_on not in ("complex", "real"):
             raise ValueError(
                 f"softmax_on must be 'complex' or 'real', got {softmax_on!r}"
@@ -94,7 +94,7 @@ class MultiheadAttention(nn.Module):
         SoftMaxClass: nn.Module = cvnn.CVSoftMax,
         softmax_on: str = "complex",
     ) -> None:
-        super(MultiheadAttention, self).__init__()
+        super().__init__()
 
         self.d_k = d_k
         self.d_v = d_v

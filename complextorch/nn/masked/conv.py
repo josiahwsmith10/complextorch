@@ -4,7 +4,6 @@ Masked Conv (Complex)
 """
 
 import math
-from typing import Tuple
 
 import torch
 import torch.nn as nn
@@ -15,7 +14,7 @@ from complextorch.nn.masked.base import BaseMasked, MaskedWeightMixin
 __all__ = ["Conv1dMasked", "Conv2dMasked", "Conv3dMasked"]
 
 
-def _to_tuple(x, n: int) -> Tuple[int, ...]:
+def _to_tuple(x, n: int) -> tuple[int, ...]:
     if isinstance(x, int):
         return (x,) * n
     return tuple(x)
@@ -54,7 +53,7 @@ class _ConvMaskedNd(MaskedWeightMixin, BaseMasked):
         self.dilation = _to_tuple(dilation, self._nd)
         self.groups = groups
 
-        weight_shape = (out_channels, in_channels // groups) + self.kernel_size
+        weight_shape = (out_channels, in_channels // groups, *self.kernel_size)
         self.weight = nn.Parameter(
             torch.empty(*weight_shape, device=device, dtype=dtype)
         )

@@ -1,5 +1,3 @@
-from typing import Optional
-
 import torch
 import torch.nn as nn
 
@@ -27,8 +25,8 @@ class CVSoftMax(nn.Module):
     where :math:`\mathbf{z} = \mathbf{x} + j\mathbf{y}`
     """
 
-    def __init__(self, dim: Optional[int] = None) -> None:
-        super(CVSoftMax, self).__init__()
+    def __init__(self, dim: int | None = None) -> None:
+        super().__init__()
 
         self.softmax = nn.Softmax(dim)
 
@@ -58,8 +56,8 @@ class PhaseSoftMax(nn.Module):
         G(\mathbf{z}) = \texttt{SoftMax}(|\mathbf{z}|) \odot \mathbf{z} / |\mathbf{z}|
     """
 
-    def __init__(self, dim: Optional[int] = None) -> None:
-        super(PhaseSoftMax, self).__init__()
+    def __init__(self, dim: int | None = None) -> None:
+        super().__init__()
 
         self.softmax = nn.Softmax(dim)
 
@@ -90,8 +88,8 @@ class MagSoftMax(nn.Module):
         G(\mathbf{z}) = \texttt{SoftMax}(|\mathbf{z}|)
     """
 
-    def __init__(self, dim: Optional[int] = None) -> None:
-        super(MagSoftMax, self).__init__()
+    def __init__(self, dim: int | None = None) -> None:
+        super().__init__()
 
         self.softmax = nn.Softmax(dim)
 

@@ -14,7 +14,7 @@ import torch.nn.functional as F
 
 from complextorch.nn.masked.base import BaseMasked, MaskedWeightMixin
 
-__all__ = ["LinearMasked", "BilinearMasked"]
+__all__ = ["BilinearMasked", "LinearMasked"]
 
 
 def _init_complex_weight(weight: torch.Tensor, fan_in: int) -> None:

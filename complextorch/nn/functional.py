@@ -1,14 +1,14 @@
+from collections.abc import Callable
+
 import torch
 import torch.nn as nn
 
-from typing import List, Optional, Callable
-
 __all__ = [
     "apply_complex",
-    "apply_complex_split",
     "apply_complex_polar",
-    "inv_sqrtm2x2",
+    "apply_complex_split",
     "batch_norm",
+    "inv_sqrtm2x2",
     "layer_norm",
     "whiten2x2_batch_norm",
     "whiten2x2_layer_norm",
@@ -92,8 +92,7 @@ def apply_complex_polar(
         # Assumes no function will be computed on phase (improves computational efficiency)
         x_mag = x.abs()
         return (mag_fun(x_mag) / x_mag.clamp(min=1e-12)) * x
-    else:
-        return torch.polar(mag_fun(x.abs()), phase_fun(x.angle()))
+    return torch.polar(mag_fun(x.abs()), phase_fun(x.angle()))
 
 
 def inv_sqrtm2x2(
@@ -212,8 +211,8 @@ def inv_sqrtm2x2(
 def whiten2x2_batch_norm(
     x: torch.Tensor,
     training: bool = True,
-    running_mean: Optional[torch.Tensor] = None,
-    running_cov: Optional[torch.Tensor] = None,
+    running_mean: torch.Tensor | None = None,
+    running_cov: torch.Tensor | None = None,
     momentum: float = 0.1,
     eps: float = 1e-5,
 ):
@@ -288,10 +287,10 @@ def whiten2x2_batch_norm(
 
 def batch_norm(
     x: torch.Tensor,
-    running_mean: Optional[torch.Tensor] = None,
-    running_var: Optional[torch.Tensor] = None,
-    weight: Optional[torch.Tensor] = None,
-    bias: Optional[torch.Tensor] = None,
+    running_mean: torch.Tensor | None = None,
+    running_var: torch.Tensor | None = None,
+    weight: torch.Tensor | None = None,
+    bias: torch.Tensor | None = None,
     training: bool = True,
     momentum: float = 0.1,
     eps: float = 1e-5,
@@ -379,7 +378,7 @@ def batch_norm(
 
 def whiten2x2_layer_norm(
     x: torch.Tensor,
-    normalized_shape: List[int],
+    normalized_shape: list[int],
     eps: float = 1e-5,
 ):
     r"""
@@ -429,9 +428,9 @@ def whiten2x2_layer_norm(
 
 def layer_norm(
     x: torch.Tensor,
-    normalized_shape: List[int],
-    weight: Optional[torch.Tensor] = None,
-    bias: Optional[torch.Tensor] = None,
+    normalized_shape: list[int],
+    weight: torch.Tensor | None = None,
+    bias: torch.Tensor | None = None,
     eps: float = 1e-5,
 ) -> torch.Tensor:
     r"""

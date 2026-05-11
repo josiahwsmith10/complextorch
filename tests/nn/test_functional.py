@@ -7,7 +7,6 @@ import torch.nn as nn
 
 from complextorch.nn import functional as F
 
-
 # ---------- apply_complex (Gauss-trick lift) ----------
 
 

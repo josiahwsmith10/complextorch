@@ -1,8 +1,6 @@
-from typing import Union, Tuple
-
+import torch
 import torch.nn as nn
 import torch.nn.functional as F
-import torch
 
 from complextorch.nn import functional as cvF
 
@@ -35,7 +33,7 @@ class AdaptiveAvgPool1d(nn.AdaptiveAvgPool1d):
     where :math:`\mathbf{z} = \mathbf{x} + j\mathbf{y}`
     """
 
-    def __init__(self, output_size: Union[int, Tuple[int]]) -> None:
+    def __init__(self, output_size: int | tuple[int]) -> None:
         super().__init__(output_size)
 
     def forward(self, input: torch.Tensor) -> torch.Tensor:
@@ -198,10 +196,7 @@ class _MagMaxPoolNd(nn.Module):
         self.ceil_mode = ceil_mode
 
     def forward(self, input: torch.Tensor):
-        if input.is_complex():
-            magnitude = input.abs()
-        else:
-            magnitude = input
+        magnitude = input.abs() if input.is_complex() else input
         _, indices = self._max_pool_with_indices(
             magnitude,
             kernel_size=self.kernel_size,

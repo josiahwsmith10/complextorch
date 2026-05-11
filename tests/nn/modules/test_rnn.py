@@ -5,8 +5,7 @@ from __future__ import annotations
 import pytest
 import torch
 
-from complextorch.nn.modules.rnn import GRU, GRUCell, LSTM, LSTMCell
-
+from complextorch.nn.modules.rnn import GRU, LSTM, GRUCell, LSTMCell
 
 # ---------- Cells ----------
 
@@ -28,10 +27,13 @@ def test_lstmcell(batchnorm):
     cell = LSTMCell(input_size=4, hidden_size=6, batchnorm=batchnorm)
     x = torch.randn(8, 4, dtype=torch.cfloat)
     h, c = cell(x)
-    assert h.shape == (8, 6) and c.shape == (8, 6)
-    assert h.is_complex() and c.is_complex()
+    assert h.shape == (8, 6)
+    assert c.shape == (8, 6)
+    assert h.is_complex()
+    assert c.is_complex()
     h2, c2 = cell(x, hx=(h, c))
-    assert h2.shape == (8, 6) and c2.shape == (8, 6)
+    assert h2.shape == (8, 6)
+    assert c2.shape == (8, 6)
 
 
 # ---------- Multi-layer ----------
@@ -62,7 +64,7 @@ def test_gru_with_provided_hx():
     gru = GRU(input_size=4, hidden_size=6, num_layers=1)
     x = torch.randn(5, 3, 4, dtype=torch.cfloat)
     hx = torch.randn(1, 3, 6, dtype=torch.cfloat)
-    out, h = gru(x, hx)
+    out, _h = gru(x, hx)
     assert out.is_complex()
 
 
@@ -93,5 +95,5 @@ def test_lstm_with_provided_hx():
     x = torch.randn(5, 3, 4, dtype=torch.cfloat)
     h0 = torch.randn(1, 3, 6, dtype=torch.cfloat)
     c0 = torch.randn(1, 3, 6, dtype=torch.cfloat)
-    out, (h, c) = lstm(x, (h0, c0))
+    out, (_h, _c) = lstm(x, (h0, c0))
     assert out.is_complex()

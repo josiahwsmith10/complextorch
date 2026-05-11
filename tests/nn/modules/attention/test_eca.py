@@ -13,7 +13,7 @@ from complextorch.nn.modules.attention.eca import (
 
 
 @pytest.mark.parametrize(
-    "cls, shape",
+    ("cls", "shape"),
     [
         (EfficientChannelAttention1d, (1, 8, 16)),
         (EfficientChannelAttention2d, (1, 8, 8, 8)),

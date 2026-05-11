@@ -20,7 +20,7 @@ from complextorch.nn.modules.dropout import Dropout
 from complextorch.nn.modules.layernorm import LayerNorm
 from complextorch.nn.modules.linear import Linear
 
-__all__ = ["ViTLayer", "ViT", "vit_t", "vit_s", "vit_b", "vit_l", "vit_h"]
+__all__ = ["ViT", "ViTLayer", "vit_b", "vit_h", "vit_l", "vit_s", "vit_t"]
 
 
 class _ViTFFN(nn.Module):
@@ -67,8 +67,7 @@ class ViTLayer(nn.Module):
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
         x = self.attn(x, x, x)
-        x = self.ffn(x)
-        return x
+        return self.ffn(x)
 
 
 class ViT(nn.Module):

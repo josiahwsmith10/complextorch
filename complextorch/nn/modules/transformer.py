@@ -14,7 +14,6 @@ the feed-forward sub-block on top with its own residual + LayerNorm.
 """
 
 import copy
-from typing import Optional
 
 import torch
 import torch.nn as nn
@@ -27,11 +26,11 @@ from complextorch.nn.modules.layernorm import LayerNorm
 from complextorch.nn.modules.linear import Linear
 
 __all__ = [
-    "TransformerEncoderLayer",
-    "TransformerEncoder",
-    "TransformerDecoderLayer",
-    "TransformerDecoder",
     "Transformer",
+    "TransformerDecoder",
+    "TransformerDecoderLayer",
+    "TransformerEncoder",
+    "TransformerEncoderLayer",
 ]
 
 
@@ -119,7 +118,7 @@ class TransformerEncoder(nn.Module):
         self,
         encoder_layer: TransformerEncoderLayer,
         num_layers: int,
-        norm: Optional[nn.Module] = None,
+        norm: nn.Module | None = None,
     ) -> None:
         super().__init__()
         self.layers = _clones(encoder_layer, num_layers)
@@ -184,7 +183,7 @@ class TransformerDecoder(nn.Module):
         self,
         decoder_layer: TransformerDecoderLayer,
         num_layers: int,
-        norm: Optional[nn.Module] = None,
+        norm: nn.Module | None = None,
     ) -> None:
         super().__init__()
         self.layers = _clones(decoder_layer, num_layers)

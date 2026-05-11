@@ -16,7 +16,6 @@ Based on work from the following paper:
 """
 
 import math
-from typing import Optional
 
 import torch
 import torch.nn as nn
@@ -79,7 +78,7 @@ class PrototypeDistance(nn.Module):
         self.temperature = nn.Parameter(torch.tensor(float(temperature_init)))
 
     def forward(
-        self, input: torch.Tensor, reference: Optional[torch.Tensor] = None
+        self, input: torch.Tensor, reference: torch.Tensor | None = None
     ) -> torch.Tensor:
         if input.dim() != 2:
             raise ValueError(

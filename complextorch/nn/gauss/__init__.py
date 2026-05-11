@@ -9,7 +9,6 @@ prefer ``complextorch.nn.Conv*d`` / ``complextorch.nn.Linear``, which wrap
 ``torch.nn.*`` with ``dtype=torch.cfloat``.
 """
 
-from complextorch.nn.gauss.linear import Linear
 from complextorch.nn.gauss.conv import (
     Conv1d,
     Conv2d,
@@ -18,13 +17,14 @@ from complextorch.nn.gauss.conv import (
     ConvTranspose2d,
     ConvTranspose3d,
 )
+from complextorch.nn.gauss.linear import Linear
 
 __all__ = [
-    "Linear",
     "Conv1d",
     "Conv2d",
     "Conv3d",
     "ConvTranspose1d",
     "ConvTranspose2d",
     "ConvTranspose3d",
+    "Linear",
 ]

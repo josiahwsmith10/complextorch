@@ -4,16 +4,21 @@ from __future__ import annotations
 
 import pytest
 import torch
-from hypothesis import given, settings, strategies as st
+from hypothesis import given, settings
+from hypothesis import strategies as st
 
-from complextorch.nn.modules.conv import Conv1d, Conv2d, Conv3d
-from complextorch.nn.modules.linear import Linear
 from complextorch.nn.gauss.conv import (
     Conv1d as GaussConv1d,
+)
+from complextorch.nn.gauss.conv import (
     Conv2d as GaussConv2d,
+)
+from complextorch.nn.gauss.conv import (
     Conv3d as GaussConv3d,
 )
 from complextorch.nn.gauss.linear import Linear as GaussLinear
+from complextorch.nn.modules.conv import Conv1d, Conv2d, Conv3d
+from complextorch.nn.modules.linear import Linear
 
 
 def _align_gauss_conv_with_native(gauss, native):
@@ -25,7 +30,7 @@ def _align_gauss_conv_with_native(gauss, native):
             gauss.bias_i.copy_(native.conv.bias.imag)
 
 
-@pytest.mark.parametrize("in_ch,out_ch,k", [(2, 4, 3), (1, 1, 1), (3, 2, 5)])
+@pytest.mark.parametrize(("in_ch", "out_ch", "k"), [(2, 4, 3), (1, 1, 1), (3, 2, 5)])
 @given(batch=st.integers(1, 3))
 @settings(max_examples=3, deadline=None)
 def test_conv1d_native_gauss_equivalence(in_ch, out_ch, k, batch):
@@ -36,7 +41,7 @@ def test_conv1d_native_gauss_equivalence(in_ch, out_ch, k, batch):
     torch.testing.assert_close(native(x), gauss(x), rtol=1e-4, atol=1e-4)
 
 
-@pytest.mark.parametrize("in_ch,out_ch,k", [(2, 4, 3), (1, 1, 1)])
+@pytest.mark.parametrize(("in_ch", "out_ch", "k"), [(2, 4, 3), (1, 1, 1)])
 @given(batch=st.integers(1, 2))
 @settings(max_examples=3, deadline=None)
 def test_conv2d_native_gauss_equivalence(in_ch, out_ch, k, batch):
@@ -47,7 +52,7 @@ def test_conv2d_native_gauss_equivalence(in_ch, out_ch, k, batch):
     torch.testing.assert_close(native(x), gauss(x), rtol=1e-4, atol=1e-4)
 
 
-@pytest.mark.parametrize("in_ch,out_ch,k", [(2, 2, 3)])
+@pytest.mark.parametrize(("in_ch", "out_ch", "k"), [(2, 2, 3)])
 @settings(max_examples=2, deadline=None)
 @given(batch=st.integers(1, 2))
 def test_conv3d_native_gauss_equivalence(in_ch, out_ch, k, batch):
@@ -58,7 +63,7 @@ def test_conv3d_native_gauss_equivalence(in_ch, out_ch, k, batch):
     torch.testing.assert_close(native(x), gauss(x), rtol=1e-4, atol=1e-4)
 
 
-@pytest.mark.parametrize("in_f,out_f", [(6, 8), (1, 1), (12, 5)])
+@pytest.mark.parametrize(("in_f", "out_f"), [(6, 8), (1, 1), (12, 5)])
 @given(batch=st.integers(1, 4))
 @settings(max_examples=3, deadline=None)
 def test_linear_native_gauss_equivalence(in_f, out_f, batch):

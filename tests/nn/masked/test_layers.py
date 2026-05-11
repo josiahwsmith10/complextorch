@@ -13,7 +13,6 @@ from complextorch.nn.masked import (
     LinearMasked,
 )
 
-
 # ---------- LinearMasked / BilinearMasked ----------
 
 
@@ -77,7 +76,7 @@ def test_bilinear_masked_no_bias():
 
 
 @pytest.mark.parametrize(
-    "cls, shape, k",
+    ("cls", "shape", "k"),
     [
         (Conv1dMasked, (1, 2, 8), 3),
         (Conv2dMasked, (1, 2, 6, 6), 3),

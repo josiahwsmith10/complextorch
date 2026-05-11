@@ -5,14 +5,14 @@ from __future__ import annotations
 import pytest
 
 from complextorch.datasets import (
+    MICCAI2023,
+    S1SLC,
     ALOSDataset,
     ATRNetSTAR,
     Bretigny,
     LeaderFile,
-    MICCAI2023,
     MSTARTargets,
     PolSFDataset,
-    S1SLC,
     SARImage,
     TrailerFile,
     VolFile,

@@ -1,5 +1,3 @@
-from typing import Union, List
-
 import torch
 import torch.nn as nn
 from torch.nn import init
@@ -28,7 +26,7 @@ class LayerNorm(nn.Module):
 
     def __init__(
         self,
-        normalized_shape: Union[int, List[int], torch.Size],
+        normalized_shape: int | list[int] | torch.Size,
         *,
         eps: float = 1e-5,
         elementwise_affine: bool = True,
@@ -67,9 +65,9 @@ class LayerNorm(nn.Module):
 
     def forward(self, input: torch.Tensor) -> torch.Tensor:
         # Sanity check to make sure the shapes match
-        assert (
-            self.normalized_shape == input.shape[-len(self.normalized_shape) :]
-        ), "Expected normalized_shape to match last dimensions of input shape!"
+        assert self.normalized_shape == input.shape[-len(self.normalized_shape) :], (
+            "Expected normalized_shape to match last dimensions of input shape!"
+        )
 
         # if self.elementwise_affine:
         #     self.weight.data = self.weight.data.to(input.device)

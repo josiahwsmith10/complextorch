@@ -4,7 +4,8 @@ from __future__ import annotations
 
 import pytest
 import torch
-from hypothesis import given, settings, strategies as st
+from hypothesis import given, settings
+from hypothesis import strategies as st
 
 
 @pytest.mark.parametrize("shape", [(4,), (2, 3), (1, 4, 5)])

@@ -4,12 +4,12 @@ import torch.nn as nn
 from complextorch.nn import functional as cvF
 
 __all__ = [
-    "GeneralizedPolarActivation",
-    "CVPolarTanh",
-    "CVPolarSquash",
-    "modReLU",
     "AdaptiveModReLU",
     "CVPolarLog",
+    "CVPolarSquash",
+    "CVPolarTanh",
+    "GeneralizedPolarActivation",
+    "modReLU",
 ]
 
 
@@ -36,7 +36,7 @@ class GeneralizedPolarActivation(nn.Module):
     """
 
     def __init__(self, activation_mag: nn.Module, activation_phase: nn.Module) -> None:
-        super(GeneralizedPolarActivation, self).__init__()
+        super().__init__()
         self.activation_mag = activation_mag
         self.activation_phase = activation_phase
 
@@ -77,7 +77,7 @@ class CVPolarTanh(GeneralizedPolarActivation):
     """
 
     def __init__(self) -> None:
-        super(CVPolarTanh, self).__init__(nn.Tanh(), None)
+        super().__init__(nn.Tanh(), None)
 
 
 class _Squash(nn.Module):
@@ -92,7 +92,7 @@ class _Squash(nn.Module):
     """
 
     def __init__(self) -> None:
-        super(_Squash, self).__init__()
+        super().__init__()
 
     def forward(self, input: torch.Tensor) -> torch.Tensor:
         r"""Computes the squash functionality.
@@ -127,7 +127,7 @@ class CVPolarSquash(GeneralizedPolarActivation):
     """
 
     def __init__(self):
-        super(CVPolarSquash, self).__init__(_Squash(), None)
+        super().__init__(_Squash(), None)
 
 
 class _LogXPlus1(nn.Module):
@@ -142,7 +142,7 @@ class _LogXPlus1(nn.Module):
     """
 
     def __init__(self) -> None:
-        super(_LogXPlus1, self).__init__()
+        super().__init__()
 
     def forward(self, input: torch.Tensor) -> torch.Tensor:
         r"""Computes the :math:`\log(x + 1)` functionality.
@@ -177,7 +177,7 @@ class CVPolarLog(GeneralizedPolarActivation):
     """
 
     def __init__(self) -> None:
-        super(CVPolarLog, self).__init__(_LogXPlus1(), None)
+        super().__init__(_LogXPlus1(), None)
 
 
 class _modReLU(nn.Module):
@@ -189,7 +189,7 @@ class _modReLU(nn.Module):
     """
 
     def __init__(self, bias: float = -0.1, learnable: bool = False) -> None:
-        super(_modReLU, self).__init__()
+        super().__init__()
         if learnable:
             self.bias = nn.Parameter(torch.tensor(float(bias)))
         else:
@@ -238,10 +238,10 @@ class modReLU(GeneralizedPolarActivation):
         # When learnable, the bias may move above 0 during training; only
         # validate the initialisation when it's a fixed constant.
         if not learnable:
-            assert (
-                bias < 0
-            ), "bias must be smaller than 0 to have a non-linearity effect"
-        super(modReLU, self).__init__(_modReLU(bias, learnable=learnable), None)
+            assert bias < 0, (
+                "bias must be smaller than 0 to have a non-linearity effect"
+            )
+        super().__init__(_modReLU(bias, learnable=learnable), None)
 
 
 class _AdaptiveModReLUBias(nn.Module):

@@ -28,7 +28,7 @@ class Linear(nn.Module):
         device=None,
         dtype=None,
     ) -> None:
-        super(Linear, self).__init__()
+        super().__init__()
 
         # Assumes PyTorch complex weight initialization is correct
         __temp = nn.Linear(

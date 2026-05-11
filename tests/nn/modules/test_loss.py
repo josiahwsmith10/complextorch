@@ -7,6 +7,7 @@ import torch
 import torch.nn as nn
 
 from complextorch.nn.modules.loss import (
+    SSIM,
     CVCauchyError,
     CVFourthPowError,
     CVLogCoshError,
@@ -16,12 +17,10 @@ from complextorch.nn.modules.loss import (
     GeneralizedSplitLoss,
     MSELoss,
     PerpLossSSIM,
-    SSIM,
     SplitL1,
     SplitMSE,
     SplitSSIM,
 )
-
 
 # -------- _reduce branches via parameterized losses --------
 

@@ -24,12 +24,11 @@ work is mechanical I/O against the well-documented SAR/MRI file formats.
 
 import enum
 import os
+from collections.abc import Callable, Sequence
 from pathlib import Path
-from typing import Callable, Optional, Sequence, Tuple, Union
 
 import torch
 from torch.utils.data import Dataset
-
 
 # ---------------------------------------------------------------------------
 # Helpers
@@ -78,13 +77,13 @@ class SAMPLE(Dataset):
 
     def __init__(
         self,
-        root: Optional[Union[str, os.PathLike]] = None,
+        root: str | os.PathLike | None = None,
         num_samples: int = 128,
         channels: int = 1,
         height: int = 32,
         width: int = 32,
         num_classes: int = 10,
-        transform: Optional[Callable[[torch.Tensor], torch.Tensor]] = None,
+        transform: Callable[[torch.Tensor], torch.Tensor] | None = None,
         seed: int = 0,
     ) -> None:
         super().__init__()
@@ -106,7 +105,7 @@ class SAMPLE(Dataset):
     def __len__(self) -> int:
         return self.num_samples
 
-    def __getitem__(self, index: int) -> Tuple[torch.Tensor, int]:
+    def __getitem__(self, index: int) -> tuple[torch.Tensor, int]:
         chip = self._data[index]
         if self.transform is not None:
             chip = self.transform(chip)
@@ -137,10 +136,10 @@ class SLCDataset(Dataset):
 
     def __init__(
         self,
-        root: Union[str, os.PathLike],
-        annotation_file: Optional[Union[str, os.PathLike]] = None,
+        root: str | os.PathLike,
+        annotation_file: str | os.PathLike | None = None,
         suffix: str = ".npy",
-        transform: Optional[Callable[[torch.Tensor], torch.Tensor]] = None,
+        transform: Callable[[torch.Tensor], torch.Tensor] | None = None,
     ) -> None:
         super().__init__()
         self.root = Path(root)
@@ -150,9 +149,9 @@ class SLCDataset(Dataset):
         self.suffix = suffix
         self.transform = transform
 
-        self.labels: Optional[Sequence[int]] = None
+        self.labels: Sequence[int] | None = None
         if annotation_file is not None:
-            with open(annotation_file, "r") as fh:
+            with open(annotation_file) as fh:
                 self.labels = [int(line.strip()) for line in fh if line.strip()]
             if len(self.labels) != len(self.files):
                 raise ValueError(

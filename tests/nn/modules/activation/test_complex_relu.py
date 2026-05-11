@@ -111,7 +111,8 @@ def test_gtrelu_forward_shape():
 
 def test_gtrelu_phase_scale_adds_parameter():
     layer = GTReLU(num_channels=4, phase_scale=True)
-    assert layer.lambd is not None and layer.lambd.shape == (4,)
+    assert layer.lambd is not None
+    assert layer.lambd.shape == (4,)
 
 
 def test_gtrelu_no_phase_scale_no_lambda():

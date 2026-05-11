@@ -34,7 +34,7 @@ def test_dropout1d_eval_is_identity():
 
 
 @pytest.mark.parametrize(
-    "cls, shape",
+    ("cls", "shape"),
     [
         (Dropout1d, (2, 4, 8)),
         (Dropout2d, (2, 4, 4, 4)),

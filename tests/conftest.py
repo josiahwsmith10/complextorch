@@ -14,7 +14,7 @@ def _seed_everything():
     torch.manual_seed(0)
     random.seed(0)
     np.random.seed(0)
-    yield
+    return
 
 
 @pytest.fixture

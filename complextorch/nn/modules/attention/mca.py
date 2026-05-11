@@ -32,15 +32,15 @@ class _MaskedChannelAttention(nn.Module):
         MaskingClass: nn.Module = cvnn.ComplexRatioMask,
         act: nn.Module = cvnn.CReLU,
     ) -> None:
-        super(_MaskedChannelAttention, self).__init__()
+        super().__init__()
         self.channels = channels
         self.reduction_factor = reduction_factor
         self.MaskingClass = MaskingClass()
         self.act = act()
 
-        assert (
-            channels % reduction_factor == 0
-        ), "Channels / Reduction Factor must yield integer"
+        assert channels % reduction_factor == 0, (
+            "Channels / Reduction Factor must yield integer"
+        )
         self.reduced_channels = int(channels / reduction_factor)
 
         # Placeholders
@@ -89,7 +89,7 @@ class MaskedChannelAttention1d(_MaskedChannelAttention):
         MaskingClass: nn.Module = cvnn.ComplexRatioMask,
         act: nn.Module = cvnn.CReLU,
     ) -> None:
-        super(MaskedChannelAttention1d, self).__init__(
+        super().__init__(
             channels=channels,
             reduction_factor=reduction_factor,
             MaskingClass=MaskingClass,
@@ -144,7 +144,7 @@ class MaskedChannelAttention2d(_MaskedChannelAttention):
         MaskingClass: nn.Module = cvnn.ComplexRatioMask,
         act: nn.Module = cvnn.CReLU,
     ) -> None:
-        super(MaskedChannelAttention2d, self).__init__(
+        super().__init__(
             channels=channels,
             reduction_factor=reduction_factor,
             MaskingClass=MaskingClass,
@@ -200,7 +200,7 @@ class MaskedChannelAttention3d(_MaskedChannelAttention):
         MaskingClass: nn.Module = cvnn.ComplexRatioMask,
         act: nn.Module = cvnn.CReLU,
     ) -> None:
-        super(MaskedChannelAttention3d, self).__init__(
+        super().__init__(
             channels=channels,
             reduction_factor=reduction_factor,
             MaskingClass=MaskingClass,

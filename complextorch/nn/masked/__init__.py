@@ -6,7 +6,7 @@ Fixed-sparsity-pattern complex layers and helpers for managing their masks
 across a whole network.
 """
 
-from typing import Dict, Iterator, Tuple
+from collections.abc import Iterator
 
 import torch
 
@@ -16,14 +16,14 @@ from complextorch.nn.masked.linear import BilinearMasked, LinearMasked
 
 __all__ = [
     "BaseMasked",
-    "MaskedWeightMixin",
-    "LinearMasked",
     "BilinearMasked",
     "Conv1dMasked",
     "Conv2dMasked",
     "Conv3dMasked",
-    "deploy_masks",
+    "LinearMasked",
+    "MaskedWeightMixin",
     "binarize_masks",
+    "deploy_masks",
     "is_sparse",
     "named_masks",
 ]
@@ -31,7 +31,7 @@ __all__ = [
 
 def deploy_masks(
     model: torch.nn.Module,
-    state_dict: Dict[str, torch.Tensor],
+    state_dict: dict[str, torch.Tensor],
     *,
     strict: bool = True,
 ) -> torch.nn.Module:
@@ -81,7 +81,7 @@ def is_sparse(layer: torch.nn.Module) -> bool:
 
 def named_masks(
     model: torch.nn.Module,
-) -> Iterator[Tuple[str, torch.Tensor]]:
+) -> Iterator[tuple[str, torch.Tensor]]:
     """Yield ``(qualified_name, mask)`` for each currently-set mask."""
     for name, mod in model.named_modules():
         if isinstance(mod, BaseMasked) and mod.is_sparse:

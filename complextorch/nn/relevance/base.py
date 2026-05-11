@@ -5,16 +5,16 @@ BaseARD + Module-Walking Helpers
 Adapted from :mod:`cplxmodule.nn.relevance.base`.
 """
 
-from typing import Iterator, Tuple
+from collections.abc import Iterator
 
 import torch
 
 __all__ = [
     "BaseARD",
-    "named_penalties",
-    "penalties",
-    "named_relevance",
     "compute_ard_masks",
+    "named_penalties",
+    "named_relevance",
+    "penalties",
 ]
 
 
@@ -39,7 +39,7 @@ def named_penalties(
     module: torch.nn.Module,
     reduction: str = "sum",
     prefix: str = "",
-) -> Iterator[Tuple[str, torch.Tensor]]:
+) -> Iterator[tuple[str, torch.Tensor]]:
     """Yield ``(name, penalty)`` for every :class:`BaseARD` submodule."""
     if reduction is not None and reduction not in ("mean", "sum"):
         raise ValueError(f"reduction must be 'mean', 'sum', or None; got {reduction!r}")
@@ -63,7 +63,7 @@ def penalties(
 
 def named_relevance(
     module: torch.nn.Module, *, prefix: str = "", **kwargs
-) -> Iterator[Tuple[str, torch.Tensor]]:
+) -> Iterator[tuple[str, torch.Tensor]]:
     """Yield ``(name, mask)`` for every :class:`BaseARD` submodule."""
     for name, mod in module.named_modules(prefix=prefix):
         if isinstance(mod, BaseARD):

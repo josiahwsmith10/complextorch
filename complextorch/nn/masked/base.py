@@ -62,6 +62,7 @@ class BaseMasked(nn.Module):
         if name != "mask":
             return super().__setattr__(name, value)
         self.mask_(value)
+        return None
 
     def _load_from_state_dict(
         self,
@@ -109,8 +110,5 @@ class MaskedWeightMixin(SparsityStats):
 
     def sparsity(self, **kwargs):
         weight = self.weight
-        if self.is_sparse:
-            n_dropped = float((self.mask == 0).sum().item())
-        else:
-            n_dropped = 0.0
+        n_dropped = float((self.mask == 0).sum().item()) if self.is_sparse else 0.0
         return [(id(weight), n_dropped)]

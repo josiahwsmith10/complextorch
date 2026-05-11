@@ -70,7 +70,7 @@ def test_pwelch_onesided_with_complex_raises():
 def test_pwelch_window_longer_than_signal():
     """Window length is clamped to signal length."""
     x = torch.randn(8)
-    freqs, psd = pwelch(x, window=64)
+    freqs, _psd = pwelch(x, window=64)
     assert freqs.shape[0] == 5  # rfft(8) → 5
 
 

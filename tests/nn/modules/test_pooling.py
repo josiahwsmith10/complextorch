@@ -19,7 +19,7 @@ from complextorch.nn.modules.pooling import (
 
 
 @pytest.mark.parametrize(
-    "cls, shape, out_size",
+    ("cls", "shape", "out_size"),
     [
         (AdaptiveAvgPool1d, (2, 4, 8), 4),
         (AdaptiveAvgPool2d, (2, 4, 8, 8), (4, 4)),
@@ -34,7 +34,7 @@ def test_adaptive_avg_pool(cls, shape, out_size):
 
 
 @pytest.mark.parametrize(
-    "cls, shape",
+    ("cls", "shape"),
     [
         (AvgPool1d, (2, 4, 8)),
         (AvgPool2d, (2, 4, 8, 8)),
@@ -49,7 +49,7 @@ def test_avg_pool_complex(cls, shape):
 
 
 @pytest.mark.parametrize(
-    "cls, shape",
+    ("cls", "shape"),
     [
         (AvgPool1d, (2, 4, 8)),
         (AvgPool2d, (2, 4, 8, 8)),
@@ -64,7 +64,7 @@ def test_avg_pool_real_passthrough(cls, shape):
 
 
 @pytest.mark.parametrize(
-    "cls, shape",
+    ("cls", "shape"),
     [
         (MagMaxPool1d, (2, 4, 8)),
         (MagMaxPool2d, (2, 4, 8, 8)),

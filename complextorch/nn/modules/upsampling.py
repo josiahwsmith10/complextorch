@@ -16,25 +16,23 @@ Two flavors of complex-valued upsampling / interpolation:
   :math:`+\pi` — neither form is universally correct.
 """
 
-from typing import Optional, Tuple, Union
-
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
-__all__ = ["Upsample", "PolarUpsample"]
+__all__ = ["PolarUpsample", "Upsample"]
 
 
-_SizeT = Optional[Union[int, Tuple[int, ...]]]
+_SizeT = int | tuple[int, ...] | None
 
 
 def _interpolate(
     x: torch.Tensor,
     size: _SizeT,
-    scale_factor: Optional[Union[float, Tuple[float, ...]]],
+    scale_factor: float | tuple[float, ...] | None,
     mode: str,
-    align_corners: Optional[bool],
-    recompute_scale_factor: Optional[bool],
+    align_corners: bool | None,
+    recompute_scale_factor: bool | None,
 ) -> torch.Tensor:
     return F.interpolate(
         x,
@@ -60,10 +58,10 @@ class Upsample(nn.Module):
     def __init__(
         self,
         size: _SizeT = None,
-        scale_factor: Optional[Union[float, Tuple[float, ...]]] = None,
+        scale_factor: float | tuple[float, ...] | None = None,
         mode: str = "nearest",
-        align_corners: Optional[bool] = None,
-        recompute_scale_factor: Optional[bool] = None,
+        align_corners: bool | None = None,
+        recompute_scale_factor: bool | None = None,
     ) -> None:
         super().__init__()
         self.size = size
@@ -132,10 +130,10 @@ class PolarUpsample(nn.Module):
     def __init__(
         self,
         size: _SizeT = None,
-        scale_factor: Optional[Union[float, Tuple[float, ...]]] = None,
+        scale_factor: float | tuple[float, ...] | None = None,
         mode: str = "nearest",
-        align_corners: Optional[bool] = None,
-        recompute_scale_factor: Optional[bool] = None,
+        align_corners: bool | None = None,
+        recompute_scale_factor: bool | None = None,
     ) -> None:
         super().__init__()
         self.size = size

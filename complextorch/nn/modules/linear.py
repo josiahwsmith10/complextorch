@@ -1,9 +1,10 @@
 import math
+from typing import ClassVar
 
 import torch
 import torch.nn as nn
 
-__all__ = ["Linear", "Bilinear"]
+__all__ = ["Bilinear", "Linear"]
 
 
 class Linear(nn.Module):
@@ -27,7 +28,7 @@ class Linear(nn.Module):
         device=None,
         dtype=torch.cfloat,
     ) -> None:
-        super(Linear, self).__init__()
+        super().__init__()
 
         self.linear = nn.Linear(
             in_features=in_features,
@@ -77,7 +78,12 @@ class Bilinear(nn.Module):
             ``torch.cfloat``.
     """
 
-    __constants__ = ["in1_features", "in2_features", "out_features", "conjugate"]
+    __constants__: ClassVar[list[str]] = [
+        "in1_features",
+        "in2_features",
+        "out_features",
+        "conjugate",
+    ]
 
     def __init__(
         self,
@@ -89,7 +95,7 @@ class Bilinear(nn.Module):
         device=None,
         dtype=torch.cfloat,
     ) -> None:
-        super(Bilinear, self).__init__()
+        super().__init__()
         self.in1_features = in1_features
         self.in2_features = in2_features
         self.out_features = out_features

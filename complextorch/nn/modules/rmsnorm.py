@@ -7,8 +7,6 @@ Root-Mean-Square layer normalization adapted to complex tensors. Equivalent to
 is a 2x2 real matrix applied to ``(Re, Im)`` of each channel.
 """
 
-from typing import List, Tuple, Union
-
 import torch
 import torch.nn as nn
 
@@ -36,7 +34,7 @@ class RMSNorm(nn.Module):
 
     def __init__(
         self,
-        normalized_shape: Union[int, List[int], Tuple[int, ...], torch.Size],
+        normalized_shape: int | list[int] | tuple[int, ...] | torch.Size,
         *,
         eps: float = 1e-5,
         elementwise_affine: bool = True,

@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import torch
 
-from complextorch.models.cds import CDSEquivariant, CDSInvariant, CDSMSTAR
+from complextorch.models.cds import CDSMSTAR, CDSEquivariant, CDSInvariant
 
 
 def test_cds_invariant_forward_backward():

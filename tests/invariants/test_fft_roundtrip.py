@@ -3,7 +3,8 @@
 from __future__ import annotations
 
 import torch
-from hypothesis import given, settings, strategies as st
+from hypothesis import given, settings
+from hypothesis import strategies as st
 
 from complextorch.nn.modules.fft import FFTBlock, IFFTBlock
 
