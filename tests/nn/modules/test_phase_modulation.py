@@ -98,3 +98,19 @@ def test_phase_modulation_grad_flows():
 def test_phase_modulation_extra_repr():
     s = PhaseDivConv2d(in_channels=4, kernel_size=3, padding=1).extra_repr()
     assert "in_channels=4" in s
+
+
+def test_phase_modulation_invalid_nd_raises():
+    """Direct construction of the internal base with nd not in (1, 2, 3) is rejected."""
+    from complextorch.nn.modules.phase_modulation import _PhaseDivConvNd
+
+    with pytest.raises(ValueError, match="nd must be 1, 2, or 3"):
+        _PhaseDivConvNd(nd=4, in_channels=2, kernel_size=3)
+
+
+def test_phase_modulation_real_input_auto_casts():
+    """Real input is upcast to cfloat in forward."""
+    layer = PhaseDivConv1d(in_channels=3, kernel_size=3, padding=1)
+    x = torch.randn(2, 3, 8) + 0.1
+    out = layer(x)
+    assert out.is_complex()

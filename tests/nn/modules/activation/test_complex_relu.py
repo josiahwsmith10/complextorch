@@ -162,3 +162,41 @@ def test_equivariant_phase_relu_grad_flows():
     out = layer(x)
     out.abs().sum().backward()
     assert torch.isfinite(layer.phase_gain.grad).all()
+
+
+def test_broadcast_channelwise_passthrough_for_1d_input():
+    """1-D input -> the else branch returns t unchanged."""
+    from complextorch.nn.modules.activation.complex_relu import _broadcast_channelwise
+
+    t = torch.zeros(4)
+    out = _broadcast_channelwise(t, input_dim=1)
+    assert out is t
+
+
+def test_gtrelu_real_input_auto_casts():
+    from complextorch.nn.modules.activation.complex_relu import GTReLU
+
+    layer = GTReLU(num_channels=4)
+    x = torch.randn(2, 4, 6)
+    out = layer(x)
+    assert out.is_complex()
+
+
+def test_gtrelu_extra_repr():
+    from complextorch.nn.modules.activation.complex_relu import GTReLU
+
+    s = GTReLU(num_channels=4, global_scaling=True, phase_scale=True).extra_repr()
+    assert "num_channels=4" in s
+    assert "phase_scale=True" in s
+
+
+def test_equivariant_phase_relu_real_input_auto_casts():
+    layer = EquivariantPhaseReLU(num_channels=3)
+    x = torch.randn(2, 3, 4)
+    out = layer(x)
+    assert out.is_complex()
+
+
+def test_equivariant_phase_relu_extra_repr():
+    s = EquivariantPhaseReLU(num_channels=4).extra_repr()
+    assert "num_channels=4" in s

@@ -74,3 +74,38 @@ def test_prototype_distance_extra_repr():
     s = PrototypeDistance(in_features=4, num_prototypes=10).extra_repr()
     assert "in_features=4" in s
     assert "num_prototypes=10" in s
+
+
+def test_prototype_distance_real_input_auto_casts():
+    """A real input tensor is upcast to cfloat in forward."""
+    head = PrototypeDistance(in_features=4, num_prototypes=3)
+    x = torch.randn(2, 4)
+    logits = head(x)
+    assert logits.shape == (2, 3)
+
+
+def test_prototype_distance_real_reference_auto_casts():
+    """A real reference tensor is upcast to cfloat in forward."""
+    head = PrototypeDistance(in_features=4, num_prototypes=3)
+    x = torch.randn(2, 4, dtype=torch.cfloat)
+    ref = torch.randn(2, 1)  # real
+    logits = head(x, reference=ref)
+    assert logits.shape == (2, 3)
+
+
+def test_prototype_distance_reference_1d_promoted_to_2d():
+    """A 1-D reference (one complex value per sample) is unsqueezed to 2-D."""
+    head = PrototypeDistance(in_features=4, num_prototypes=3)
+    x = torch.randn(2, 4, dtype=torch.cfloat)
+    ref = torch.randn(2, dtype=torch.cfloat)  # [B]
+    logits = head(x, reference=ref)
+    assert logits.shape == (2, 3)
+
+
+def test_prototype_distance_reference_shape_mismatch_raises():
+    """A reference whose batch dim doesn't match the input is rejected."""
+    head = PrototypeDistance(in_features=4, num_prototypes=3)
+    x = torch.randn(2, 4, dtype=torch.cfloat)
+    ref = torch.randn(5, 4, dtype=torch.cfloat)  # wrong batch
+    with pytest.raises(ValueError, match="reference must broadcast"):
+        head(x, reference=ref)

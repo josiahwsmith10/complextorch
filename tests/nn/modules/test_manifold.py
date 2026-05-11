@@ -93,3 +93,29 @@ def test_wfm_distance_linear_grad_flows():
 def test_wfm_distance_linear_extra_repr():
     s = wFMDistanceLinear(input_dim=10).extra_repr()
     assert "input_dim=10" in s
+
+
+def test_wfm_relu_real_input_auto_casts():
+    """Real input is auto-cast to cfloat (forward's else branch)."""
+    layer = wFMReLU(num_channels=3)
+    x = torch.randn(2, 3, 5) + 0.1
+    out = layer(x)
+    assert out.is_complex()
+
+
+def test_wfm_distance_linear_real_input_auto_casts():
+    """wFMDistanceLinear also auto-casts real input."""
+    layer = wFMDistanceLinear(input_dim=12)
+    x = torch.randn(2, 3, 4) + 0.1
+    out = layer(x)
+    assert torch.isfinite(out).all()
+
+
+def test_wfm_distance_linear_wrong_input_dim_raises():
+    """flat.shape[1] != input_dim triggers a ValueError."""
+    import pytest
+
+    layer = wFMDistanceLinear(input_dim=10)
+    x = torch.randn(2, 3, 4, dtype=torch.cfloat) + 0.1  # 12 != 10
+    with pytest.raises(ValueError, match="expects flattened input of size"):
+        layer(x)

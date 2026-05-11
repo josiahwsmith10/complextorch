@@ -169,3 +169,13 @@ def test_mag_batchnorm_state_dict_uses_underlying_bn():
 def test_mag_batchnorm_extra_repr():
     s = MagBatchNorm2d(4).extra_repr()
     assert "num_features=4" in s
+
+
+def test_mag_batchnorm_real_input_passthrough():
+    """Real input goes straight through the underlying real BN (else branch)."""
+    bn = MagBatchNorm2d(num_features=4)
+    bn.train()
+    x = torch.randn(8, 4, 6, 6)
+    out = bn(x)
+    assert not out.is_complex()
+    assert out.shape == x.shape
