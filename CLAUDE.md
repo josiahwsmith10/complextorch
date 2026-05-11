@@ -37,11 +37,11 @@ The doc stack is **PyData Sphinx Theme + MyST + sphinx-autoapi + myst-nb + sphin
 - `docs/source/examples/getting_started.md` is a MyST-NB notebook re-executed on every build. If you break the public API, this notebook will fail and the doc build will fail.
 - The doc stack is pinned to Sphinx 7 because `sphinx-multiversion` 0.2.4 is incompatible with Sphinx 8+ (see comment in `pyproject.toml`). Migrate to `sphinx-polyversion` to unblock newer Sphinx.
 
-CI lives in `.github/workflows/`: `test.yml` (pytest on 3.10/3.11/3.12 with `--cov-fail-under=100` — any coverage drop fails CI), `docs.yml` (per-PR `sphinx-build -W` gate + per-merge `sphinx-multiversion` deploy to GitHub Pages), `ci-cd.yml` (PyPI publish + Sigstore on semver tag).
+CI lives in `.github/workflows/`: `test.yml` (pytest on 3.10/3.11/3.12 with `--cov-fail-under=100` — any coverage drop fails CI), `docs.yml` (per-PR `sphinx-build -W` gate + per-merge `sphinx-multiversion` deploy to GitHub Pages), `lint.yml` (ruff check on every PR / push), `pypi.yml` (build sdist+wheel, trusted-publish to PyPI, Sigstore-sign, cut a GitHub Release — triggered by a semver tag matching `[0-9]+.[0-9]+.[0-9]+`).
 
 ## Releasing a new version
 
-`complextorch/__init__.py:__version__` is the single source of truth. `pyproject.toml` reads it via `[tool.setuptools.dynamic] version = {attr = "complextorch.__version__"}` and `docs/source/conf.py` parses it via regex. To bump the version, edit `__init__.py`, add an entry under `## [Unreleased]` in `CHANGELOG.md`, then `git tag X.Y.Z && git push --tags` to trigger `ci-cd.yml`.
+`complextorch/__init__.py:__version__` is the single source of truth. `pyproject.toml` reads it via `[tool.setuptools.dynamic] version = {attr = "complextorch.__version__"}` and `docs/source/conf.py` parses it via regex. To bump the version, edit `__init__.py`, add an entry under `## [Unreleased]` in `CHANGELOG.md`, then `git tag X.Y.Z && git push --tags` to trigger `pypi.yml`.
 
 Release notes live in `CHANGELOG.md` (keepachangelog format) and are surfaced in the docs via `docs/source/changelog.md`. The `sphinx-multiversion` whitelist in `conf.py` is `^2\.[1-9]\d*\.\d+$` — bump the regex when cutting a 3.x.
 
