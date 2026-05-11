@@ -28,7 +28,14 @@ See [CHANGELOG.md](CHANGELOG.md) for the full release history. Version 2.0
 brings major feature-parity expansion (RNN/LSTM, Transformer, ARD/Variational
 Dropout, masked layers, transforms, signal, datasets, models subpackages); see
 the changelog for the breaking changes around `MultiheadAttention` and
-default `bias=True`.
+default `bias=True`. Version 2.0.1 adds **symmetry-aware modules**
+(U(1)-equivariant / invariant building blocks from
+[SurReal](https://arxiv.org/abs/1910.11334) and
+[CDS](https://arxiv.org/abs/2112.01525), with reference networks under
+`complextorch.models`) plus `SpectralPool{1,2,3}d`
+([Rippel 2015](https://arxiv.org/abs/1506.03767) /
+[Trabelsi 2018](https://arxiv.org/abs/1705.09792)) for frequency-domain
+downsampling.
 
 ## Documentation
 

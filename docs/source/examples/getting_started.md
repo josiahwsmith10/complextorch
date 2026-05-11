@@ -139,6 +139,40 @@ The two tones at 50 Hz and 120 Hz should be clearly visible. Because `pwelch`
 is autograd-friendly, you can use the PSD as a spectral loss for training a
 complex-valued generator network.
 
+## 6 · Spectral pooling
+
+{class}`complextorch.nn.SpectralPool2d` (and its 1-D / 3-D siblings)
+downsamples by truncating the centered discrete Fourier spectrum — a
+complex-valued port of the spectral pooling layer from Rippel et al. (2015)
+and Trabelsi et al. (2018). It preserves the DC bin exactly, so the
+spatial mean is unchanged.
+
+```{code-cell}
+import torch
+import complextorch as ctorch
+
+torch.manual_seed(0)
+x = torch.randn(2, 3, 16, 16, dtype=torch.cfloat)
+pool = ctorch.nn.SpectralPool2d((8, 8))
+y = pool(x)
+
+# Mean preservation: spectral pooling routes DC through unchanged.
+mean_err = (y.mean(dim=(-2, -1)) - x.mean(dim=(-2, -1))).abs().max().item()
+print(f"input  shape {tuple(x.shape)}")
+print(f"output shape {tuple(y.shape)}")
+print(f"max |mean(y) - mean(x)| = {mean_err:.2e}")
+```
+
+Because the operator is a linear function of the input (an FFT, a centered
+crop, and an IFFT), gradients flow back through it like any other layer:
+
+```{code-cell}
+x = torch.randn(2, 3, 16, 16, dtype=torch.cfloat, requires_grad=True)
+y = ctorch.nn.SpectralPool2d((8, 8))(x)
+y.abs().pow(2).sum().backward()
+print(f"x.grad shape {tuple(x.grad.shape)}, all finite = {torch.isfinite(x.grad).all().item()}")
+```
+
 ## Where next?
 
 - Browse the [API reference](../api/complextorch/index) for the full module

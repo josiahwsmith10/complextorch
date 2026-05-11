@@ -87,6 +87,50 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   the complex-valued usage in Trabelsi et al. 2018 ("Deep Complex
   Networks"). Centered crop handles even/odd input/output parities
   correctly so DC stays at index 0 after `ifftshift`.
+- Co-domain symmetric layers from Singhal, Xing, Yu — "Co-Domain Symmetry
+  for Complex-Valued Deep Learning" (CVPR 2022, arxiv:2112.01525) and
+  Chakraborty, Xing, Yu — "SurReal: Complex-Valued Learning as Principled
+  Transformations on a Scaling and Rotation Manifold" (arxiv:1910.11334).
+  See [Co-domain symmetry](concepts/co-domain-symmetry.md) for the math
+  and U(1)-equivariance / invariance properties of each module.
+  - **Phase modulation** (U(1)-invariant when the inner conv is C-linear):
+    `PhaseDivConv{1,2,3}d` (`x · conj(g(x)) / |g(x)|²`),
+    `PhaseConjConv{1,2,3}d` (`x · conj(g(x))`).
+  - **Phase-thresholding activations** (CDS):
+    `GTReLU` (learnable complex scaling + upper-half-plane phase mask;
+    custom autograd whose backward gradient is the mask itself),
+    `EquivariantPhaseReLU` (channel-mean-relative phase thresholding —
+    strictly U(1)-equivariant).
+  - **Tangent ReLU** (SurReal Eq. 21-22): `tReLU` —
+    `r ↦ max(r, 1)`, `arg(z) ↦ max(arg(z), 0)`. Parameter-free; the
+    principled tangent-space lift of ReLU onto the rotation+scaling
+    manifold.
+  - **Equivariant normalisation**: `MagBatchNorm{1,2,3}d` — applies a
+    real BatchNorm to `|z|` and rescales `z` to match; phase is preserved
+    so the operator is U(1)-equivariant. Distinct from
+    `BatchNorm{1,2,3}d` (full 2x2 covariance whitening, not equivariant).
+  - **Learnable complex scaling**: `ComplexScaling` —
+    `(α + jβ) · z` with both real and imaginary parts learnable;
+    strict generalisation of `PhaseShift` (unit-magnitude rotation).
+  - **Prototype classifier head**: `PrototypeDistance` — learnable
+    complex prototypes + a temperature scalar; logits are negative
+    root-mean-squared per-channel complex distances. Optional
+    `reference=` argument pre-rotates prototypes per sample, enabling
+    U(1)-equivariant networks to produce invariant logits.
+  - **Manifold extensions** (SurReal companion to `wFMConv1d/2d`):
+    `wFMReLU` (port of RotLieNet `manifoldReLUv2angle` — learned affine
+    on log-magnitude and phase, distinct from `tReLU`),
+    `wFMDistanceLinear` (real-valued distance-to-Fréchet-mean head).
+  - **Paper-faithful wFM-Conv** (SurReal Eq. 14-16): `wFMConvStrict2d` —
+    single convex weight tensor per output channel
+    (`Σ w_{o,i} = 1`, `w_{o,i} ≥ 0` by squared-then-normalised
+    parameterisation), no pre-modulation, no `fold(unfold(·))` smear.
+    Verified strictly U(1)-equivariant when `padding=0`. The existing
+    `wFMConv2d` is preserved as the port of RotLieNet's experimental
+    `ComplexConv2Deffgroup` variant.
+- Reference models in `complextorch.models`: `CDSInvariant`,
+  `CDSEquivariant`, `CDSMSTAR` (the latter pairs a complex CDS front-end
+  with a real ResNet-lite SAR backbone).
 
 ### Changed
 

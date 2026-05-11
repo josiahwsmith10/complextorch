@@ -72,6 +72,17 @@ CUDA/CPU target from <https://pytorch.org/get-started/locally/> first. See
   {mod}`complextorch.nn.init` (variance-correct complex initializers),
   {mod}`complextorch.nn.relevance` (Variational Dropout & ARD), and
   {mod}`complextorch.nn.masked` (fixed-mask sparsified layers).
+- **Symmetry-aware modules.** U(1)-equivariant primitives
+  ({class}`complextorch.nn.ComplexScaling`,
+  {class}`complextorch.nn.MagBatchNorm2d`,
+  {class}`complextorch.nn.EquivariantPhaseReLU`,
+  {class}`complextorch.nn.wFMConvStrict2d`) and U(1)-invariant ones
+  ({class}`complextorch.nn.PhaseDivConv2d`,
+  {class}`complextorch.nn.PrototypeDistance`) from the SurReal
+  ([arxiv:1910.11334](https://arxiv.org/abs/1910.11334)) and CDS
+  (CVPR 2022) papers, with the {class}`complextorch.nn.tReLU` tangent-space
+  nonlinearity (SurReal Eq. 21-22). See
+  [Co-domain symmetry](concepts/co-domain-symmetry.md).
 
 ## Citation
 
@@ -87,6 +98,7 @@ installation
 examples/index
 concepts/activations
 concepts/native-vs-gauss
+concepts/co-domain-symmetry
 ```
 
 ```{toctree}
