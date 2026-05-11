@@ -80,6 +80,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   stubs.
 - `[test]` extras now pull in `pytest-xdist` (parallel runs via `-n auto`)
   and `hypothesis` (property tests).
+- Pooling: `SpectralPool{1,2,3}d` — downsamples by truncating the centered
+  discrete Fourier spectrum, preserves the spatial mean exactly (DC bin),
+  and works on both real and complex inputs. Matches the spectral-pooling
+  layer from Rippel et al. 2015 ("Spectral Representations for CNNs") and
+  the complex-valued usage in Trabelsi et al. 2018 ("Deep Complex
+  Networks"). Centered crop handles even/odd input/output parities
+  correctly so DC stays at index 0 after `ifftshift`.
 
 ### Changed
 

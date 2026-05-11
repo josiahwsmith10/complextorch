@@ -14,6 +14,9 @@ __all__ = [
     "MagMaxPool1d",
     "MagMaxPool2d",
     "MagMaxPool3d",
+    "SpectralPool1d",
+    "SpectralPool2d",
+    "SpectralPool3d",
 ]
 
 
@@ -259,3 +262,140 @@ class MagMaxPool3d(_MagMaxPoolNd):
     """
 
     _max_pool_with_indices = staticmethod(F.max_pool3d_with_indices)
+
+
+def _spectral_pool(
+    input: torch.Tensor,
+    output_size: tuple[int, ...],
+    spatial_dims: tuple[int, ...],
+) -> torch.Tensor:
+    r"""Downsample ``input`` along ``spatial_dims`` by cropping its centered DFT.
+
+    Uses ``norm="forward"`` on both the forward and inverse FFT so that the
+    spatial mean (i.e. the DC bin) is preserved exactly: if ``y`` is the
+    output, ``y.mean(spatial_dims) == input.mean(spatial_dims)``.
+
+    The crop is centered so that DC lands at position ``K // 2`` of the
+    cropped spectrum, which is where ``torch.fft.ifftshift`` of a length-``K``
+    signal expects it (this matters when ``K`` and the input length have
+    different parities).
+    """
+    input_size = tuple(input.size(d) for d in spatial_dims)
+    if any(k <= 0 for k in output_size):
+        raise ValueError(f"output_size {output_size} must be positive")
+    if any(k > n for k, n in zip(output_size, input_size, strict=True)):
+        raise ValueError(
+            f"output_size {output_size} must not exceed input spatial size "
+            f"{input_size} along dims {spatial_dims}"
+        )
+    if output_size == input_size:
+        return input
+    z = torch.fft.fftn(input, dim=spatial_dims, norm="forward")
+    z = torch.fft.fftshift(z, dim=spatial_dims)
+    slices = [slice(None)] * input.dim()
+    for d, n, k in zip(spatial_dims, input_size, output_size, strict=True):
+        start = (n // 2) - (k // 2)
+        slices[d] = slice(start, start + k)
+    z = z[tuple(slices)]
+    z = torch.fft.ifftshift(z, dim=spatial_dims)
+    return torch.fft.ifftn(z, dim=spatial_dims, norm="forward")
+
+
+def _to_tuple(value, n: int, name: str) -> tuple[int, ...]:
+    if isinstance(value, int):
+        return (value,) * n
+    out = tuple(value)
+    if len(out) != n:
+        raise ValueError(f"{name} must have length {n}, got {len(out)}")
+    return out
+
+
+class _SpectralPoolNd(nn.Module):
+    r"""Internal base for N-D spectral pooling. See :class:`SpectralPool1d`."""
+
+    _ndim: int = 1  # overridden per dim
+
+    def __init__(self, output_size) -> None:
+        super().__init__()
+        self.output_size = _to_tuple(output_size, self._ndim, "output_size")
+
+    def forward(self, input: torch.Tensor) -> torch.Tensor:
+        spatial_dims = tuple(range(-self._ndim, 0))
+        was_real = not input.is_complex()
+        out = _spectral_pool(input, self.output_size, spatial_dims)
+        if was_real:
+            out = out.real
+        return out
+
+    def extra_repr(self) -> str:
+        return f"output_size={self.output_size}"
+
+
+class SpectralPool1d(_SpectralPoolNd):
+    r"""
+    1-D Spectral Pooling
+    --------------------
+
+    Downsamples the last spatial dimension by truncating the centered discrete
+    Fourier spectrum, then inverting. Compared to average pooling, spectral
+    pooling preserves more information per coefficient because it keeps the
+    low-frequency content of the signal directly rather than averaging
+    neighbouring samples.
+
+    The forward and inverse FFTs use ``norm="forward"``, so the DC bin (and
+    therefore the spatial mean) is preserved exactly. The crop is centered
+    around DC.
+
+    For real inputs the output is real; for complex inputs the output is
+    complex. Only downsampling (``output_size <= input_size``) is supported.
+
+    Based on:
+
+        **O. Rippel, J. Snoek, R. P. Adams. Spectral Representations for
+        Convolutional Neural Networks.** NeurIPS 2015.
+
+            - https://arxiv.org/abs/1506.03767
+
+    Also used as a complex-valued pooling layer in:
+
+        **C. Trabelsi et al. Deep Complex Networks.** ICLR 2018.
+
+            - https://arxiv.org/abs/1705.09792
+
+    Args:
+        output_size (int): number of spatial samples after pooling. Must be
+            ``<= input.size(-1)``.
+    """
+
+    _ndim = 1
+
+
+class SpectralPool2d(_SpectralPoolNd):
+    r"""
+    2-D Spectral Pooling
+    --------------------
+
+    See :class:`SpectralPool1d`. Operates on the last two spatial dimensions.
+
+    Args:
+        output_size (int or tuple[int, int]): spatial output shape ``(H, W)``.
+            A single ``int`` is broadcast to both dimensions.
+    """
+
+    _ndim = 2
+
+
+class SpectralPool3d(_SpectralPoolNd):
+    r"""
+    3-D Spectral Pooling
+    --------------------
+
+    See :class:`SpectralPool1d`. Operates on the last three spatial dimensions.
+
+    Args:
+        output_size (int or tuple[int, int, int]): spatial output shape
+            ``(D, H, W)``. A single ``int`` is broadcast to all three
+            dimensions.
+    """
+
+    _ndim = 3

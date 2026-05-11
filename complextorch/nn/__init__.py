@@ -130,6 +130,9 @@ from complextorch.nn.modules.pooling import (
     MagMaxPool1d,
     MagMaxPool2d,
     MagMaxPool3d,
+    SpectralPool1d,
+    SpectralPool2d,
+    SpectralPool3d,
 )
 
 from complextorch.nn.modules.upsampling import Upsample, PolarUpsample
@@ -278,6 +281,9 @@ __all__ = [
     "RMSNorm",
     "RealToComplex",
     "ScaledDotProductAttention",
+    "SpectralPool1d",
+    "SpectralPool2d",
+    "SpectralPool3d",
     "SplitL1",
     "SplitMSE",
     "SplitSSIM",
