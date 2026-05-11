@@ -732,9 +732,7 @@ class wFMConvStrict2d(nn.Module):
             )
         B, C, H, W = input.shape
         if self.in_channels != C:
-            raise ValueError(
-                f"expected in_channels={self.in_channels}, got C={C}"
-            )
+            raise ValueError(f"expected in_channels={self.in_channels}, got C={C}")
 
         kh, kw = self.kernel_size
         sh, sw = self.stride

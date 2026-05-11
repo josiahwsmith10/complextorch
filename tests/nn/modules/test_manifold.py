@@ -153,9 +153,13 @@ def test_trelu_phase_clamps_negative_to_zero():
 
 def test_trelu_phase_preserves_positive():
     """arg(z) >= 0 → phase unchanged."""
-    z = torch.tensor([2.0 * (1 + 1j) / math.sqrt(2.0)], dtype=torch.cfloat)  # |z|=2, θ=π/4
+    z = torch.tensor(
+        [2.0 * (1 + 1j) / math.sqrt(2.0)], dtype=torch.cfloat
+    )  # |z|=2, θ=π/4
     out = tReLU()(z)
-    torch.testing.assert_close(out.angle(), torch.tensor([math.pi / 4]), atol=1e-5, rtol=0)
+    torch.testing.assert_close(
+        out.angle(), torch.tensor([math.pi / 4]), atol=1e-5, rtol=0
+    )
 
 
 def test_trelu_no_parameters():
@@ -210,9 +214,7 @@ def test_wfm_conv_strict_weights_are_convex():
     conv = wFMConvStrict2d(in_channels=3, out_channels=4, kernel_size=3)
     w = conv._convex_weights()
     assert w.shape == (4, 3 * 3 * 3)
-    torch.testing.assert_close(
-        w.sum(dim=1), torch.ones(4), atol=1e-5, rtol=1e-5
-    )
+    torch.testing.assert_close(w.sum(dim=1), torch.ones(4), atol=1e-5, rtol=1e-5)
     assert (w >= 0).all()
 
 
