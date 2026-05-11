@@ -171,11 +171,12 @@ class Normalize(nn.Module):
     def forward(self, x: torch.Tensor) -> torch.Tensor:
         from complextorch.nn.functional import inv_sqrtm2x2
 
-        if x.dim() < 3 or x.shape[-3] != self.mean.shape[0]:
+        # Contract: (C, H, W) or (B, C, H, W) — channel at dim -3, two spatial dims.
+        if x.dim() not in (3, 4) or x.shape[-3] != self.mean.shape[0]:
             raise ValueError(
-                f"expected input with channel dim {self.mean.shape[0]}, got shape {tuple(x.shape)}"
+                f"expected input of shape (C, H, W) or (B, C, H, W) with C={self.mean.shape[0]}, "
+                f"got shape {tuple(x.shape)}"
             )
-        broadcast = (self.mean.shape[0],) + (1,) * (x.dim() - x.dim() + 2)
         m = self.mean.view(self.mean.shape[0], 1, 1)
         x = x - m
         a = self.covariance[..., 0, 0].view(-1, 1, 1)

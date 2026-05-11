@@ -169,7 +169,6 @@ def _gather_max_by_magnitude(
     """
     # Flatten spatial dimensions of input, then gather along that flat dim.
     n_spatial = indices.dim() - 2  # batch, channel, then spatial
-    spatial_dims = input.shape[-n_spatial:]
     flat_input = input.reshape(*input.shape[:-n_spatial], -1)
     flat_indices = indices.reshape(*indices.shape[:-n_spatial], -1)
     gathered = torch.gather(flat_input, dim=-1, index=flat_indices)

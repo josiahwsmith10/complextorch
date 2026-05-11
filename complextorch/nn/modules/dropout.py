@@ -73,17 +73,8 @@ class _ChannelDropoutNd(nn.Module):
             return input
         if not input.is_complex():
             return self._dropout_fn(input, self.p, training=True, inplace=self.inplace)
-        # view_as_real returns a real view of shape (..., 2); the channel-wise
-        # dropout treats element 0 of that final dim as the "channel" axis, so
-        # we drop both real and imag together by operating on view_as_real then
-        # going back to complex.
-        real_view = torch.view_as_real(input)
-        # Move the trailing size-2 axis to a leading position so dropoutNd's
-        # channel semantics see ``channels`` as the leading dim of the original
-        # input, not the {re,im} axis. Easiest: build a fake-channel tensor of
-        # shape (B, C, ...) and apply mask manually.
-        # Sample a Bernoulli mask of shape (B, C, 1, 1, ...) matching the input's
-        # spatial rank, then scale by 1/(1-p).
+        # Trabelsi 2018 channel dropout: one Bernoulli sample per (batch, channel),
+        # shared across real and imag, broadcast over spatial dims.
         b, c = input.shape[0], input.shape[1]
         mask_shape = (b, c) + (1,) * (input.dim() - 2)
         mask = torch.empty(mask_shape, dtype=input.real.dtype, device=input.device)
