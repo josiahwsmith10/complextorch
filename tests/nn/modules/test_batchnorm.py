@@ -1,4 +1,4 @@
-"""Tests for complex BatchNorm{1,2,3}d and NaiveBatchNorm{1,2,3}d."""
+"""Tests for complex BatchNorm{1,2,3}d, NaiveBatchNorm{1,2,3}d, MagBatchNorm{1,2,3}d."""
 
 from __future__ import annotations
 
@@ -9,6 +9,9 @@ from complextorch.nn.modules.batchnorm import (
     BatchNorm1d,
     BatchNorm2d,
     BatchNorm3d,
+    MagBatchNorm1d,
+    MagBatchNorm2d,
+    MagBatchNorm3d,
     NaiveBatchNorm1d,
     NaiveBatchNorm2d,
     NaiveBatchNorm3d,
@@ -121,4 +124,48 @@ def test_naive_batchnorm_forward(cls, shape):
 
 def test_naive_batchnorm_extra_repr():
     s = NaiveBatchNorm2d(4).extra_repr()
+    assert "num_features=4" in s
+
+
+# ---------- MagBatchNorm (magnitude-only, equivariant) ----------
+
+
+@pytest.mark.parametrize(
+    "cls, shape",
+    [
+        (MagBatchNorm1d, (16, 4, 10)),
+        (MagBatchNorm2d, (16, 4, 8, 8)),
+        (MagBatchNorm3d, (4, 4, 4, 4, 4)),
+    ],
+)
+def test_mag_batchnorm_forward(cls, shape):
+    bn = cls(num_features=4)
+    x = torch.randn(*shape, dtype=torch.cfloat)
+    out = bn(x)
+    assert out.shape == x.shape
+    assert out.is_complex()
+
+
+def test_mag_batchnorm_equivariant_under_phase_rotation():
+    bn = MagBatchNorm2d(num_features=4)
+    bn.eval()
+    bn.train()
+    _ = bn(torch.randn(8, 4, 6, 6, dtype=torch.cfloat))
+    bn.eval()
+    x = torch.randn(2, 4, 6, 6, dtype=torch.cfloat) + 0.1
+    rotor = torch.polar(torch.tensor(1.0), torch.tensor(0.9))
+    y1 = bn(x * rotor)
+    y2 = bn(x) * rotor
+    torch.testing.assert_close(y1, y2, atol=1e-4, rtol=1e-4)
+
+
+def test_mag_batchnorm_state_dict_uses_underlying_bn():
+    bn = MagBatchNorm2d(num_features=4)
+    sd_keys = list(bn.state_dict().keys())
+    # The underlying real BN's params should be exposed as bn.weight, bn.bias, etc.
+    assert any(k.startswith("bn.") for k in sd_keys)
+
+
+def test_mag_batchnorm_extra_repr():
+    s = MagBatchNorm2d(4).extra_repr()
     assert "num_features=4" in s

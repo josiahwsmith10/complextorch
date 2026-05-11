@@ -136,7 +136,7 @@ def test_normalize_wrong_channel_dim():
     mean = torch.zeros(3, dtype=torch.cfloat)
     cov = torch.eye(2).unsqueeze(0).expand(3, 2, 2).clone()
     norm = Normalize(mean=mean, covariance=cov)
-    with pytest.raises(ValueError, match="channel dim"):
+    with pytest.raises(ValueError, match=r"with C=3"):
         norm(torch.randn(5, 4, 4, dtype=torch.cfloat))
 
 

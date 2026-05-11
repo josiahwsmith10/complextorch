@@ -4,6 +4,8 @@ from complextorch.nn.modules.activation.complex_relu import (
     CPReLU,
     zAbsReLU,
     zLeakyReLU,
+    GTReLU,
+    EquivariantPhaseReLU,
 )
 from complextorch.nn.modules.activation.fully_complex import (
     CVSigmoid,
@@ -42,6 +44,8 @@ __all__ = [
     "CPReLU",
     "zAbsReLU",
     "zLeakyReLU",
+    "GTReLU",
+    "EquivariantPhaseReLU",
     # fully_complex
     "CVSigmoid",
     "zReLU",

@@ -4,6 +4,8 @@ from complextorch.nn.modules.activation import (
     CPReLU,
     zAbsReLU,
     zLeakyReLU,
+    GTReLU,
+    EquivariantPhaseReLU,
 )
 from complextorch.nn.modules.activation import (
     CVSigmoid,
@@ -42,7 +44,18 @@ from complextorch.nn.modules.casting import (
     ComplexToConcatenated,
     RealToComplex,
 )
-from complextorch.nn.modules.phase import PhaseShift
+from complextorch.nn.modules.phase import PhaseShift, ComplexScaling
+
+from complextorch.nn.modules.phase_modulation import (
+    PhaseDivConv1d,
+    PhaseDivConv2d,
+    PhaseDivConv3d,
+    PhaseConjConv1d,
+    PhaseConjConv2d,
+    PhaseConjConv3d,
+)
+
+from complextorch.nn.modules.prototype import PrototypeDistance
 
 from complextorch.nn.modules.conv import Conv1d, Conv2d, Conv3d
 from complextorch.nn.modules.conv import (
@@ -50,18 +63,17 @@ from complextorch.nn.modules.conv import (
     ConvTranspose2d,
     ConvTranspose3d,
 )
-from complextorch.nn.modules.conv import SlowConv1d, SlowConv2d, SlowConv3d
-from complextorch.nn.modules.conv import (
-    SlowConvTranspose1d,
-    SlowConvTranspose2d,
-    SlowConvTranspose3d,
-)
 
-from complextorch.nn.modules.manifold import wFMConv1d, wFMConv2d
+from complextorch.nn.modules.manifold import (
+    wFMConv1d,
+    wFMConv2d,
+    wFMReLU,
+    wFMDistanceLinear,
+)
 
 from complextorch.nn.modules.dropout import Dropout, Dropout1d, Dropout2d, Dropout3d
 
-from complextorch.nn.modules.linear import Linear, SlowLinear, Bilinear
+from complextorch.nn.modules.linear import Linear, Bilinear
 
 from complextorch.nn.modules.fft import FFTBlock, IFFTBlock
 
@@ -72,12 +84,16 @@ from complextorch.nn.modules.batchnorm import (
     NaiveBatchNorm1d,
     NaiveBatchNorm2d,
     NaiveBatchNorm3d,
+    MagBatchNorm1d,
+    MagBatchNorm2d,
+    MagBatchNorm3d,
 )
 from complextorch.nn.modules.layernorm import LayerNorm
 from complextorch.nn.modules.rmsnorm import RMSNorm
 from complextorch.nn.modules.groupnorm import GroupNorm
 
 from complextorch.nn import init
+from complextorch.nn import gauss
 from complextorch.nn import relevance
 from complextorch.nn import masked
 from complextorch.nn import utils
@@ -149,6 +165,8 @@ __all__ = [
     "CPReLU",
     "zAbsReLU",
     "zLeakyReLU",
+    "GTReLU",
+    "EquivariantPhaseReLU",
     "CVSigmoid",
     "zReLU",
     "CVCardiod",
@@ -179,6 +197,16 @@ __all__ = [
     "ComplexToConcatenated",
     "RealToComplex",
     "PhaseShift",
+    "ComplexScaling",
+    # phase modulation
+    "PhaseDivConv1d",
+    "PhaseDivConv2d",
+    "PhaseDivConv3d",
+    "PhaseConjConv1d",
+    "PhaseConjConv2d",
+    "PhaseConjConv3d",
+    # prototype classifier
+    "PrototypeDistance",
     # conv
     "Conv1d",
     "Conv2d",
@@ -186,15 +214,11 @@ __all__ = [
     "ConvTranspose1d",
     "ConvTranspose2d",
     "ConvTranspose3d",
-    "SlowConv1d",
-    "SlowConv2d",
-    "SlowConv3d",
-    "SlowConvTranspose1d",
-    "SlowConvTranspose2d",
-    "SlowConvTranspose3d",
     # manifold
     "wFMConv1d",
     "wFMConv2d",
+    "wFMReLU",
+    "wFMDistanceLinear",
     # dropout
     "Dropout",
     "Dropout1d",
@@ -202,7 +226,6 @@ __all__ = [
     "Dropout3d",
     # linear
     "Linear",
-    "SlowLinear",
     "Bilinear",
     # fft
     "FFTBlock",
@@ -214,11 +237,15 @@ __all__ = [
     "NaiveBatchNorm1d",
     "NaiveBatchNorm2d",
     "NaiveBatchNorm3d",
+    "MagBatchNorm1d",
+    "MagBatchNorm2d",
+    "MagBatchNorm3d",
     "LayerNorm",
     "RMSNorm",
     "GroupNorm",
     # subpackages
     "init",
+    "gauss",
     "relevance",
     "masked",
     "utils",
