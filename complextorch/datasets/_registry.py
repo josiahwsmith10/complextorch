@@ -25,7 +25,7 @@ work is mechanical I/O against the well-documented SAR/MRI file formats.
 import enum
 import os
 from pathlib import Path
-from typing import Any, Callable, Optional, Sequence, Tuple, Union
+from typing import Callable, Optional, Sequence, Tuple, Union
 
 import torch
 from torch.utils.data import Dataset

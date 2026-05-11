@@ -10,8 +10,6 @@ embedding is performed with a single complex :class:`Conv2d` whose kernel
 and stride both equal ``patch_size``.
 """
 
-from typing import Optional, Tuple
-
 import torch
 import torch.nn as nn
 

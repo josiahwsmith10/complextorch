@@ -4,7 +4,7 @@ Masked Conv (Complex)
 """
 
 import math
-from typing import Tuple, Union
+from typing import Tuple
 
 import torch
 import torch.nn as nn

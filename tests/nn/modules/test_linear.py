@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-import pytest
 import torch
 
 from complextorch.nn.modules.linear import Bilinear, Linear, SlowLinear

@@ -8,7 +8,6 @@ Class-based transforms operating on torch tensors. All transforms are
 """
 
 import math
-from typing import Optional, Tuple
 
 import torch
 import torch.nn as nn

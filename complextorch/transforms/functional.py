@@ -7,7 +7,6 @@ Lower-level helpers backing the class transforms in
 (``_``-prefixed); the public ones are listed in ``__all__``.
 """
 
-import math
 from typing import Dict, Optional, Tuple
 
 import torch

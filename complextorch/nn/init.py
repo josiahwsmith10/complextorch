@@ -26,7 +26,6 @@ import math
 from typing import Tuple
 
 import torch
-from torch import nn
 
 __all__ = [
     "kaiming_normal_",
