@@ -8,24 +8,24 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Common commands
 
-PyTorch is **not** declared as a normal install dep in practice — `requirements.txt` pins `torch>=1.11.0+cu115` (a CUDA build), so installing it via `pip install -r requirements.txt` will usually fail on non-CUDA machines. Install torch separately first (see https://pytorch.org/get-started/locally/), then:
-
 ```sh
-pip install . --use-pep517           # install the package from source
+pip install .                         # install the package
+pip install .[test]                   # with test extras (pytest, pytest-cov)
+pip install .[docs]                   # with doc extras (sphinx, sphinx_rtd_theme)
 ```
 
-Docs (Sphinx, hosted on Read the Docs, configured by `.readthedocs.yaml`):
+Docs (Sphinx, deployed to GitHub Pages by `.github/workflows/docs.yml`):
 
 ```sh
-pip install -r docs/requirements.txt
-cd docs && make html                  # output in docs/build/html
+pip install .[docs]
+cd docs/source && make html           # output in docs/source/_build/html
 ```
 
-There is **no test suite, linter config, or CI** in the repo. Don't fabricate test/lint commands — if a change needs verification, write an ad-hoc script or ask the user.
+CI lives in `.github/workflows/`: `test.yml` (pytest on 3.10/3.11/3.12), `docs.yml` (Sphinx → GitHub Pages on `main`), `ci-cd.yml` (PyPI publish + Sigstore on semver tag). A `tests/` directory does not yet exist — `test.yml` will fail until tests are added.
 
 ## Releasing a new version
 
-`complextorch/__init__.py:__version__` is the single source of truth. `setup.py` parses it via regex, `docs/source/conf.py` does the same, and `docs/source/index.rst` displays it via the Sphinx `|release|` substitution. To bump the version, edit `__init__.py` only.
+`complextorch/__init__.py:__version__` is the single source of truth. `pyproject.toml` reads it via `[tool.setuptools.dynamic] version = {attr = "complextorch.__version__"}`, `docs/source/conf.py` parses it via regex, and `docs/source/index.rst` displays it via the Sphinx `|release|` substitution. To bump the version, edit `__init__.py` only, then `git tag X.Y.Z && git push --tags` to trigger `ci-cd.yml`.
 
 The release-date string in `docs/source/index.rst` (`:Version: |release| of <date>`) and the release-notes section there are still per-release manual edits.
 

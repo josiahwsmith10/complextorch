@@ -1,3 +1,49 @@
 [build-system]
-requires = ["setuptools>=42", "wheel"]
+requires = ["setuptools>=68.2.2", "wheel"]
 build-backend = "setuptools.build_meta"
+
+[project]
+name = "complextorch"
+dynamic = ["version"]
+description = "A lightweight complex-valued neural network package built on PyTorch"
+readme = "README.md"
+license = {file = "LICENSE"}
+requires-python = ">=3.10"
+authors = [
+    {name = "Josiah W. Smith", email = "josiah.radar@gmail.com"},
+]
+keywords = ["deep learning", "pytorch", "complex valued neural networks"]
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "License :: OSI Approved :: GNU General Public License v3 or later (GPLv3+)",
+    "Operating System :: OS Independent",
+]
+dependencies = [
+    "numpy>=2.2.0",
+    "torch>=2.1.0",
+]
+
+[project.urls]
+Homepage = "https://github.com/josiahwsmith10/complextorch"
+Documentation = "https://complextorch.readthedocs.io/en/latest/index.html"
+Repository = "https://github.com/josiahwsmith10/complextorch"
+"Bug Tracker" = "https://github.com/josiahwsmith10/complextorch/issues"
+
+[project.optional-dependencies]
+docs = [
+    "sphinx>=7.0",
+    "sphinx_rtd_theme>=2.0",
+]
+test = [
+    "pytest",
+    "pytest-cov",
+]
+
+[tool.setuptools.dynamic]
+version = {attr = "complextorch.__version__"}
+
+[tool.setuptools.packages.find]
+include = ["complextorch", "complextorch.*"]
