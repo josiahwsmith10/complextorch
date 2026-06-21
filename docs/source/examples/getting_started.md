@@ -173,11 +173,105 @@ y.abs().pow(2).sum().backward()
 print(f"x.grad shape {tuple(x.grad.shape)}, all finite = {torch.isfinite(x.grad).all().item()}")
 ```
 
+## 7 · Sequence models: positional encoding & state-space layers
+
+Attention is permutation-equivariant, so the native transformer needs an
+explicit positional encoding. {class}`complextorch.nn.RotaryEmbedding` (RoPE)
+plugs straight into {class}`complextorch.nn.MultiheadAttention` — it rotates the
+per-head queries/keys by complex phasors, so build it with `dim=d_k`. See
+[Complex positional encodings](../concepts/positional-encoding.md).
+
+```{code-cell}
+torch.manual_seed(0)
+d_model, n_heads, d_head = 32, 4, 8
+rope = ctorch.nn.RotaryEmbedding(dim=d_head)
+mha = ctorch.nn.MultiheadAttention(n_heads, d_model, d_head, d_head, rotary=rope)
+
+seq = torch.randn(2, 16, d_model, dtype=torch.cfloat)   # (batch, length, d_model)
+attn_out = mha(seq, seq, seq)
+print("attention output:", attn_out.shape, attn_out.dtype)
+```
+
+For long 1-D signals, the diagonal-complex state-space layers
+({class}`complextorch.nn.S4D` / {class}`complextorch.nn.S4DBlock`) run in linear
+time. Their FFT convolution matches an exact recurrent rollout — see
+[Complex state-space models](../concepts/state-space-models.md).
+
+```{code-cell}
+ssm = ctorch.nn.S4D(channels=8, state_size=32)
+u = torch.randn(2, 64, 8, dtype=torch.cfloat)           # (batch, length, channels)
+y_fft = ssm(u)
+y_rec = ssm.recurrence(u)
+print("S4D output:", y_fft.shape, y_fft.dtype)
+print("FFT vs recurrence max abs diff:", (y_fft - y_rec).abs().max().item())
+```
+
+## 8 · Signal front-ends & unitary recurrence
+
+A {class}`complextorch.nn.STFT` is a learnable-window short-time Fourier
+transform that emits a native complex spectrogram;
+{class}`complextorch.nn.InverseSTFT` inverts it. See
+[Learnable time-frequency front-ends](../concepts/time-frequency-frontends.md).
+
+```{code-cell}
+torch.manual_seed(0)
+sig = torch.randn(2, 256, dtype=torch.cfloat)        # complex baseband signal
+stft  = ctorch.nn.STFT(n_fft=32, hop_length=8)
+istft = ctorch.nn.InverseSTFT(n_fft=32, hop_length=8)
+istft.window = stft.window                           # tie windows -> exact inverse
+
+spec  = stft(sig)                                    # (2, 32, n_frames) complex
+recon = istft(spec)
+print("spectrogram:", spec.shape, spec.dtype)
+print("interior reconstruction error:",
+      (recon[..., 32:-32] - sig[..., 32:-32]).abs().max().item())
+```
+
+{class}`complextorch.nn.UnitaryRNN` has a norm-preserving (unitary) recurrence —
+see [Unitary complex RNNs](../concepts/unitary-rnn.md).
+
+```{code-cell}
+cell = ctorch.nn.UnitaryRNNCell(input_size=8, hidden_size=16)
+W = cell.unitary_matrix()
+print("W^H W == I:", torch.allclose(W.conj().T @ W, torch.eye(16, dtype=torch.cfloat), atol=1e-5))
+```
+
+## 9 · Complex KANs & Steinmetz networks
+
+{class}`complextorch.models.CVKAN` is a Kolmogorov-Arnold network whose edge
+functions are learnable complex-plane radial bases — see
+[Complex-Valued KANs](../concepts/kan.md).
+
+```{code-cell}
+kan = ctorch.models.CVKAN([4, 8, 3], num_grid=6)
+out = kan(torch.randn(16, 4, dtype=torch.cfloat))
+print("CVKAN output:", out.shape, out.dtype)
+```
+
+{class}`complextorch.models.AnalyticNeuralNetwork` processes complex data with
+parallel real subnetworks and an analytic-signal consistency penalty (built on
+{func}`complextorch.signal.analytic_signal`) — see
+[Steinmetz & Analytic networks](../concepts/steinmetz.md).
+
+```{code-cell}
+net = ctorch.models.AnalyticNeuralNetwork(4, 16, 32)
+y = net(torch.randn(8, 4, dtype=torch.cfloat))
+print("Analytic-net output:", y.shape, "| consistency penalty:",
+      round(net.consistency_loss(y).item(), 4))
+```
+
 ## Where next?
 
 - Browse the [API reference](../api/complextorch/index) for the full module
   surface (`nn`, `signal`, `transforms`, `datasets`, `models`).
 - Read the [Activations](../concepts/activations.md) deep-dive for Type-A /
   Type-B / fully-complex / ReLU-variant theory.
+- New in 2.1: [positional encodings](../concepts/positional-encoding.md),
+  [holographic attention](../concepts/holographic-attention.md),
+  [state-space models](../concepts/state-space-models.md),
+  [unitary RNNs](../concepts/unitary-rnn.md),
+  [time-frequency front-ends](../concepts/time-frequency-frontends.md),
+  [complex KANs](../concepts/kan.md), and
+  [Steinmetz / analytic networks](../concepts/steinmetz.md).
 - Check the [changelog](../changelog.md) for what landed in the current
   release.

@@ -5,6 +5,85 @@ All notable changes to `complextorch` are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.1.0]
+
+A large modern-architecture expansion: positional encodings, interference-aware
+attention, state-space models, unitary RNNs, learnable signal front-ends,
+complex KANs, and Steinmetz/analytic networks.
+
+### Added
+
+- **Complex positional encodings** (`complextorch.nn`): `RotaryEmbedding`
+  (relative RoPE — rotates per-head queries/keys by complex phasors so the
+  Hermitian attention score depends only on relative position),
+  `SinusoidalPositionalEncoding` (fixed absolute), and `CoPE` (lightweight
+  learnable absolute). `MultiheadAttention` gains an optional `rotary=`
+  argument and `models.ViT` a `pos_encoding=` selector
+  (`"learned"` / `"sinusoidal"` / `"rotary"`). The native transformer applies
+  no positional encoding on its own, so these fill a real gap. See
+  [Complex positional encodings](concepts/positional-encoding.md).
+- **Holographic (interference-aware) attention**: `HolographicAttention`
+  gates attention logits by the query/key phase discrepancy and performs a
+  coherent (phase-rotated) superposition of the values; selectable inside
+  `MultiheadAttention` via `attention="holographic"`. Adds the companion
+  `HolographicReconstructionLoss` and `phase_smoothness` regularizer
+  (anti-phase-collapse safeguards). After Holographic Transformers
+  ([arXiv:2509.19331](https://arxiv.org/abs/2509.19331)). See
+  [Holographic attention](concepts/holographic-attention.md).
+- **Complex diagonal state-space models**: `S4D` (HiPPO-Lin-initialised
+  diagonal-complex SSM with an FFT long-convolution and an exact recurrent
+  rollout), `DSS` (normalised-kernel variant), `S4DBlock` (residual block), and
+  `MambaBlock` (selective, input-dependent S6 scan). Linear-time long-sequence
+  modelling for the 1-D signals this package targets. After S4D
+  ([arXiv:2206.11893](https://arxiv.org/abs/2206.11893)), DSS
+  ([arXiv:2203.14343](https://arxiv.org/abs/2203.14343)), and Mamba
+  ([arXiv:2312.00752](https://arxiv.org/abs/2312.00752)). See
+  [Complex state-space models](concepts/state-space-models.md).
+- **Unitary complex RNN**: `UnitaryRNN` / `UnitaryRNNCell` — a norm-preserving
+  recurrence whose hidden-to-hidden matrix is the Cayley transform of a
+  learnable skew-Hermitian generator (eigenvalues on the unit circle), with an
+  `AdaptiveModReLU` nonlinearity and `trabelsi_independent_` semi-unitary init.
+  The classic complex-domain fix for vanishing/exploding gradients on long
+  sequences; complements the existing `GRU` / `LSTM`. After uRNN
+  ([arXiv:1511.06464](https://arxiv.org/abs/1511.06464)) and the Cayley/scoRNN
+  line ([arXiv:1707.09520](https://arxiv.org/abs/1707.09520)). See
+  [Unitary complex RNNs](concepts/unitary-rnn.md).
+- **Learnable complex time-frequency front-ends**: `STFT` / `InverseSTFT`
+  (short-time Fourier transform with a learnable analysis/synthesis window and
+  exact window-squared overlap-add reconstruction when the synthesis window is
+  tied to the analysis window) and `ComplexGaborConv1d` / `MorletConv1d`
+  (learnable complex Gabor/Morlet filterbanks — a complex, wavelet-style
+  analogue of SincNet). Differentiable signal front-ends that emit native
+  complex time-frequency representations. See
+  [Learnable time-frequency front-ends](concepts/time-frequency-frontends.md).
+- **Complex-Valued KAN**: `complextorch.nn.CVKANLayer` (a Kolmogorov-Arnold edge
+  layer whose univariate functions are a learnable Gaussian radial-basis
+  expansion over the complex plane, plus a complex linear base) and the
+  `complextorch.models.CVKAN` stack. After CVKAN
+  ([arXiv:2502.02417](https://arxiv.org/abs/2502.02417)). See
+  [Complex-Valued KANs](concepts/kan.md).
+- **Steinmetz & Analytic networks**: `complextorch.models.SteinmetzNetwork`
+  (parallel real-valued subnetworks with coupled outputs) and
+  `complextorch.models.AnalyticNeuralNetwork` (Steinmetz + an analytic-signal
+  consistency penalty that tightens the generalisation bound). Adds the reusable
+  `complextorch.nn.AnalyticSignalLoss` consistency penalty. After Steinmetz
+  Neural Networks ([arXiv:2409.10075](https://arxiv.org/abs/2409.10075)). See
+  [Steinmetz & Analytic networks](concepts/steinmetz.md).
+- **Signal utilities**: `complextorch.signal.analytic_signal` and
+  `complextorch.signal.hilbert` — a differentiable torch port of
+  `scipy.signal.hilbert` (analytic signal / Hilbert transform), reused by the
+  analytic-signal consistency penalty.
+
+### Fixed
+
+- `wFMConvStrict2d` now computes the phase mean as the **circular** (Fréchet)
+  mean on `SO(2)` — averaging the unit phase vectors and recovering the angle
+  via `atan2` — instead of an arithmetic mean of the raw principal-value angles.
+  The previous behaviour (a faithful port of RotLieNet's `ComplexConv2Deffangle`)
+  was wrong across the ±π branch cut; the circular mean is the correct manifold
+  Fréchet mean and makes the layer exactly U(1)-equivariant for any input phase
+  distribution.
+
 ## [2.0.1]
 
 ### Fixed

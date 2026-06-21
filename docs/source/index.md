@@ -99,6 +99,13 @@ examples/index
 concepts/activations
 concepts/native-vs-gauss
 concepts/co-domain-symmetry
+concepts/positional-encoding
+concepts/holographic-attention
+concepts/state-space-models
+concepts/unitary-rnn
+concepts/time-frequency-frontends
+concepts/kan
+concepts/steinmetz
 ```
 
 ```{toctree}

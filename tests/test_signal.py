@@ -5,7 +5,7 @@ from __future__ import annotations
 import pytest
 import torch
 
-from complextorch.signal import pwelch
+from complextorch.signal import analytic_signal, hilbert, pwelch
 
 
 def test_pwelch_real_default_onesided():
@@ -93,4 +93,41 @@ def test_pwelch_differentiable():
     x = torch.randn(256, requires_grad=True)
     _, psd = pwelch(x, window=64)
     psd.sum().backward()
+    assert x.grad is not None
+
+
+# -------- analytic signal / Hilbert transform --------
+
+
+@pytest.mark.parametrize("n", [64, 65])  # even and odd length branches
+def test_analytic_signal_of_integer_cycle_cosine(n):
+    # cos(2*pi*k*t/N) with integer k -> analytic signal is exactly exp(j*2*pi*k*t/N).
+    k = 5
+    t = torch.arange(n, dtype=torch.float64)
+    phase = 2 * torch.pi * k * t / n
+    za = analytic_signal(torch.cos(phase))
+    expected = torch.complex(torch.cos(phase), torch.sin(phase))
+    torch.testing.assert_close(za, expected, atol=1e-9, rtol=1e-9)
+
+
+def test_hilbert_of_cosine_is_sine():
+    n, k = 128, 7
+    t = torch.arange(n, dtype=torch.float64)
+    phase = 2 * torch.pi * k * t / n
+    torch.testing.assert_close(
+        hilbert(torch.cos(phase)), torch.sin(phase), atol=1e-9, rtol=1e-9
+    )
+
+
+def test_analytic_signal_real_part_preserved_and_dim():
+    x = torch.randn(3, 32)
+    za = analytic_signal(x, dim=-1)
+    assert za.shape == x.shape
+    assert za.is_complex()
+    torch.testing.assert_close(za.real, x, atol=1e-5, rtol=1e-5)
+
+
+def test_analytic_signal_differentiable():
+    x = torch.randn(64, requires_grad=True)
+    analytic_signal(x).imag.sum().backward()
     assert x.grad is not None
