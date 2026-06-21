@@ -46,6 +46,12 @@ from complextorch.nn.modules.casting import (
 )
 from complextorch.nn.modules.phase import PhaseShift, ComplexScaling
 
+from complextorch.nn.modules.position import (
+    RotaryEmbedding,
+    SinusoidalPositionalEncoding,
+    CoPE,
+)
+
 from complextorch.nn.modules.phase_modulation import (
     PhaseDivConv1d,
     PhaseDivConv2d,
@@ -113,6 +119,11 @@ from complextorch.nn.modules.loss import (
     SplitMSE,
 )
 from complextorch.nn.modules.loss import (
+    AnalyticSignalLoss,
+    HolographicReconstructionLoss,
+    phase_smoothness,
+)
+from complextorch.nn.modules.loss import (
     CVQuadError,
     CVFourthPowError,
     CVCauchyError,
@@ -139,6 +150,19 @@ from complextorch.nn.modules.upsampling import Upsample, PolarUpsample
 
 from complextorch.nn.modules.rnn import GRUCell, GRU, LSTMCell, LSTM
 
+from complextorch.nn.modules.unitary_rnn import UnitaryRNN, UnitaryRNNCell
+
+from complextorch.nn.modules.ssm import S4D, DSS, S4DBlock, MambaBlock
+
+from complextorch.nn.modules.kan import CVKANLayer
+
+from complextorch.nn.modules.frontend import (
+    STFT,
+    InverseSTFT,
+    ComplexGaborConv1d,
+    MorletConv1d,
+)
+
 from complextorch.nn.modules.transformer import (
     TransformerEncoderLayer,
     TransformerEncoder,
@@ -152,6 +176,7 @@ from complextorch.nn.modules.attention import (
     MultiheadAttention,
     ScaledDotProductAttention,
 )
+from complextorch.nn.modules.attention.holographic import HolographicAttention
 from complextorch.nn.modules.attention.eca import (
     EfficientChannelAttention1d,
     EfficientChannelAttention2d,
@@ -167,14 +192,20 @@ __all__ = [
     "CCELU",
     "CELU",
     "CGELU",
+    # state-space models
+    "DSS",
     "GRU",
     "LSTM",
+    "S4D",
     "SSIM",
+    "STFT",
     # pooling
     "AdaptiveAvgPool1d",
     "AdaptiveAvgPool2d",
     "AdaptiveAvgPool3d",
     "AdaptiveModReLU",
+    # kan / analytic
+    "AnalyticSignalLoss",
     "AvgPool1d",
     "AvgPool2d",
     "AvgPool3d",
@@ -190,6 +221,7 @@ __all__ = [
     "CVCardiod",
     "CVCauchyError",
     "CVFourthPowError",
+    "CVKANLayer",
     "CVLogCoshError",
     "CVLogError",
     "CVPolarLog",
@@ -208,6 +240,9 @@ __all__ = [
     "CVSplitReLU",
     "CVSplitSigmoid",
     "CVSplitTanh",
+    "CoPE",
+    # recurrence / front-ends
+    "ComplexGaborConv1d",
     "ComplexRatioMask",
     "ComplexScaling",
     "ComplexToConcatenated",
@@ -239,9 +274,12 @@ __all__ = [
     # losses
     "GeneralizedSplitLoss",
     "GroupNorm",
+    "HolographicAttention",
+    "HolographicReconstructionLoss",
     "IFFTBlock",
     # casting / phase
     "InterleavedToComplex",
+    "InverseSTFT",
     "LSTMCell",
     "LayerNorm",
     # linear
@@ -255,10 +293,12 @@ __all__ = [
     "MagMaxPool3d",
     "MagMinMaxNorm",
     "MagSoftMax",
+    "MambaBlock",
     "MaskedChannelAttention1d",
     "MaskedChannelAttention2d",
     "MaskedChannelAttention3d",
     "Mod",
+    "MorletConv1d",
     # attention
     "MultiheadAttention",
     "NaiveBatchNorm1d",
@@ -280,7 +320,11 @@ __all__ = [
     "PrototypeDistance",
     "RMSNorm",
     "RealToComplex",
+    # positional encoding
+    "RotaryEmbedding",
+    "S4DBlock",
     "ScaledDotProductAttention",
+    "SinusoidalPositionalEncoding",
     "SpectralPool1d",
     "SpectralPool2d",
     "SpectralPool3d",
@@ -293,6 +337,8 @@ __all__ = [
     "TransformerEncoder",
     # transformer
     "TransformerEncoderLayer",
+    "UnitaryRNN",
+    "UnitaryRNNCell",
     # upsampling
     "Upsample",
     "gauss",
@@ -300,6 +346,7 @@ __all__ = [
     "init",
     "masked",
     "modReLU",
+    "phase_smoothness",
     "relevance",
     "tReLU",
     "utils",

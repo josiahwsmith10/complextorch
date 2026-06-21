@@ -9,6 +9,7 @@ from complextorch.nn.modules.attention import (
     MultiheadAttention,
     ScaledDotProductAttention,
 )
+from complextorch.nn.modules.position import RotaryEmbedding
 
 
 def test_scaled_dot_product_complex_softmax():
@@ -51,3 +52,28 @@ def test_multihead_attention_cross():
     v = torch.randn(2, 7, 8, dtype=torch.cfloat)
     out = mha(q, k, v)
     assert out.shape == q.shape
+
+
+def test_multihead_attention_with_rotary():
+    mha = MultiheadAttention(
+        n_heads=2, d_model=8, d_k=4, d_v=4, rotary=RotaryEmbedding(4)
+    )
+    q = torch.randn(2, 5, 8, dtype=torch.cfloat)
+    out = mha(q, q, q)
+    assert out.shape == q.shape
+    assert out.is_complex()
+
+
+def test_multihead_attention_holographic():
+    mha = MultiheadAttention(
+        n_heads=2, d_model=8, d_k=4, d_v=4, attention="holographic"
+    )
+    q = torch.randn(2, 5, 8, dtype=torch.cfloat)
+    out = mha(q, q, q)
+    assert out.shape == q.shape
+    assert out.is_complex()
+
+
+def test_multihead_attention_invalid_attention():
+    with pytest.raises(ValueError, match="attention must be"):
+        MultiheadAttention(n_heads=2, d_model=8, d_k=4, d_v=4, attention="bogus")

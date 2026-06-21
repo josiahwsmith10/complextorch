@@ -8,11 +8,62 @@ A small set of complex-aware signal helpers that don't fit naturally in
 - :func:`pwelch` — Welch power spectral density (torch port of
   :func:`scipy.signal.welch`). Works on both real and complex inputs and is
   differentiable end-to-end.
+- :func:`analytic_signal` / :func:`hilbert` — analytic signal and Hilbert
+  transform (torch port of :func:`scipy.signal.hilbert`), differentiable
+  end-to-end. Used by the analytic-signal consistency penalty
+  (:class:`complextorch.nn.AnalyticSignalLoss`).
 """
 
 import torch
 
-__all__ = ["pwelch"]
+__all__ = ["analytic_signal", "hilbert", "pwelch"]
+
+
+def analytic_signal(x: torch.Tensor, dim: int = -1) -> torch.Tensor:
+    r"""
+    Analytic Signal (torch port of :func:`scipy.signal.hilbert`).
+
+    Returns the complex analytic signal :math:`x_a = x + j\,\mathcal{H}\{x\}`,
+    whose imaginary part is the Hilbert transform of ``x``. Computed by zeroing
+    the negative-frequency half of the FFT and doubling the positive half.
+    Differentiable end-to-end.
+
+    Args:
+        x: real-valued signal (the analytic signal is computed over ``dim``).
+        dim: dimension along which to transform.
+
+    Returns:
+        complex analytic signal of the same shape as ``x``.
+    """
+    n = x.shape[dim]
+    xf = torch.fft.fft(x, dim=dim)
+    h = torch.zeros(n, dtype=x.real.dtype, device=x.device)
+    if n % 2 == 0:
+        h[0] = h[n // 2] = 1.0
+        h[1 : n // 2] = 2.0
+    else:
+        h[0] = 1.0
+        h[1 : (n + 1) // 2] = 2.0
+    shape = [1] * x.dim()
+    shape[dim] = n
+    return torch.fft.ifft(xf * h.view(shape), dim=dim)
+
+
+def hilbert(x: torch.Tensor, dim: int = -1) -> torch.Tensor:
+    r"""
+    Hilbert Transform :math:`\mathcal{H}\{x\}`.
+
+    The imaginary part of the :func:`analytic_signal` — a 90-degree phase shift
+    of every frequency component. Differentiable end-to-end.
+
+    Args:
+        x: real-valued signal.
+        dim: dimension along which to transform.
+
+    Returns:
+        the (real) Hilbert transform of ``x``.
+    """
+    return analytic_signal(x, dim=dim).imag
 
 
 def _window_view(x: torch.Tensor, dim: int, size: int, stride: int = 1) -> torch.Tensor:

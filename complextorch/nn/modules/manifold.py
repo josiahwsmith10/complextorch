@@ -628,12 +628,15 @@ class wFMConvStrict2d(nn.Module):
     enforced by parameterising :math:`w_{o, i} = \tilde{w}_{o, i}^2 / \sum_k \tilde{w}_{o, k}^2`
     where :math:`\tilde{w}` is the unconstrained learnable tensor.
 
-    For each output position the closed-form wFM on the manifold is applied:
+    For each output position the closed-form wFM on the manifold is applied —
+    the geometric mean of the magnitudes (the Fréchet mean on :math:`\mathbb{R}^+`)
+    and the **circular** mean of the phases (the Fréchet mean on :math:`SO(2)`):
 
     .. math::
 
         |y_o| = \exp\!\Bigl(\sum_i w_{o, i} \log |z_i|\Bigr), \qquad
-        \arg y_o = \sum_i w_{o, i} \arg z_i
+        \arg y_o = \operatorname{atan2}\!\Bigl(\sum_i w_{o, i} \sin \arg z_i,\;
+                                               \sum_i w_{o, i} \cos \arg z_i\Bigr)
 
     where :math:`\{z_i\}` are the complex inputs from the kernel window
     (across all input channels and spatial positions).
@@ -667,6 +670,19 @@ class wFMConvStrict2d(nn.Module):
         and does not transform as ``0 \mapsto 0 \cdot e^{j\psi}`` under input
         rotation. The result is still well-defined; only exact equivariance
         degrades near the boundary.
+
+    .. note::
+        The phase mean is the weighted **circular** (Fréchet) mean on
+        :math:`SO(2)`: the unit phase vectors are averaged and the angle is
+        recovered with :func:`torch.atan2`. This is correct across the
+        :math:`\pm\pi` branch cut and keeps the layer **exactly**
+        U(1)-equivariant for any input phase distribution. The reference
+        ``ComplexConv2Deffangle`` in
+        `RotLieNet <https://github.com/xingyifei2016/RotLieNet>`_ instead takes a
+        plain arithmetic mean of the raw principal-value angles — only accurate
+        away from :math:`\pm\pi`; this implementation uses the
+        geometrically-correct circular mean, matching the paper's Fréchet-mean
+        definition.
 
     Args:
         in_channels: number of complex input channels.
@@ -750,7 +766,12 @@ class wFMConvStrict2d(nn.Module):
         # Convex weights [O, C*kh*kw]; contract with the unfolded windows.
         w = self._convex_weights()
         log_mag_out = torch.einsum("oj,bjl->bol", w, log_mag_unf)
-        phase_out = torch.einsum("oj,bjl->bol", w, phase_unf)
+        # Circular (Fréchet) mean of the phase on SO(2): average the unit phase
+        # vectors and recover the angle via atan2. Correct across the ±π branch
+        # cut and exactly U(1)-equivariant, unlike a raw weighted sum of angles.
+        cos_out = torch.einsum("oj,bjl->bol", w, phase_unf.cos())
+        sin_out = torch.einsum("oj,bjl->bol", w, phase_unf.sin())
+        phase_out = torch.atan2(sin_out, cos_out)
 
         log_mag_out = log_mag_out.view(B, self.out_channels, out_h, out_w)
         phase_out = phase_out.view(B, self.out_channels, out_h, out_w)
