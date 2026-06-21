@@ -39,9 +39,18 @@ The doc stack is **PyData Sphinx Theme + MyST + sphinx-autoapi + myst-nb + sphin
 
 CI lives in `.github/workflows/`: `test.yml` (pytest on 3.10/3.11/3.12 with `--cov-fail-under=100` — any coverage drop fails CI), `docs.yml` (per-PR `sphinx-build -W` gate + per-merge `sphinx-multiversion` deploy to GitHub Pages), `lint.yml` (ruff check on every PR / push), `pypi.yml` (build sdist+wheel, trusted-publish to PyPI, Sigstore-sign, cut a GitHub Release — triggered by a semver tag matching `[0-9]+.[0-9]+.[0-9]+`).
 
+## Branching & pull requests
+
+Standard GitHub flow — `main` is the integration **and** release branch; branch off it and merge back into it.
+
+- **Branch from `main`, PR into `main`.** Base every feature/fix branch on the latest `main` and target `main` in the PR — not whatever branch happens to be checked out at the start of a session. If `main` is behind some other branch (e.g. an unreleased work branch), merge that branch into `main` *first*, then build on `main`; never stack a feature PR onto a non-`main` base.
+- **Branch names are descriptors; tags are version labels.** Use `feature/<slug>`, `fix/<slug>`, or `release/X.Y.Z` for branch names and reserve bare semver (`X.Y.Z`) for **tags**. Never name a branch `X.Y.Z` — it collides with the release tag and makes `git push origin X.Y.Z` ambiguous.
+- **Keep history linear** (rebase- or squash-merge; the repo has no merge commits) and keep one logical change per PR.
+- **CI gates the merge.** All three workflows must be green before merging: `test.yml` (pytest with `--cov-fail-under=100`), `lint.yml` (**both** `ruff check` *and* `ruff format --check`), and `docs.yml` (`sphinx -W`). Run all of them locally before pushing — `ruff format --check` is the easy one to forget, since `ruff check` alone does **not** catch formatting.
+
 ## Releasing a new version
 
-`complextorch/__init__.py:__version__` is the single source of truth. `pyproject.toml` reads it via `[tool.setuptools.dynamic] version = {attr = "complextorch.__version__"}` and `docs/source/conf.py` parses it via regex. To bump the version, edit `__init__.py`, add an entry under `## [Unreleased]` in `CHANGELOG.md`, then `git tag X.Y.Z && git push --tags` to trigger `pypi.yml`.
+`complextorch/__init__.py:__version__` is the single source of truth. `pyproject.toml` reads it via `[tool.setuptools.dynamic] version = {attr = "complextorch.__version__"}` and `docs/source/conf.py` parses it via regex. To cut a release, work on a `release/X.Y.Z` branch off `main`: bump `__version__` in `__init__.py`, add the `CHANGELOG.md` entry, open a PR into `main`, and merge it once CI is green. Then — with CI green on the resulting `main` commit — tag **that `main` commit** and push the tag: `git tag -a X.Y.Z <main-sha> -m "…" && git push origin X.Y.Z` (push the one tag, not `--tags`). The tag — not the branch — triggers `pypi.yml`, which trusted-publishes to PyPI, Sigstore-signs, and cuts a GitHub Release, so **a pushed tag is an irreversible public release**: only push it after the PR is merged and `main` is green, and tag the `main` merge commit, never a feature-branch commit.
 
 Release notes live in `CHANGELOG.md` (keepachangelog format) and are surfaced in the docs via `docs/source/changelog.md`. The `sphinx-multiversion` whitelist in `conf.py` is `^2\.\d+\.\d+$` — bump the regex when cutting a 3.x.
 
