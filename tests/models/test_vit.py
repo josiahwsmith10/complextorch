@@ -66,6 +66,50 @@ def test_vit_invalid_image_patch():
         )
 
 
+@pytest.mark.parametrize("pos_encoding", ["learned", "sinusoidal", "rotary"])
+def test_vit_pos_encoding_modes(pos_encoding):
+    vit = ViT(
+        image_size=16,
+        patch_size=4,
+        num_classes=5,
+        dim=16,
+        depth=1,
+        heads=2,
+        mlp_dim=32,
+        pos_encoding=pos_encoding,
+    )
+    x = torch.randn(1, 1, 16, 16, dtype=torch.cfloat)
+    out = vit(x)
+    assert out.shape == (1, 5)
+
+
+def test_vit_invalid_pos_encoding():
+    with pytest.raises(ValueError, match="pos_encoding must be"):
+        ViT(
+            image_size=16,
+            patch_size=4,
+            num_classes=5,
+            dim=16,
+            depth=1,
+            heads=2,
+            mlp_dim=32,
+            pos_encoding="bogus",
+        )
+
+
+def test_vit_invalid_dim_heads():
+    with pytest.raises(ValueError, match="must be divisible by heads"):
+        ViT(
+            image_size=16,
+            patch_size=4,
+            num_classes=5,
+            dim=18,
+            depth=1,
+            heads=4,
+            mlp_dim=32,
+        )
+
+
 # ---------- Presets (smoke: just instantiate; don't run forward on full sizes) ----------
 
 

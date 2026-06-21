@@ -19,6 +19,10 @@ from complextorch.nn.modules.conv import Conv2d
 from complextorch.nn.modules.dropout import Dropout
 from complextorch.nn.modules.layernorm import LayerNorm
 from complextorch.nn.modules.linear import Linear
+from complextorch.nn.modules.position import (
+    RotaryEmbedding,
+    SinusoidalPositionalEncoding,
+)
 
 __all__ = ["ViT", "ViTLayer", "vit_b", "vit_h", "vit_l", "vit_s", "vit_t"]
 
@@ -55,13 +59,20 @@ class ViTLayer(nn.Module):
         dropout: float = 0.0,
         layer_norm_eps: float = 1e-5,
         softmax_on: str = "complex",
+        rotary: RotaryEmbedding | None = None,
     ) -> None:
         super().__init__()
         if dim % nhead != 0:
             raise ValueError(f"dim ({dim}) must be divisible by nhead ({nhead})")
         d_head = dim // nhead
         self.attn = MultiheadAttention(
-            nhead, dim, d_head, d_head, dropout=dropout, softmax_on=softmax_on
+            nhead,
+            dim,
+            d_head,
+            d_head,
+            dropout=dropout,
+            softmax_on=softmax_on,
+            rotary=rotary,
         )
         self.ffn = _ViTFFN(dim, mlp_dim, dropout, layer_norm_eps)
 
@@ -85,6 +96,16 @@ class ViT(nn.Module):
         mlp_dim: width of the FFN.
         dropout: dropout probability.
         softmax_on: ``'complex'`` or ``'real'``; controls attention softmax.
+        pos_encoding: positional-encoding scheme:
+
+            - ``'learned'`` (default): a learned complex ``pos_embed`` parameter
+              added to the token + patch embeddings (original behaviour).
+            - ``'sinusoidal'``: a fixed complex
+              :class:`~complextorch.nn.SinusoidalPositionalEncoding` added to the
+              embeddings.
+            - ``'rotary'``: relative :class:`~complextorch.nn.RotaryEmbedding`
+              applied to the per-head query/key tensors inside attention; no
+              additive position embedding is used.
 
     Note: the classification head returns a complex ``(B, num_classes)``
     tensor. Most downstream losses take ``|·|`` first.
@@ -103,31 +124,52 @@ class ViT(nn.Module):
         dropout: float = 0.0,
         layer_norm_eps: float = 1e-5,
         softmax_on: str = "complex",
+        pos_encoding: str = "learned",
     ) -> None:
         super().__init__()
         if image_size % patch_size != 0:
             raise ValueError(
                 f"image_size ({image_size}) must be divisible by patch_size ({patch_size})"
             )
+        if pos_encoding not in ("learned", "sinusoidal", "rotary"):
+            raise ValueError(
+                "pos_encoding must be 'learned', 'sinusoidal' or 'rotary'; "
+                f"got {pos_encoding!r}"
+            )
+        if dim % heads != 0:
+            raise ValueError(f"dim ({dim}) must be divisible by heads ({heads})")
         num_patches = (image_size // patch_size) ** 2
+        self.pos_encoding = pos_encoding
         self.patch_embed = Conv2d(
             in_channels, dim, kernel_size=patch_size, stride=patch_size, bias=True
         )
-        # Class token and positional embedding are complex parameters.
+        # Class token is a complex parameter.
         self.cls_token = nn.Parameter(torch.zeros(1, 1, dim, dtype=torch.cfloat))
-        self.pos_embed = nn.Parameter(
-            torch.zeros(1, num_patches + 1, dim, dtype=torch.cfloat)
-        )
         with torch.no_grad():
             self.cls_token.real.normal_(0, 0.02)
             self.cls_token.imag.normal_(0, 0.02)
-            self.pos_embed.real.normal_(0, 0.02)
-            self.pos_embed.imag.normal_(0, 0.02)
+
+        self.pos_embed: nn.Parameter | None = None
+        self.pos_enc: SinusoidalPositionalEncoding | None = None
+        rotary: RotaryEmbedding | None = None
+        if pos_encoding == "learned":
+            self.pos_embed = nn.Parameter(
+                torch.zeros(1, num_patches + 1, dim, dtype=torch.cfloat)
+            )
+            with torch.no_grad():
+                self.pos_embed.real.normal_(0, 0.02)
+                self.pos_embed.imag.normal_(0, 0.02)
+        elif pos_encoding == "sinusoidal":
+            self.pos_enc = SinusoidalPositionalEncoding(dim)
+        else:  # rotary
+            rotary = RotaryEmbedding(dim // heads)
 
         self.drop = Dropout(dropout)
         self.blocks = nn.ModuleList(
             [
-                ViTLayer(dim, heads, mlp_dim, dropout, layer_norm_eps, softmax_on)
+                ViTLayer(
+                    dim, heads, mlp_dim, dropout, layer_norm_eps, softmax_on, rotary
+                )
                 for _ in range(depth)
             ]
         )
@@ -140,7 +182,10 @@ class ViT(nn.Module):
         x = x.flatten(2).transpose(1, 2)  # (B, N, dim)
         cls = self.cls_token.expand(b, -1, -1)
         x = torch.cat([cls, x], dim=1)
-        x = x + self.pos_embed
+        if self.pos_embed is not None:
+            x = x + self.pos_embed
+        elif self.pos_enc is not None:
+            x = self.pos_enc(x)
         x = self.drop(x)
         for block in self.blocks:
             x = block(x)

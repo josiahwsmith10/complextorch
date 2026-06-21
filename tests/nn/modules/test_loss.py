@@ -8,6 +8,7 @@ import torch.nn as nn
 
 from complextorch.nn.modules.loss import (
     SSIM,
+    AnalyticSignalLoss,
     CVCauchyError,
     CVFourthPowError,
     CVLogCoshError,
@@ -15,12 +16,15 @@ from complextorch.nn.modules.loss import (
     CVQuadError,
     GeneralizedPolarLoss,
     GeneralizedSplitLoss,
+    HolographicReconstructionLoss,
     MSELoss,
     PerpLossSSIM,
     SplitL1,
     SplitMSE,
     SplitSSIM,
+    phase_smoothness,
 )
+from complextorch.signal import analytic_signal
 
 # -------- _reduce branches via parameterized losses --------
 
@@ -30,6 +34,7 @@ REDUCTION_LOSSES = [
     CVCauchyError,
     CVLogCoshError,
     MSELoss,
+    HolographicReconstructionLoss,
 ]
 
 
@@ -167,3 +172,72 @@ def test_cvcauchy_with_custom_c():
     y = torch.randn(4, dtype=torch.cfloat)
     out = loss(x, y)
     assert out.dim() == 0
+
+
+# -------- Holographic reconstruction loss --------
+
+
+def test_holographic_reconstruction_matches_abs_sq():
+    x = torch.randn(3, 5, dtype=torch.cfloat)
+    y = torch.randn(3, 5, dtype=torch.cfloat)
+    out = HolographicReconstructionLoss(reduction="sum")(x, y)
+    torch.testing.assert_close(out, ((x - y).abs() ** 2).sum())
+
+
+def test_holographic_reconstruction_zero_on_identity():
+    x = torch.randn(3, 5, dtype=torch.cfloat)
+    out = HolographicReconstructionLoss()(x, x)
+    torch.testing.assert_close(out, torch.zeros(()))
+
+
+# -------- phase_smoothness regularizer --------
+
+
+@pytest.mark.parametrize("reduction", ["mean", "sum", "none"])
+def test_phase_smoothness_reduction(reduction):
+    x = torch.randn(2, 6, dtype=torch.cfloat)
+    out = phase_smoothness(x, dim=-1, reduction=reduction)
+    if reduction == "none":
+        assert out.shape == (2, 5)  # one fewer along the diff dim
+    else:
+        assert out.dim() == 0
+
+
+def test_phase_smoothness_zero_on_constant_phase():
+    # Constant phase along the sequence -> zero variation.
+    mag = torch.rand(1, 8) + 0.1
+    x = torch.polar(mag, torch.full((1, 8), 0.4))
+    out = phase_smoothness(x, dim=-1)
+    torch.testing.assert_close(out, torch.zeros(()), atol=1e-6, rtol=0)
+
+
+def test_phase_smoothness_invalid_reduction():
+    x = torch.randn(2, 6, dtype=torch.cfloat)
+    with pytest.raises(ValueError, match="reduction must be"):
+        phase_smoothness(x, reduction="bogus")
+
+
+# -------- AnalyticSignalLoss --------
+
+
+def test_analytic_signal_loss_zero_on_true_analytic_signal():
+    x = torch.randn(2, 64)
+    z = analytic_signal(x)  # imag(z) == hilbert(real(z)) by construction
+    out = AnalyticSignalLoss()(z)
+    torch.testing.assert_close(out, torch.zeros(()), atol=1e-10, rtol=0)
+
+
+@pytest.mark.parametrize("reduction", ["mean", "sum", "none"])
+def test_analytic_signal_loss_reduction(reduction):
+    z = torch.randn(2, 16, dtype=torch.cfloat)
+    out = AnalyticSignalLoss(reduction=reduction)(z)
+    if reduction == "none":
+        assert out.shape == z.shape
+    else:
+        assert out.dim() == 0
+
+
+def test_analytic_signal_loss_invalid_reduction():
+    z = torch.randn(2, 16, dtype=torch.cfloat)
+    with pytest.raises(ValueError, match="reduction must be"):
+        AnalyticSignalLoss(reduction="bogus")(z)

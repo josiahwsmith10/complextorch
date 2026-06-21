@@ -2,6 +2,8 @@ import torch
 import torch.nn as nn
 
 from complextorch import nn as cvnn
+from complextorch.nn.modules.attention.holographic import HolographicAttention
+from complextorch.nn.modules.position import RotaryEmbedding
 
 __all__ = ["MultiheadAttention", "ScaledDotProductAttention"]
 
@@ -82,6 +84,18 @@ class MultiheadAttention(nn.Module):
     Multihead self attention extended to complex-valued tensors.
 
     By default, the :class:`MultiheadAttention` employs :class:`complextorch.nn.CVSoftMax`, which applies the traditional softmax to the real and imaginary parts of the complex-valued tensor separately. Pass :class:`complextorch.nn.PhaseSoftMax` via ``SoftMaxClass`` for the phase-preserving alternative.
+
+    Pass a :class:`complextorch.nn.RotaryEmbedding` via ``rotary`` to inject
+    relative positional information; it is applied to the per-head query and key
+    tensors after projection and must be constructed with ``dim=d_k``. Rotary is
+    intended for **self-attention** (a shared query/key position axis); for
+    cross-attention with differing query/key positions the relative-offset
+    semantics are not meaningful, so prefer an additive encoding there.
+
+    Set ``attention='holographic'`` to use the interference-aware
+    :class:`~complextorch.nn.HolographicAttention` core instead of the default
+    scaled dot-product attention (in which case ``SoftMaxClass`` / ``softmax_on``
+    are unused).
     """
 
     def __init__(
@@ -93,24 +107,37 @@ class MultiheadAttention(nn.Module):
         dropout: float = 0.1,
         SoftMaxClass: nn.Module = cvnn.CVSoftMax,
         softmax_on: str = "complex",
+        rotary: RotaryEmbedding | None = None,
+        attention: str = "scaled_dot_product",
     ) -> None:
         super().__init__()
+        if attention not in ("scaled_dot_product", "holographic"):
+            raise ValueError(
+                "attention must be 'scaled_dot_product' or 'holographic'; "
+                f"got {attention!r}"
+            )
 
         self.d_k = d_k
         self.d_v = d_v
         self.n_heads = n_heads
+        self.rotary = rotary
 
         self.w_q = cvnn.Linear(d_model, n_heads * d_k, bias=False)
         self.w_k = cvnn.Linear(d_model, n_heads * d_k, bias=False)
         self.w_v = cvnn.Linear(d_model, n_heads * d_v, bias=False)
         self.fc = cvnn.Linear(n_heads * d_v, d_model, bias=False)
 
-        self.attention = ScaledDotProductAttention(
-            temperature=d_k**0.5,
-            attn_dropout=dropout,
-            SoftMaxClass=SoftMaxClass,
-            softmax_on=softmax_on,
-        )
+        if attention == "holographic":
+            self.attention = HolographicAttention(
+                temperature=d_k**0.5, attn_dropout=dropout
+            )
+        else:
+            self.attention = ScaledDotProductAttention(
+                temperature=d_k**0.5,
+                attn_dropout=dropout,
+                SoftMaxClass=SoftMaxClass,
+                softmax_on=softmax_on,
+            )
 
         self.dropout = cvnn.Dropout(dropout)
         self.layer_norm = cvnn.LayerNorm(d_model, eps=1e-6)
@@ -136,6 +163,9 @@ class MultiheadAttention(nn.Module):
             k.transpose(1, 2),
             v.transpose(1, 2),
         )
+
+        if self.rotary is not None:
+            q, k = self.rotary.rotate_q_k(q, k)
 
         q = self.attention(q, k, v)
 

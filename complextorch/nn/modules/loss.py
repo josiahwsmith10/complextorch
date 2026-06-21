@@ -2,19 +2,24 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
+from complextorch.signal import hilbert
+
 __all__ = [
     "SSIM",
+    "AnalyticSignalLoss",
     "CVCauchyError",
     "CVFourthPowError",
     "CVLogCoshError",
     "CVLogError",
     "CVQuadError",
     "GeneralizedSplitLoss",
+    "HolographicReconstructionLoss",
     "MSELoss",
     "PerpLossSSIM",
     "SplitL1",
     "SplitMSE",
     "SplitSSIM",
+    "phase_smoothness",
 ]
 
 
@@ -453,3 +458,98 @@ class CVLogError(nn.Module):
     def forward(self, x: torch.Tensor, y: torch.Tensor) -> torch.Tensor:
         err = torch.log(x) - torch.log(y)
         return _reduce(err.abs() ** 2, self.reduction)
+
+
+class HolographicReconstructionLoss(nn.Module):
+    r"""
+    Holographic Reconstruction Loss
+    -------------------------------
+
+    Separate real/imaginary reconstruction term used by the holographic
+    transformer's dual-headed decoder as an anti-"phase-collapse" safeguard:
+
+    .. math::
+
+        \mathcal{L}_\text{recon}(\hat{\mathbf{x}}, \mathbf{x})
+            = \lVert \Re(\hat{\mathbf{x}} - \mathbf{x})\rVert_2^2
+            + \lVert \Im(\hat{\mathbf{x}} - \mathbf{x})\rVert_2^2 .
+
+    Forcing the decoder to recover both quadratures prevents phase-blind
+    solutions. See :class:`complextorch.nn.HolographicAttention` and
+    https://arxiv.org/abs/2509.19331.
+
+    Args:
+        reduction: ``'mean'`` (default), ``'sum'``, or ``'none'``.
+    """
+
+    def __init__(self, reduction: str = "mean") -> None:
+        super().__init__()
+        self.reduction = reduction
+
+    def forward(self, x: torch.Tensor, y: torch.Tensor) -> torch.Tensor:
+        d = x - y
+        return _reduce(d.real**2 + d.imag**2, self.reduction)
+
+
+class AnalyticSignalLoss(nn.Module):
+    r"""
+    Analytic-Signal Consistency Penalty
+    -----------------------------------
+
+    Penalises how far a complex latent :math:`\mathbf{z}` is from being an
+    **analytic signal** — i.e. how far its imaginary part is from the Hilbert
+    transform of its real part:
+
+    .. math::
+
+        \mathcal{L}(\mathbf{z}) = \text{reduce}\big(\,
+            |\Im(\mathbf{z}) - \mathcal{H}\{\Re(\mathbf{z})\}|^2 \,\big).
+
+    Driving this to zero enforces the deterministic, orthogonal relationship
+    between the real and imaginary channels that defines an analytic signal —
+    the consistency term of the Analytic Neural Network
+    (:class:`complextorch.models.AnalyticNeuralNetwork`,
+    https://arxiv.org/abs/2409.10075). Unlike the comparison losses above, this
+    takes a **single** argument (the latent).
+
+    Args:
+        dim: signal dimension along which the Hilbert transform is taken.
+        reduction: ``'mean'`` (default), ``'sum'``, or ``'none'``.
+    """
+
+    def __init__(self, dim: int = -1, reduction: str = "mean") -> None:
+        super().__init__()
+        self.dim = dim
+        self.reduction = reduction
+
+    def forward(self, z: torch.Tensor) -> torch.Tensor:
+        target_imag = hilbert(z.real, dim=self.dim)
+        return _reduce((z.imag - target_imag) ** 2, self.reduction)
+
+
+def phase_smoothness(
+    x: torch.Tensor, dim: int = -1, reduction: str = "mean"
+) -> torch.Tensor:
+    r"""
+    Phase-Smoothness (Total-Variation) Regularizer
+    ----------------------------------------------
+
+    Penalizes erratic phase fluctuations between adjacent positions along
+    ``dim`` using the wrapped phase difference:
+
+    .. math::
+
+        \mathcal{R}(\mathbf{z}) = \text{reduce}\big(\,
+            | \text{wrap}(\angle z_{n+1} - \angle z_n) | \,\big),
+
+    where ``wrap`` maps the difference into :math:`(-\pi, \pi]`. Companion to
+    :class:`complextorch.nn.HolographicAttention` (https://arxiv.org/abs/2509.19331).
+
+    Args:
+        x: complex-valued tensor.
+        dim: dimension along which adjacent phases are compared.
+        reduction: ``'mean'`` (default), ``'sum'``, or ``'none'``.
+    """
+    diff = torch.diff(x.angle(), dim=dim)
+    wrapped = (diff + torch.pi) % (2 * torch.pi) - torch.pi
+    return _reduce(wrapped.abs(), reduction)

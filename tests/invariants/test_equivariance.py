@@ -74,11 +74,40 @@ def test_wfm_conv_strict_2d_is_u1_equivariant():
     zero cannot be rotated faithfully in ``(log|z|, arg z)`` form.
     """
     layer = wFMConvStrict2d(in_channels=2, out_channels=3, kernel_size=3, padding=0)
-    # Keep phases away from ±π so a small rotation does not wrap the branch cut.
     torch.manual_seed(0)
     x = 0.5 * torch.randn(2, 2, 6, 6, dtype=torch.cfloat) + 1.5
     rotor = torch.polar(torch.tensor(1.0), torch.tensor(0.3))
     torch.testing.assert_close(layer(x * rotor), layer(x) * rotor, atol=1e-4, rtol=1e-4)
+
+
+def test_wfm_conv_strict_2d_equivariant_across_branch_cut():
+    """The circular phase mean stays U(1)-equivariant even when kernel windows
+    straddle the ±π branch cut — a raw arithmetic mean of angles would not."""
+    layer = wFMConvStrict2d(in_channels=2, out_channels=3, kernel_size=3, padding=0)
+    torch.manual_seed(0)
+    # Full-circle phases and a large rotation (~143°) that pushes many samples
+    # across the ±π discontinuity.
+    mag = torch.rand(2, 2, 6, 6) + 0.5
+    ang = torch.rand(2, 2, 6, 6) * (2 * torch.pi) - torch.pi
+    x = torch.polar(mag, ang)
+    rotor = torch.polar(torch.tensor(1.0), torch.tensor(2.5))
+    torch.testing.assert_close(layer(x * rotor), layer(x) * rotor, atol=1e-4, rtol=1e-4)
+
+
+def test_wfm_conv_strict_2d_phase_cancellation_is_finite():
+    """Degenerate circular-mean case: when a window's unit phase vectors cancel
+    (resultant ≈ 0, i.e. ``atan2`` near the origin) the layer's mean phase is
+    ill-defined, but the forward and backward passes must stay finite (no NaN)."""
+    layer = wFMConvStrict2d(in_channels=1, out_channels=1, kernel_size=2, padding=0)
+    with torch.no_grad():
+        layer.weight.fill_(1.0)  # uniform convex weights (1/N each)
+    # Balanced phases 0, π/2, π, -π/2 -> the unit phase vectors sum to ~0.
+    ang = torch.tensor([[[[0.0, torch.pi / 2], [torch.pi, -torch.pi / 2]]]])
+    x = torch.polar(torch.ones(1, 1, 2, 2), ang).requires_grad_(True)
+    y = layer(x)
+    assert torch.isfinite(y).all()
+    y.real.sum().backward()  # phase-dependent loss stresses atan2 at the origin
+    assert torch.isfinite(x.grad).all()
 
 
 # ---------------------------------------------------------------------------
