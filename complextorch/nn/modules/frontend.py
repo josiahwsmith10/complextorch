@@ -145,17 +145,11 @@ class InverseSTFT(nn.Module):
         signal = torch.zeros(*batch, out_len, dtype=frames.dtype, device=frames.device)
         wsq = torch.zeros(out_len, dtype=self.window.real.dtype, device=frames.device)
         win_sq = self.window.abs() ** 2
+        # Overlap-add: each frame contributes only to its own n_fft-wide slice.
         for m in range(n_frames):
-            start = m * hop
-            pad_l = torch.zeros(*batch, start, dtype=frames.dtype, device=frames.device)
-            pad_r = torch.zeros(
-                *batch,
-                out_len - start - n_fft,
-                dtype=frames.dtype,
-                device=frames.device,
-            )
-            signal = signal + torch.cat([pad_l, frames[..., m, :], pad_r], dim=-1)
-            wsq = wsq + F.pad(win_sq, (start, out_len - start - n_fft))
+            sl = slice(m * hop, m * hop + n_fft)
+            signal[..., sl] = signal[..., sl] + frames[..., m, :]
+            wsq[sl] = wsq[sl] + win_sq
         return signal / (wsq + self.eps)
 
     def extra_repr(self) -> str:
@@ -228,15 +222,14 @@ class ComplexGaborConv1d(nn.Module):
         Returns:
             torch.Tensor: complex ``(B, out_channels, T')`` feature map.
         """
-        kern = self._kernels()  # (O, K)
-        weight = (
-            kern.unsqueeze(1)
-            .expand(self.out_channels, self.in_channels, self.kernel_size)
-            .contiguous()
-        )
+        kern = self._kernels().unsqueeze(1)  # (O, 1, K)
         if not input.is_complex():
             input = input.to(torch.cfloat)
-        return F.conv1d(input, weight, stride=self.stride, padding=self.padding)
+        # Each filter is shared across input channels (SincNet-style), so the
+        # convolution with a per-channel-replicated weight equals convolving the
+        # channel-summed input once — same result, no in_channels replication.
+        summed = input.sum(dim=1, keepdim=True)  # (B, 1, T)
+        return F.conv1d(summed, kern, stride=self.stride, padding=self.padding)
 
     def extra_repr(self) -> str:
         return (
