@@ -52,6 +52,24 @@ def _position_angles(inv_freq: torch.Tensor, seq_len: int, offset: int) -> torch
     return torch.outer(pos, inv_freq)
 
 
+def _apply_phasor(
+    input: torch.Tensor, angles: torch.Tensor, dim: int, *, add: bool
+) -> torch.Tensor:
+    """Combine ``input`` with the unit phasor bank ``e^{j·angles}``.
+
+    Validates the feature dim, casts a real ``input`` up to complex, then either
+    adds the phasor (absolute encoding) or multiplies by it (rotary encoding).
+    """
+    if input.shape[-1] != dim:
+        raise ValueError(
+            f"last dim of input ({input.shape[-1]}) must equal dim ({dim})"
+        )
+    phasor = torch.polar(torch.ones_like(angles), angles)
+    if not input.is_complex():
+        input = input.to(torch.cfloat)
+    return input + phasor if add else input * phasor
+
+
 class RotaryEmbedding(nn.Module):
     r"""
     Complex Rotary Position Embedding (RoPE)
@@ -106,15 +124,8 @@ class RotaryEmbedding(nn.Module):
         Returns:
             torch.Tensor: rotated complex tensor of the same shape.
         """
-        if input.shape[-1] != self.dim:
-            raise ValueError(
-                f"last dim of input ({input.shape[-1]}) must equal dim ({self.dim})"
-            )
         angles = _position_angles(self.inv_freq, input.shape[-2], offset)
-        rotor = torch.polar(torch.ones_like(angles), angles)
-        if not input.is_complex():
-            input = input.to(torch.cfloat)
-        return input * rotor
+        return _apply_phasor(input, angles, self.dim, add=False)
 
     def rotate_q_k(
         self, q: torch.Tensor, k: torch.Tensor, offset: int = 0
@@ -163,15 +174,8 @@ class SinusoidalPositionalEncoding(nn.Module):
         Returns:
             torch.Tensor: ``input`` plus the positional phasor bank.
         """
-        if input.shape[-1] != self.dim:
-            raise ValueError(
-                f"last dim of input ({input.shape[-1]}) must equal dim ({self.dim})"
-            )
         angles = _position_angles(self.inv_freq, input.shape[-2], offset)
-        pe = torch.polar(torch.ones_like(angles), angles)
-        if not input.is_complex():
-            input = input.to(torch.cfloat)
-        return input + pe
+        return _apply_phasor(input, angles, self.dim, add=True)
 
     def extra_repr(self) -> str:
         return f"dim={self.dim}, base={self.base}"
@@ -220,15 +224,8 @@ class CoPE(nn.Module):
         Returns:
             torch.Tensor: rotated complex tensor of the same shape.
         """
-        if input.shape[-1] != self.dim:
-            raise ValueError(
-                f"last dim of input ({input.shape[-1]}) must equal dim ({self.dim})"
-            )
         angles = _position_angles(self.omega, input.shape[-2], offset) + self.phi
-        rotor = torch.polar(torch.ones_like(angles), angles)
-        if not input.is_complex():
-            input = input.to(torch.cfloat)
-        return input * rotor
+        return _apply_phasor(input, angles, self.dim, add=False)
 
     def extra_repr(self) -> str:
         return f"dim={self.dim}, base={self.base}"

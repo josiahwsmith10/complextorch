@@ -5,6 +5,28 @@ All notable changes to `complextorch` are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.1.1]
+
+Internal cleanup and performance pass over the 2.1.0 architectures. No public
+API or numerical-behaviour changes — purely simplification, reuse, and reduced
+allocation/recomputation.
+
+### Changed
+
+- `InverseSTFT` overlap-add now accumulates each frame into its own
+  window-sized slice instead of building full-length zero-pads and
+  concatenating per frame — same reconstruction, fewer allocations
+  (O(frames · n_fft) instead of O(frames · output_length)).
+- `ComplexGaborConv1d` / `MorletConv1d` convolve the channel-summed input with
+  the shared filterbank rather than materialising an `in_channels`-replicated
+  weight on every forward — mathematically identical, lower memory.
+- The diagonal state-space layers (`S4D` / `DSS` / `MambaBlock`) share a single
+  diagonal-`A` parameterisation helper, and the S4D kernel no longer rebuilds
+  the discretised `A` / `dt·A` redundantly within a forward.
+- De-duplicated the complex positional-encoding forward paths
+  (`RotaryEmbedding` / `SinusoidalPositionalEncoding` / `CoPE`) onto a shared
+  phasor helper, and dropped an unused field from `models.ViT`.
+
 ## [2.1.0]
 
 A large modern-architecture expansion: positional encodings, interference-aware

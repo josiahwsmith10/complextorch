@@ -53,6 +53,24 @@ from complextorch.nn.modules.rmsnorm import RMSNorm
 __all__ = ["DSS", "S4D", "MambaBlock", "S4DBlock"]
 
 
+def _init_diagonal_A(rows: int, state_size: int) -> tuple[nn.Parameter, nn.Parameter]:
+    """S4D-Lin diagonal-``A`` init shared by the static-``A`` SSMs.
+
+    Returns the two learnable tensors ``(log_neg_A_real, A_imag)`` parameterising
+    :math:`A = -e^{a_r} + j\\,a_i` with the S4D-Lin imaginary schedule
+    :math:`a_i = \\pi n`. Used by both :class:`SSMBase` and :class:`MambaBlock`.
+    """
+    log_neg_A_real = nn.Parameter(torch.full((rows, state_size), math.log(0.5)))
+    a_imag = math.pi * torch.arange(state_size, dtype=torch.float32)
+    A_imag = nn.Parameter(a_imag.expand(rows, state_size).clone())
+    return log_neg_A_real, A_imag
+
+
+def _diagonal_A(log_neg_A_real: torch.Tensor, A_imag: torch.Tensor) -> torch.Tensor:
+    """Assemble the stable diagonal ``A = -exp(log_neg_A_real) + j * A_imag``."""
+    return torch.complex(-torch.exp(log_neg_A_real), A_imag)
+
+
 class SSMBase(nn.Module):
     r"""
     Diagonal Complex State-Space Model (base, S4D-style)
@@ -86,11 +104,7 @@ class SSMBase(nn.Module):
         self.state_size = state_size
 
         # A = -exp(log_neg_A_real) + j * A_imag  (real part stays negative).
-        self.log_neg_A_real = nn.Parameter(
-            torch.full((channels, state_size), math.log(0.5))
-        )
-        a_imag = math.pi * torch.arange(state_size, dtype=torch.float32)
-        self.A_imag = nn.Parameter(a_imag.expand(channels, state_size).clone())
+        self.log_neg_A_real, self.A_imag = _init_diagonal_A(channels, state_size)
 
         self.B = nn.Parameter(torch.ones(channels, state_size, dtype=torch.cfloat))
         self.C = nn.Parameter(torch.randn(channels, state_size, dtype=torch.cfloat))
@@ -104,25 +118,28 @@ class SSMBase(nn.Module):
     # -- parameter views -----------------------------------------------------
 
     def _A(self) -> torch.Tensor:
-        return torch.complex(-torch.exp(self.log_neg_A_real), self.A_imag)
+        return _diagonal_A(self.log_neg_A_real, self.A_imag)
 
-    def _dtA(self) -> torch.Tensor:
-        """Discretisation exponent ``dt * A`` of shape ``(H, N)``."""
-        return torch.exp(self.log_dt).unsqueeze(-1) * self._A()
+    def _discretize(
+        self, length: int
+    ) -> tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
+        """Return ``(A_bar, B_bar, dtA)``; zero-order hold.
 
-    def _discretize(self, length: int) -> tuple[torch.Tensor, torch.Tensor]:
-        """Return ``(A_bar, B_bar)``; zero-order hold (length-independent)."""
-        dtA = self._dtA()
+        ``length`` is unused here (the S4D kernel is length-independent); it is
+        the seam the :class:`DSS` override uses to normalise over the sequence.
+        ``dtA = log(A_bar)`` is returned so :meth:`_kernel` need not rebuild it.
+        """
+        A = self._A()
+        dtA = torch.exp(self.log_dt).unsqueeze(-1) * A
         A_bar = torch.exp(dtA)
-        B_bar = (A_bar - 1.0) / self._A() * self.B
-        return A_bar, B_bar
+        B_bar = (A_bar - 1.0) / A * self.B
+        return A_bar, B_bar, dtA
 
     # -- kernel / forward ----------------------------------------------------
 
     def _kernel(self, length: int) -> torch.Tensor:
         """Causal convolution kernel ``K`` of shape ``(H, L)``."""
-        _, B_bar = self._discretize(length)
-        dtA = self._dtA()  # log of A_bar
+        _, B_bar, dtA = self._discretize(length)  # dtA is log of A_bar
         powers = torch.arange(length, device=dtA.device, dtype=dtA.real.dtype)
         vander = torch.exp(dtA.unsqueeze(-1) * powers)  # (H, N, L)
         return torch.einsum("hn,hnl->hl", self.C * B_bar, vander)
@@ -157,7 +174,7 @@ class SSMBase(nn.Module):
             torch.Tensor: complex ``(B, L, H)`` sequence.
         """
         batch, length, _ = input.shape
-        A_bar, B_bar = self._discretize(length)
+        A_bar, B_bar, _ = self._discretize(length)
         state = torch.zeros(
             batch,
             self.channels,
@@ -201,11 +218,13 @@ class DSS(SSMBase):
     :meth:`recurrence` remain mathematically equivalent.
     """
 
-    def _discretize(self, length: int) -> tuple[torch.Tensor, torch.Tensor]:
-        dtA = self._dtA()
+    def _discretize(
+        self, length: int
+    ) -> tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
+        dtA = torch.exp(self.log_dt).unsqueeze(-1) * self._A()
         A_bar = torch.exp(dtA)
         B_bar = self.B * dtA / (torch.exp(length * dtA) - 1.0)
-        return A_bar, B_bar
+        return A_bar, B_bar, dtA
 
 
 class S4DBlock(nn.Module):
@@ -288,15 +307,11 @@ class MambaBlock(nn.Module):
         self.out_proj = Linear(self.d_inner, channels)
 
         # Static diagonal A (S4D-Lin init), shared across the scan.
-        self.log_neg_A_real = nn.Parameter(
-            torch.full((self.d_inner, state_size), math.log(0.5))
-        )
-        a_imag = math.pi * torch.arange(state_size, dtype=torch.float32)
-        self.A_imag = nn.Parameter(a_imag.expand(self.d_inner, state_size).clone())
+        self.log_neg_A_real, self.A_imag = _init_diagonal_A(self.d_inner, state_size)
         self.D = nn.Parameter(torch.ones(self.d_inner))
 
     def _A(self) -> torch.Tensor:
-        return torch.complex(-torch.exp(self.log_neg_A_real), self.A_imag)
+        return _diagonal_A(self.log_neg_A_real, self.A_imag)
 
     def forward(self, input: torch.Tensor) -> torch.Tensor:
         r"""Selective scan over the sequence.

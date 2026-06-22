@@ -139,7 +139,6 @@ class ViT(nn.Module):
         if dim % heads != 0:
             raise ValueError(f"dim ({dim}) must be divisible by heads ({heads})")
         num_patches = (image_size // patch_size) ** 2
-        self.pos_encoding = pos_encoding
         self.patch_embed = Conv2d(
             in_channels, dim, kernel_size=patch_size, stride=patch_size, bias=True
         )
