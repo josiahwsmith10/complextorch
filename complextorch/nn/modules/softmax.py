@@ -45,9 +45,11 @@ class CVSoftMax(nn.Module):
         Returns:
             torch.Tensor: :math:`\texttt{SoftMax}(\mathbf{x}) + j \texttt{SoftMax}(\mathbf{y})`
         """
-        if mask is not None:
-            input = torch.complex(input.real + mask, input.imag + mask)
-        return cvF.apply_complex_split(self.softmax, self.softmax, input)
+        if mask is None:
+            return cvF.apply_complex_split(self.softmax, self.softmax, input)
+        return torch.complex(
+            self.softmax(input.real + mask), self.softmax(input.imag + mask)
+        )
 
 
 class PhaseSoftMax(nn.Module):

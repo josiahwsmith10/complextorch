@@ -28,16 +28,17 @@ See [CHANGELOG.md](CHANGELOG.md) for the full release history.
 
 **Version 2.2.0** is a correctness release fixing all 28 defects confirmed by
 a full-repository code review — several were silently-wrong numerics
-(`CVSigmoid` was inverted, `trabelsi_independent_` produced vanishing
-weights, `pwelch` halved the top PSD bin for odd windows, the Gauss-trick
-convolutions ignored `padding_mode` in their cross term). It also adds
+(`RMSNorm` halved output power at init, `trabelsi_independent_` produced
+vanishing weights, `pwelch` halved the top PSD bin for odd windows, the
+Gauss-trick convolutions ignored `padding_mode` in their cross term). It also adds
 **full `torch.nn.Transformer`-parity attention masking** (`attn_mask`,
 `key_padding_mask`, `src/tgt/memory` masks, and
 `Transformer.generate_square_subsequent_mask` for causal decoding, with
-well-defined semantics under the complex softmax variants). Two changes are
+well-defined semantics under the complex softmax variants). Three changes are
 breaking: the transformer stack now defaults to `batch_first=False` (torch
-parity) and `ViTLayer` is now genuinely pre-norm (old ViT checkpoints do not
-load).
+parity), `ViTLayer` is now genuinely pre-norm (old ViT checkpoints do not
+load), and `CVSigmoid` was removed (use `torch.nn.Sigmoid`, which supports
+complex natively).
 
 Version 2.1 added modern complex-valued architectures (state-space models,
 unitary RNNs, holographic attention, KAN, time-frequency frontends). Version

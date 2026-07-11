@@ -90,6 +90,16 @@ def test_zabsrelu_forward_is_bit_exact_hard_gate():
     assert torch.equal(layer(z), expected)
 
 
+def test_zabsrelu_no_grad_matches_grad_path():
+    """Under no_grad the surrogate is skipped, but the output is unchanged."""
+    z = torch.randn(64, dtype=torch.cfloat)
+    layer = zAbsReLU(a_init=0.5)
+    grad_out = layer(z)  # grad-enabled: goes through the STE surrogate
+    with torch.no_grad():
+        no_grad_out = layer(z)  # skips the surrogate entirely
+    assert torch.equal(grad_out.detach(), no_grad_out)
+
+
 def test_zabsrelu_threshold_receives_gradient():
     """The learnable threshold gets a finite, nonzero surrogate gradient."""
     z = torch.tensor([0.5 + 0j, 0.9 + 0.1j, 1.1 + 0j, 2.0 - 1.0j])

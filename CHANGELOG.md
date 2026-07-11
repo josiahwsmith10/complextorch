@@ -9,9 +9,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 Correctness release: fixes all 28 defects confirmed by a full-repo code
 review, several of which deliberately change numerical behaviour (they were
-corrections of silently-wrong math). Two changes are breaking — the
-transformer `batch_first` default and the ViT pre-norm restructure — and are
-called out below.
+corrections of silently-wrong math). Three changes are breaking — the
+transformer `batch_first` default, the ViT pre-norm restructure, and the
+removal of `CVSigmoid` — and are called out below.
 
 ### Changed (breaking)
 
@@ -26,10 +26,15 @@ called out below.
   is external. Saved ViT checkpoints from earlier versions do not load
   (state-dict keys changed).
 
+### Removed (breaking)
+
+- `CVSigmoid` has been removed. It only ever wrapped `1/(1+exp(-z))` (and was
+  additionally inverted — it computed `σ(-z)`); `torch.sigmoid` /
+  `torch.nn.Sigmoid` already support complex dtypes natively, so use those
+  directly instead.
+
 ### Fixed (numerical corrections — outputs change)
 
-- `CVSigmoid` computed `1/(1+e^z)` — the *inverted* sigmoid `σ(-z)`. It now
-  computes `σ(z)` and reduces to `torch.sigmoid` on the real axis.
 - `init.trabelsi_independent_` produced weights hundreds of times too small
   (fixed `1/sqrt(fan_in+fan_out)` scale on an already-normalized semi-unitary
   matrix). It now rescales analytically to the paper's variance target

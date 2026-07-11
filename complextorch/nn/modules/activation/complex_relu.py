@@ -117,6 +117,10 @@ class zAbsReLU(nn.Module):
     def forward(self, input: torch.Tensor) -> torch.Tensor:
         mag = input.abs()  # real-valued even for complex input
         hard = (mag >= self.a).to(mag.dtype)
+        if not torch.is_grad_enabled():
+            # The surrogate only exists to route gradients; its forward value
+            # is exactly the hard gate, so skip it entirely under no_grad/eval.
+            return input * hard
         # Straight-through estimator: (soft - soft.detach()) is exactly zero
         # in the forward pass — the grouping matters, (hard + soft) - soft
         # would round — so the output is the bit-exact hard gate, while the
