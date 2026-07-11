@@ -42,7 +42,7 @@ class ComplexRatioMask(nn.Module):
         return x_mag.sigmoid() * (input / x_mag.clamp(min=_EPS))
 
 
-class PhaseSigmoid(nn.Module):
+class PhaseSigmoid(ComplexRatioMask):
     r"""
     Phase-Preserving Complex-Valued Sigmoid Layer
     ---------------------------------------------
@@ -51,7 +51,8 @@ class PhaseSigmoid(nn.Module):
 
         \texttt{PhaseSigmoid}(\mathbf{z}) = \texttt{Sigmoid}(|\mathbf{z}|) \odot \frac{\mathbf{z}}{|\mathbf{z}|}
 
-    Retains phase and squeezes magnitude using :class:`torch.nn.Sigmoid`.
+    Alias for :class:`ComplexRatioMask` — the same phase-preserving sigmoid
+    magnitude squeeze appears in the literature under both names.
 
     Based on work from the following paper:
 
@@ -61,21 +62,6 @@ class PhaseSigmoid(nn.Module):
 
             - https://ieeexplore.ieee.org/abstract/document/9335579
     """
-
-    def __init__(self) -> None:
-        super().__init__()
-
-    def forward(self, input: torch.Tensor) -> torch.Tensor:
-        r"""Computes phase-preserving sigmoid mask on a complex-valued input tensor.
-
-        Args:
-            input (torch.Tensor): input tensor
-
-        Returns:
-            torch.Tensor: :math:`\text{sigmoid}(|\mathbf{z}|) * \mathbf{z} / |\mathbf{z}|`
-        """
-        x_mag = input.abs()
-        return x_mag.sigmoid() * (input / x_mag.clamp(min=_EPS))
 
 
 class MagMinMaxNorm(nn.Module):

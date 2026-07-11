@@ -8,7 +8,6 @@ from complextorch.nn.modules.activation import (
     EquivariantPhaseReLU,
 )
 from complextorch.nn.modules.activation import (
-    CVSigmoid,
     zReLU,
     CVCardiod,
     CVSigLog,
@@ -110,7 +109,7 @@ from complextorch.nn.modules.softmax import CVSoftMax, MagSoftMax, PhaseSoftMax
 
 from complextorch.nn.modules.mask import ComplexRatioMask, PhaseSigmoid, MagMinMaxNorm
 
-from complextorch.nn.modules.loss import GeneralizedSplitLoss
+from complextorch.nn.modules.loss import GeneralizedPolarLoss, GeneralizedSplitLoss
 from complextorch.nn.modules.loss import (
     SSIM,
     SplitSSIM,
@@ -229,7 +228,6 @@ __all__ = [
     "CVPolarTanh",
     "CVQuadError",
     "CVSigLog",
-    "CVSigmoid",
     # softmax / mask
     "CVSoftMax",
     "CVSplitAbs",
@@ -270,8 +268,9 @@ __all__ = [
     "GRUCell",
     "GTReLU",
     "GeneralizedPolarActivation",
-    "GeneralizedSplitActivation",
     # losses
+    "GeneralizedPolarLoss",
+    "GeneralizedSplitActivation",
     "GeneralizedSplitLoss",
     "GroupNorm",
     "HolographicAttention",

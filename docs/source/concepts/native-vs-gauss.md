@@ -49,12 +49,28 @@ PyTorch's native complex support and are kept for two reasons:
    if you want to apply different parameterizations or constraints to each
    half.
 
+## `weight` / `bias` access
+
+Both variants expose `weight` and `bias`, with one deliberate semantic
+difference:
+
+- **Native** layers return the wrapped `torch.nn` module's **live** complex
+  parameter (storage-shared), so `nn.init.*_(layer.weight)` and
+  `layer.weight.data.copy_(...)` work, and assigning an `nn.Parameter`
+  rebinds it exactly as on the raw `torch.nn` layer.
+- **Gauss** layers return a **freshly allocated** complex view assembled from
+  the split halves — mutating it does *not* write through. Assign through the
+  setter instead (`layer.weight = value`, tensor or `nn.Parameter`), which
+  copies into `conv_r.weight` / `conv_i.weight`.
+
 ## Which should I use?
 
 Use the **native cfloat** variant. The Gauss-trick path no longer offers a
 speed advantage since PyTorch 2.1, so its only remaining role is as a
 numerically-equivalent reference. The test suite under `tests/invariants/`
-checks the two paths agree to floating-point tolerance on the same weights.
+checks the two paths agree to floating-point tolerance on the same weights —
+including every `padding_mode` (`zeros`, `reflect`, `replicate`,
+`circular`).
 
 If you're adding a new layer that has a native PyTorch complex equivalent,
 follow the native pattern (wrap `torch.nn.X` with `dtype=torch.cfloat`)

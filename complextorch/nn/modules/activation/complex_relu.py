@@ -36,7 +36,7 @@ class CVSplitReLU(GeneralizedSplitActivation):
             - https://arxiv.org/abs/1712.10096
     """
 
-    def __init__(self, inplace: bool = True) -> None:
+    def __init__(self, inplace: bool = False) -> None:
         super().__init__(nn.ReLU(inplace), nn.ReLU(inplace))
 
 
@@ -96,21 +96,42 @@ class zAbsReLU(nn.Module):
             0 & \text{otherwise}
         \end{cases}
 
+    The forward pass is the exact hard gate above. Because the indicator has
+    zero gradient almost everywhere with respect to :math:`a`, the threshold
+    learns through a straight-through sigmoid surrogate of width ``tau``.
+    A negative :math:`a` is equivalent to :math:`a = 0` (identity).
+
     Args:
-        a_init: initial value of the (scalar) threshold parameter.
+        a_init: initial value of the (scalar) threshold parameter. The
+            default 0.0 makes the layer an exact identity at initialization
+            (:math:`|z| \geq 0` always); the surrogate gradient can still
+            move :math:`a`.
+        tau: width of the sigmoid surrogate used for the backward pass.
     """
 
-    def __init__(self, a_init: float = 0.0) -> None:
+    def __init__(self, a_init: float = 0.0, tau: float = 0.1) -> None:
         super().__init__()
         self.a = nn.Parameter(torch.tensor(float(a_init)))
+        self.tau = tau
 
     def forward(self, input: torch.Tensor) -> torch.Tensor:
-        mask = (input.abs() >= self.a).to(
-            input.dtype if input.is_complex() else input.real.dtype
-        )
-        if input.is_complex():
-            return input * mask
-        return input * mask
+        mag = input.abs()  # real-valued even for complex input
+        hard = (mag >= self.a).to(mag.dtype)
+        if not torch.is_grad_enabled():
+            # The surrogate only exists to route gradients; its forward value
+            # is exactly the hard gate, so skip it entirely under no_grad/eval.
+            return input * hard
+        # Straight-through estimator: (soft - soft.detach()) is exactly zero
+        # in the forward pass — the grouping matters, (hard + soft) - soft
+        # would round — so the output is the bit-exact hard gate, while the
+        # backward pass flows through the sigmoid surrogate, giving `a` and
+        # near-threshold inputs a gradient.
+        soft = torch.sigmoid((mag - self.a) / self.tau)
+        gate = hard + (soft - soft.detach())
+        return input * gate
+
+    def extra_repr(self) -> str:
+        return f"tau={self.tau}"
 
 
 class zLeakyReLU(nn.Module):

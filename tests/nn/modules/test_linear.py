@@ -56,3 +56,47 @@ def test_bilinear_extra_repr():
     assert "in2_features=6" in repr_str
     assert "out_features=3" in repr_str
     assert "conjugate=False" in repr_str
+
+
+def test_linear_weight_bias_are_live_parameters():
+    """weight/bias are the wrapped module's parameters, storage-shared."""
+    layer = Linear(8, 4)
+    assert layer.weight is layer.linear.weight
+    assert layer.bias is layer.linear.bias
+    x = torch.randn(2, 8, dtype=torch.cfloat)
+    y_before = layer(x).detach().clone()
+    layer.weight.data.zero_()
+    assert not torch.allclose(layer(x), y_before)
+
+
+def test_linear_bias_none_when_disabled():
+    assert Linear(8, 4, bias=False).bias is None
+
+
+def test_linear_parameter_assignment_rebinds():
+    layer = Linear(8, 4)
+    p = torch.nn.Parameter(torch.randn(4, 8, dtype=torch.cfloat))
+    layer.weight = p
+    assert layer.linear.weight is p
+    x = torch.randn(2, 8, dtype=torch.cfloat)
+    torch.testing.assert_close(layer(x), x @ p.t() + layer.bias)
+
+
+def test_linear_plain_tensor_assignment_raises_type_error():
+    """torch-parity: nn.Linear itself rejects non-Parameter assignment."""
+    import pytest
+
+    layer = Linear(8, 4)
+    with pytest.raises(TypeError, match="cannot assign"):
+        layer.weight = torch.randn(4, 8, dtype=torch.cfloat)
+
+
+def test_linear_state_dict_keys_unchanged():
+    assert set(Linear(8, 4).state_dict()) == {"linear.weight", "linear.bias"}
+
+
+def test_linear_bias_parameter_assignment_rebinds():
+    layer = Linear(8, 4)
+    p = torch.nn.Parameter(torch.randn(4, dtype=torch.cfloat))
+    layer.bias = p
+    assert layer.linear.bias is p

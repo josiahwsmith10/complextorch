@@ -192,6 +192,18 @@ attn_out = mha(seq, seq, seq)
 print("attention output:", attn_out.shape, attn_out.dtype)
 ```
 
+The attention stack also supports the full `torch.nn`-parity mask API
+(`attn_mask`, `key_padding_mask`, and the transformer-level masks) — a causal
+mask keeps position $t$ from attending to the future, the staple of
+autoregressive decoding. See
+[Complex transformer & attention masking](../concepts/transformer.md).
+
+```{code-cell}
+causal = ctorch.nn.Transformer.generate_square_subsequent_mask(16)
+causal_out = mha(seq, seq, seq, attn_mask=causal)
+print("causal attention output:", causal_out.shape)
+```
+
 For long 1-D signals, the diagonal-complex state-space layers
 ({class}`complextorch.nn.S4D` / {class}`complextorch.nn.S4DBlock`) run in linear
 time. Their FFT convolution matches an exact recurrent rollout — see

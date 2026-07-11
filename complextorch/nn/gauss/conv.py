@@ -3,6 +3,8 @@ import torch.nn as nn
 import torch.nn.functional as F
 from torch.nn.common_types import _size_1_t, _size_2_t, _size_3_t
 
+from complextorch.nn._parameters import _RoutePropertySetattrMixin
+
 __all__ = [
     "Conv1d",
     "Conv2d",
@@ -13,7 +15,7 @@ __all__ = [
 ]
 
 
-class _Conv(nn.Module):
+class _Conv(_RoutePropertySetattrMixin, nn.Module):
     r"""
     torch.Tensor-based Complex-Valued Convolution
     -----------------------------------------
@@ -45,6 +47,7 @@ class _Conv(nn.Module):
         self.padding = padding
         self.dilation = dilation
         self.groups = groups
+        self.padding_mode = padding_mode
 
         # Assumes PyTorch complex weight initialization is correct
         __temp = ConvClass(
@@ -137,12 +140,25 @@ class _Conv(nn.Module):
         """
         t1 = self.conv_r(input.real)
         t2 = self.conv_i(input.imag)
+        # The t1/t2 module convs honor padding_mode internally; the raw
+        # functional t3 conv only zero-pads, so for any other mode pre-pad
+        # the summed input exactly as the sub-convs do and convolve unpadded.
+        t3_input = input.real + input.imag
+        if self.padding_mode != "zeros":
+            t3_input = F.pad(
+                t3_input,
+                self.conv_r._reversed_padding_repeated_twice,
+                mode=self.padding_mode,
+            )
+            t3_padding = 0
+        else:
+            t3_padding = self.padding
         t3 = self.ConvFunc(
-            input=(input.real + input.imag),
+            input=t3_input,
             weight=(self.conv_r.weight + self.conv_i.weight),
             bias=None,
             stride=self.stride,
-            padding=self.padding,
+            padding=t3_padding,
             dilation=self.dilation,
             groups=self.groups,
         )
@@ -344,7 +360,7 @@ class Conv3d(_Conv):
         )
 
 
-class _ConvTranspose(nn.Module):
+class _ConvTranspose(_RoutePropertySetattrMixin, nn.Module):
     r"""
     torch.Tensor-based Complex-Valued Transposed Convolution
     ----------------------------------------------------

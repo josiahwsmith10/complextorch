@@ -24,12 +24,29 @@ Although there is an emphasis on 1-D data tensors, due to a focus on signal proc
 
 ## What's new
 
-See [CHANGELOG.md](CHANGELOG.md) for the full release history. Version 2.0
-brings major feature-parity expansion (RNN/LSTM, Transformer, ARD/Variational
-Dropout, masked layers, transforms, signal, datasets, models subpackages); see
-the changelog for the breaking changes around `MultiheadAttention` and
-default `bias=True`. Version 2.0.1 adds **symmetry-aware modules**
-(U(1)-equivariant / invariant building blocks from
+See [CHANGELOG.md](CHANGELOG.md) for the full release history.
+
+**Version 2.2.0** is a correctness release fixing all 28 defects confirmed by
+a full-repository code review — several were silently-wrong numerics
+(`RMSNorm` halved output power at init, `trabelsi_independent_` produced
+vanishing weights, `pwelch` halved the top PSD bin for odd windows, the
+Gauss-trick convolutions ignored `padding_mode` in their cross term). It also adds
+**full `torch.nn.Transformer`-parity attention masking** (`attn_mask`,
+`key_padding_mask`, `src/tgt/memory` masks, and
+`Transformer.generate_square_subsequent_mask` for causal decoding, with
+well-defined semantics under the complex softmax variants). Three changes are
+breaking: the transformer stack now defaults to `batch_first=False` (torch
+parity), `ViTLayer` is now genuinely pre-norm (old ViT checkpoints do not
+load), and `CVSigmoid` was removed (use `torch.nn.Sigmoid`, which supports
+complex natively).
+
+Version 2.1 added modern complex-valued architectures (state-space models,
+unitary RNNs, holographic attention, KAN, time-frequency frontends). Version
+2.0 brought major feature-parity expansion (RNN/LSTM, Transformer,
+ARD/Variational Dropout, masked layers, transforms, signal, datasets, models
+subpackages); see the changelog for the breaking changes around
+`MultiheadAttention` and default `bias=True`. Version 2.0.1 added
+**symmetry-aware modules** (U(1)-equivariant / invariant building blocks from
 [SurReal](https://arxiv.org/abs/1910.11334) and
 [CDS](https://arxiv.org/abs/2112.01525), with reference networks under
 `complextorch.models`) plus `SpectralPool{1,2,3}d`

@@ -60,6 +60,25 @@ def test_invalid_reduction(cls):
         loss(x, y)
 
 
+def test_logcosh_matches_naive_formula_for_small_residuals():
+    x = torch.randn(4, 8, dtype=torch.cfloat) * 0.5
+    y = torch.randn(4, 8, dtype=torch.cfloat) * 0.5
+    out = CVLogCoshError(reduction="none")(x, y)
+    naive = torch.log(torch.cosh((x - y).abs() ** 2))
+    torch.testing.assert_close(out, naive, atol=1e-6, rtol=1e-5)
+
+
+def test_logcosh_finite_for_large_residuals():
+    """Regression: cosh(|x-y|^2) overflows float32 for |x-y| >= ~9.4."""
+    x = torch.full((4,), 20.0 + 0.0j, dtype=torch.cfloat, requires_grad=True)
+    y = torch.zeros(4, dtype=torch.cfloat)
+    out = CVLogCoshError()(x, y)
+    assert torch.isfinite(out)
+    out.backward()
+    assert torch.isfinite(x.grad.real).all()
+    assert torch.isfinite(x.grad.imag).all()
+
+
 # -------- CVLogError (separate because log() requires non-zero input) --------
 
 
@@ -107,6 +126,14 @@ def test_generalized_split_loss_user_provided():
 
 
 # -------- Polar loss --------
+
+
+def test_generalized_polar_loss_is_public():
+    """Regression: GeneralizedPolarLoss was missing from the nn re-exports."""
+    import complextorch.nn as cvnn
+
+    assert cvnn.GeneralizedPolarLoss is GeneralizedPolarLoss
+    assert "GeneralizedPolarLoss" in cvnn.__all__
 
 
 def test_generalized_polar_loss():

@@ -2,10 +2,12 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
+from complextorch.nn._parameters import _RoutePropertySetattrMixin
+
 __all__ = ["Linear"]
 
 
-class Linear(nn.Module):
+class Linear(_RoutePropertySetattrMixin, nn.Module):
     r"""
     Gauss-trick Complex-Valued Linear Layer
     ---------------------------------------

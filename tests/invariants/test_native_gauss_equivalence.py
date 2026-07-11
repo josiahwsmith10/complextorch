@@ -63,6 +63,34 @@ def test_conv3d_native_gauss_equivalence(in_ch, out_ch, k, batch):
     torch.testing.assert_close(native(x), gauss(x), rtol=1e-4, atol=1e-4)
 
 
+@pytest.mark.parametrize("padding_mode", ["zeros", "reflect", "replicate", "circular"])
+def test_conv1d_native_gauss_equivalence_padding_modes(padding_mode):
+    """Regression: the t3 Gauss term used to zero-pad regardless of
+    padding_mode, silently corrupting the imaginary output at the borders."""
+    native = Conv1d(2, 3, kernel_size=3, padding=1, padding_mode=padding_mode)
+    gauss = GaussConv1d(2, 3, kernel_size=3, padding=1, padding_mode=padding_mode)
+    _align_gauss_conv_with_native(gauss, native)
+    x = torch.randn(2, 2, 16, dtype=torch.cfloat)
+    torch.testing.assert_close(native(x), gauss(x), rtol=1e-4, atol=1e-4)
+
+
+@pytest.mark.parametrize("padding_mode", ["reflect", "circular"])
+def test_conv2d_native_gauss_equivalence_padding_modes(padding_mode):
+    native = Conv2d(2, 3, kernel_size=3, padding=1, padding_mode=padding_mode)
+    gauss = GaussConv2d(2, 3, kernel_size=3, padding=1, padding_mode=padding_mode)
+    _align_gauss_conv_with_native(gauss, native)
+    x = torch.randn(2, 2, 8, 8, dtype=torch.cfloat)
+    torch.testing.assert_close(native(x), gauss(x), rtol=1e-4, atol=1e-4)
+
+
+def test_conv3d_native_gauss_equivalence_padding_modes():
+    native = Conv3d(2, 2, kernel_size=3, padding=1, padding_mode="replicate")
+    gauss = GaussConv3d(2, 2, kernel_size=3, padding=1, padding_mode="replicate")
+    _align_gauss_conv_with_native(gauss, native)
+    x = torch.randn(1, 2, 4, 4, 4, dtype=torch.cfloat)
+    torch.testing.assert_close(native(x), gauss(x), rtol=1e-4, atol=1e-4)
+
+
 @pytest.mark.parametrize(("in_f", "out_f"), [(6, 8), (1, 1), (12, 5)])
 @given(batch=st.integers(1, 4))
 @settings(max_examples=3, deadline=None)

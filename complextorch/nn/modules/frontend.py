@@ -222,6 +222,10 @@ class ComplexGaborConv1d(nn.Module):
         Returns:
             torch.Tensor: complex ``(B, out_channels, T')`` feature map.
         """
+        if input.shape[1] != self.in_channels:
+            raise ValueError(
+                f"expected {self.in_channels} input channels, got {input.shape[1]}"
+            )
         kern = self._kernels().unsqueeze(1)  # (O, 1, K)
         if not input.is_complex():
             input = input.to(torch.cfloat)

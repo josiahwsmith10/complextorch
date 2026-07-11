@@ -131,3 +131,25 @@ def test_analytic_signal_differentiable():
     x = torch.randn(64, requires_grad=True)
     analytic_signal(x).imag.sum().backward()
     assert x.grad is not None
+
+
+@pytest.mark.parametrize("fn", [analytic_signal, hilbert])
+def test_analytic_signal_rejects_complex_input(fn):
+    """scipy.signal.hilbert parity: complex input must raise."""
+    with pytest.raises(ValueError, match="x must be real"):
+        fn(torch.randn(32, dtype=torch.cfloat))
+
+
+@pytest.mark.parametrize("window", [63, 64])  # odd: no Nyquist bin; even: has one
+def test_pwelch_matches_scipy_including_last_bin(window):
+    """Regression: odd windows halved the top PSD bin versus scipy."""
+    scipy_signal = pytest.importorskip("scipy.signal")
+
+    torch.manual_seed(0)
+    x = torch.randn(1024, dtype=torch.float64)
+    freqs, psd = pwelch(x, window=window, fs=2.0)
+    f_ref, p_ref = scipy_signal.welch(x.numpy(), fs=2.0, window="hann", nperseg=window)
+    torch.testing.assert_close(
+        freqs, torch.from_numpy(f_ref), atol=1e-6, rtol=1e-6, check_dtype=False
+    )
+    torch.testing.assert_close(psd, torch.from_numpy(p_ref), atol=1e-10, rtol=1e-8)

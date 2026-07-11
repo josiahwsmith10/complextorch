@@ -64,3 +64,18 @@ def test_gauss_linear_weight_property_returns_fresh_storage():
     layer.weight.data.zero_()
     assert torch.equal(layer.linear_r.weight, before_r)
     assert torch.equal(layer.linear_i.weight, before_i)
+
+
+def test_gauss_linear_parameter_assignment_routes_to_setter():
+    """Regression: nn.Parameter assignment used to raise KeyError."""
+    layer = Linear(8, 4)
+    target = torch.randn_like(layer.weight)
+    layer.weight = torch.nn.Parameter(target)
+    torch.testing.assert_close(layer.linear_r.weight, target.real)
+    torch.testing.assert_close(layer.linear_i.weight, target.imag)
+
+
+def test_gauss_linear_bias_parameter_assignment_raises_when_disabled():
+    layer = Linear(8, 4, bias=False)
+    with pytest.raises(RuntimeError, match="bias=False"):
+        layer.bias = torch.nn.Parameter(torch.randn(4, dtype=torch.cfloat))

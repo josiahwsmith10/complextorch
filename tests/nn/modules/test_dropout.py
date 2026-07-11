@@ -74,3 +74,40 @@ def test_channel_dropout_real_input_path():
 def test_channel_dropout_extra_repr():
     s = Dropout2d(p=0.3).extra_repr()
     assert "p=0.3" in s
+
+
+@pytest.mark.parametrize(
+    ("cls", "shape"),
+    [
+        (Dropout1d, (6, 16)),
+        (Dropout2d, (6, 8, 8)),
+        (Dropout3d, (6, 4, 4, 4)),
+    ],
+)
+def test_channel_dropout_unbatched_complex_drops_whole_channels(cls, shape):
+    """Regression: unbatched complex input used to get an independent mask
+    per element instead of one mask per channel."""
+    torch.manual_seed(0)
+    layer = cls(p=0.5)
+    layer.train()
+    x = torch.ones(*shape, dtype=torch.cfloat)
+    out = layer(x)
+    flat = out.reshape(shape[0], -1)
+    # Every channel is either fully zeroed or fully scaled by 1/(1-p).
+    for row in flat:
+        assert torch.equal(row, torch.zeros_like(row)) or torch.equal(
+            row, torch.full_like(row, 2.0)
+        )
+
+
+def test_channel_dropout_unbatched_matches_real_branch_semantics():
+    """Complex and real unbatched inputs share channel-drop semantics."""
+    layer = Dropout1d(p=0.5)
+    layer.train()
+    x_real = torch.ones(4, 16)
+    out_real = layer(x_real)
+    # torch's F.dropout1d drops whole channels on unbatched input too.
+    for row in out_real:
+        assert torch.equal(row, torch.zeros_like(row)) or torch.equal(
+            row, torch.full_like(row, 2.0)
+        )

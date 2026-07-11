@@ -1,6 +1,8 @@
 import torch
 import torch.nn as nn
 
+from complextorch.nn._parameters import _WrappedWeightBiasMixin
+
 __all__ = [
     "Conv1d",
     "Conv2d",
@@ -11,7 +13,7 @@ __all__ = [
 ]
 
 
-class Conv1d(nn.Module):
+class Conv1d(_WrappedWeightBiasMixin, nn.Module):
     r"""
     Complex-Valued 1-D Convolution using PyTorch
     --------------------------------------------
@@ -21,7 +23,11 @@ class Conv1d(nn.Module):
         - Convenience wrapper over ``torch.nn.Conv1d`` whose only behavioural difference is the default ``dtype=torch.cfloat``.
 
         - See :mod:`complextorch.nn.gauss` for the hand-rolled real/imag-split variant using Gauss' trick.
+
+        - ``weight`` / ``bias`` expose the wrapped module's complex parameters directly (storage-shared); assigning an :class:`~torch.nn.Parameter` rebinds it exactly as on the raw ``torch.nn`` layer (unlike the Gauss-trick variants, whose setters copy into the split real/imag halves).
     """
+
+    _wrapped_attr = "conv"
 
     def __init__(
         self,
@@ -65,7 +71,7 @@ class Conv1d(nn.Module):
         return self.conv(input)
 
 
-class Conv2d(nn.Module):
+class Conv2d(_WrappedWeightBiasMixin, nn.Module):
     r"""
     Complex-Valued 2-D Convolution using PyTorch
     --------------------------------------------
@@ -75,7 +81,11 @@ class Conv2d(nn.Module):
         - Convenience wrapper over ``torch.nn.Conv2d`` whose only behavioural difference is the default ``dtype=torch.cfloat``.
 
         - See :mod:`complextorch.nn.gauss` for the hand-rolled real/imag-split variant using Gauss' trick.
+
+        - ``weight`` / ``bias`` expose the wrapped module's complex parameters directly (storage-shared); assigning an :class:`~torch.nn.Parameter` rebinds it exactly as on the raw ``torch.nn`` layer (unlike the Gauss-trick variants, whose setters copy into the split real/imag halves).
     """
+
+    _wrapped_attr = "conv"
 
     def __init__(
         self,
@@ -119,7 +129,7 @@ class Conv2d(nn.Module):
         return self.conv(input)
 
 
-class Conv3d(nn.Module):
+class Conv3d(_WrappedWeightBiasMixin, nn.Module):
     r"""
     Complex-Valued 3-D Convolution using PyTorch
     --------------------------------------------
@@ -129,7 +139,11 @@ class Conv3d(nn.Module):
         - Convenience wrapper over ``torch.nn.Conv3d`` whose only behavioural difference is the default ``dtype=torch.cfloat``.
 
         - See :mod:`complextorch.nn.gauss` for the hand-rolled real/imag-split variant using Gauss' trick.
+
+        - ``weight`` / ``bias`` expose the wrapped module's complex parameters directly (storage-shared); assigning an :class:`~torch.nn.Parameter` rebinds it exactly as on the raw ``torch.nn`` layer (unlike the Gauss-trick variants, whose setters copy into the split real/imag halves).
     """
+
+    _wrapped_attr = "conv"
 
     def __init__(
         self,
@@ -173,7 +187,7 @@ class Conv3d(nn.Module):
         return self.conv(input)
 
 
-class ConvTranspose1d(nn.Module):
+class ConvTranspose1d(_WrappedWeightBiasMixin, nn.Module):
     r"""
     Complex-Valued 1-D Transposed Convolution using PyTorch
     -------------------------------------------------------
@@ -183,7 +197,11 @@ class ConvTranspose1d(nn.Module):
         - Convenience wrapper over ``torch.nn.ConvTranspose1d`` whose only behavioural difference is the default ``dtype=torch.cfloat``.
 
         - See :mod:`complextorch.nn.gauss` for the hand-rolled real/imag-split variant using Gauss' trick.
+
+        - ``weight`` / ``bias`` expose the wrapped module's complex parameters directly (storage-shared); assigning an :class:`~torch.nn.Parameter` rebinds it exactly as on the raw ``torch.nn`` layer (unlike the Gauss-trick variants, whose setters copy into the split real/imag halves).
     """
+
+    _wrapped_attr = "conv_transposed"
 
     def __init__(
         self,
@@ -229,7 +247,7 @@ class ConvTranspose1d(nn.Module):
         return self.conv_transposed(input)
 
 
-class ConvTranspose2d(nn.Module):
+class ConvTranspose2d(_WrappedWeightBiasMixin, nn.Module):
     r"""
     Complex-Valued 2-D Transposed Convolution using PyTorch
     -------------------------------------------------------
@@ -239,7 +257,11 @@ class ConvTranspose2d(nn.Module):
         - Convenience wrapper over ``torch.nn.ConvTranspose2d`` whose only behavioural difference is the default ``dtype=torch.cfloat``.
 
         - See :mod:`complextorch.nn.gauss` for the hand-rolled real/imag-split variant using Gauss' trick.
+
+        - ``weight`` / ``bias`` expose the wrapped module's complex parameters directly (storage-shared); assigning an :class:`~torch.nn.Parameter` rebinds it exactly as on the raw ``torch.nn`` layer (unlike the Gauss-trick variants, whose setters copy into the split real/imag halves).
     """
+
+    _wrapped_attr = "conv_transposed"
 
     def __init__(
         self,
@@ -285,7 +307,7 @@ class ConvTranspose2d(nn.Module):
         return self.conv_transposed(input)
 
 
-class ConvTranspose3d(nn.Module):
+class ConvTranspose3d(_WrappedWeightBiasMixin, nn.Module):
     r"""
     Complex-Valued 3-D Transposed Convolution using PyTorch
     -------------------------------------------------------
@@ -295,7 +317,11 @@ class ConvTranspose3d(nn.Module):
         - Convenience wrapper over ``torch.nn.ConvTranspose3d`` whose only behavioural difference is the default ``dtype=torch.cfloat``.
 
         - See :mod:`complextorch.nn.gauss` for the hand-rolled real/imag-split variant using Gauss' trick.
+
+        - ``weight`` / ``bias`` expose the wrapped module's complex parameters directly (storage-shared); assigning an :class:`~torch.nn.Parameter` rebinds it exactly as on the raw ``torch.nn`` layer (unlike the Gauss-trick variants, whose setters copy into the split real/imag halves).
     """
+
+    _wrapped_attr = "conv_transposed"
 
     def __init__(
         self,

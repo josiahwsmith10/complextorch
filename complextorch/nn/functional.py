@@ -230,7 +230,10 @@ def whiten2x2_batch_norm(
         torch.Tensor : Batch normalized data
     """
     # assume tensor is 2 x B x F x ...
-    assert x.dim() >= 3
+    if x.dim() < 3:
+        raise ValueError(
+            f"expected a (2, B, F, ...) stacked tensor, got {x.dim()} dims"
+        )
 
     # Axes over which to compute mean and covariance
     axes = 1, *range(3, x.dim())
@@ -242,7 +245,9 @@ def whiten2x2_batch_norm(
     if training or running_mean is None:
         mean = x.mean(dim=axes, keepdim=True)
         if running_mean is not None:
-            running_mean += momentum * (mean.data.squeeze() - running_mean)
+            # reshape(2, -1), not squeeze(): a bare squeeze would also drop
+            # the feature dim when num_features == 1
+            running_mean += momentum * (mean.data.reshape(2, -1) - running_mean)
 
     else:
         # running_mean is shape [2, F]; reshape to broadcast against [2, B, F, ...]
@@ -341,12 +346,10 @@ def batch_norm(
         covariance.
     """
     # check arguments
-    assert (running_mean is None and running_var is None) or (
-        running_mean is not None and running_var is not None
-    )
-    assert (weight is None and bias is None) or (
-        weight is not None and bias is not None
-    )
+    if (running_mean is None) != (running_var is None):
+        raise ValueError("running_mean and running_var must be given together")
+    if (weight is None) != (bias is None):
+        raise ValueError("weight and bias must be given together")
 
     # stack along the first axis
     x = torch.stack((x.real, x.imag), dim=0)
@@ -395,14 +398,18 @@ def whiten2x2_layer_norm(
         torch.Tensor : Layer normalized data
     """
     # assume tensor is 2 x B x F x ...
-    assert x.dim() >= 3
+    if x.dim() < 3:
+        raise ValueError(
+            f"expected a (2, B, F, ...) stacked tensor, got {x.dim()} dims"
+        )
 
     # Axes over which to compute mean and covariance
     axes = [-(i + 1) for i in range(len(normalized_shape))]
 
     # Compute the batch mean [2, B, 1, ...] and center the batch
+    # (out-of-place; do not mutate the input stack)
     mean = x.mean(dim=axes, keepdim=True)
-    x -= mean
+    x = x - mean
 
     # head shape for broadcasting
     head = mean.shape[1:]
@@ -460,9 +467,8 @@ def layer_norm(
         The ridge coefficient to stabilize the estimate of the real-imaginary
         covariance.
     """
-    assert (weight is None and bias is None) or (
-        weight is not None and bias is not None
-    )
+    if (weight is None) != (bias is None):
+        raise ValueError("weight and bias must be given together")
 
     # stack along the first axis
     x = torch.stack((x.real, x.imag), dim=0)

@@ -52,20 +52,38 @@ __all__ = [
 ]
 
 
-def _center_crop(x: torch.Tensor, target_spatial: tuple[int, ...]) -> torch.Tensor:
-    """Center-crop the trailing spatial dims of ``x`` to ``target_spatial``.
+def _align_to_conv_grid(
+    x: torch.Tensor, conv: nn.Module, out_spatial: tuple[int, ...]
+) -> torch.Tensor:
+    """Sample ``x`` at the receptive-field centers of ``conv``'s output grid.
 
-    Used when the inner conv ``g`` has a kernel larger than 1 and no padding,
-    leaving ``g(x)`` smaller than ``x``. Returns ``x`` unchanged if shapes
-    already match.
+    Output index ``j`` of the inner conv sees the input window centered at
+    ``j*stride - padding + dilation*(kernel_size - 1)//2`` (per spatial dim),
+    so each ``g(x)`` value must be paired with the ``x`` sample at that
+    position — a *strided* sampling, not a contiguous center crop, whenever
+    ``stride > 1``. Returns ``x`` unchanged if the shapes already match
+    (stride-1 same-size convs, including string ``padding='same'``).
     """
-    spatial_in = x.shape[-len(target_spatial) :]
-    if tuple(spatial_in) == tuple(target_spatial):
+    nd = len(out_spatial)
+    spatial_in = x.shape[-nd:]
+    if tuple(spatial_in) == tuple(out_spatial):
         return x
+    padding = conv.padding
     slices = [slice(None), slice(None)]
-    for in_size, out_size in zip(spatial_in, target_spatial, strict=False):
-        start = (in_size - out_size) // 2
-        slices.append(slice(start, start + out_size))
+    for i in range(nd):
+        length_in, length_out = spatial_in[i], out_spatial[i]
+        k, s, d = conv.kernel_size[i], conv.stride[i], conv.dilation[i]
+        p = 0 if isinstance(padding, str) else padding[i]
+        start = max(d * (k - 1) // 2 - p, 0)
+        last = start + (length_out - 1) * s
+        if last >= length_in:
+            start = length_in - 1 - (length_out - 1) * s
+        if start < 0:
+            raise ValueError(
+                f"inner conv output ({length_out}) is too large to pair with "
+                f"the input ({length_in}) along spatial dim {i}; reduce padding"
+            )
+        slices.append(slice(start, start + (length_out - 1) * s + 1, s))
     return x[tuple(slices)]
 
 
@@ -118,9 +136,10 @@ class _PhaseModulationNd(nn.Module):
         if self.use_one_filter:
             # g_x has 1 output channel; expand back to in_channels for elementwise ops.
             g_x = g_x.expand(g_x.shape[0], self.in_channels, *g_x.shape[2:])
-        # Center-crop input to g_x's spatial size when the inner conv shrank it.
+        # Pair each g(x) value with the x sample at its receptive-field
+        # center (strided sampling when the inner conv shrank the grid).
         target_spatial = g_x.shape[-self.nd :]
-        x = _center_crop(input, target_spatial)
+        x = _align_to_conv_grid(input, self.conv.conv, target_spatial)
         return self._combine(x, g_x)
 
     def extra_repr(self) -> str:

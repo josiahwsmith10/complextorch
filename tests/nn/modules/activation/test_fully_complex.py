@@ -8,7 +8,6 @@ import torch
 from complextorch.nn.modules.activation.fully_complex import (
     CVCardiod,
     CVSigLog,
-    CVSigmoid,
     Mod,
     zReLU,
 )
@@ -17,12 +16,6 @@ from complextorch.nn.modules.activation.fully_complex import (
 @pytest.fixture
 def z():
     return torch.randn(8, dtype=torch.cfloat)
-
-
-def test_cvsigmoid_forward(z):
-    out = CVSigmoid()(z)
-    assert out.shape == z.shape
-    assert out.is_complex()
 
 
 def test_zrelu_zeros_outside_first_quadrant():

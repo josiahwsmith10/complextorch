@@ -37,7 +37,14 @@ class ExpiFunction(torch.autograd.Function):
     @staticmethod
     def backward(ctx, grad_output: torch.Tensor) -> torch.Tensor:
         (x,) = ctx.saved_tensors
-        return grad_output * torch.exp(x) / x
+        # d/dx Ei(x) = e^x / x diverges at x = 0. Clamp |x| to the smallest
+        # normal float so the gradient is huge-but-finite: inf never appears,
+        # so a zero upstream gradient stays 0 instead of becoming 0*inf = NaN.
+        tiny = torch.finfo(x.dtype).tiny
+        safe_x = torch.where(
+            x.abs() < tiny, torch.copysign(torch.full_like(x, tiny), x), x
+        )
+        return grad_output * torch.exp(x) / safe_x
 
 
 torch_expi = ExpiFunction.apply

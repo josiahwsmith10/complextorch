@@ -12,7 +12,7 @@ from complextorch.nn.modules.phase_modulation import (
     PhaseDivConv1d,
     PhaseDivConv2d,
     PhaseDivConv3d,
-    _center_crop,
+    _align_to_conv_grid,
 )
 
 
@@ -70,7 +70,8 @@ def test_phase_modulation_use_one_filter_false():
 
 
 def test_phase_modulation_center_crop_no_padding():
-    """When inner conv shrinks spatial dims, input is center-cropped to match."""
+    """When inner conv shrinks spatial dims, input is sampled at the
+    receptive-field centers (for stride=1 this is the old center crop)."""
     layer = PhaseDivConv2d(in_channels=3, kernel_size=3, padding=0)
     x = torch.randn(2, 3, 8, 8, dtype=torch.cfloat) + 0.1
     out = layer(x)
@@ -78,10 +79,53 @@ def test_phase_modulation_center_crop_no_padding():
     assert out.shape == (2, 3, 6, 6)
 
 
-def test_center_crop_passthrough_when_shape_matches():
+def test_align_passthrough_when_shape_matches():
+    layer = PhaseDivConv2d(in_channels=3, kernel_size=3, padding=1)
     x = torch.randn(2, 3, 8, 8)
-    out = _center_crop(x, (8, 8))
-    assert out is x or torch.equal(out, x)
+    out = _align_to_conv_grid(x, layer.conv.conv, (8, 8))
+    assert out is x
+
+
+def test_phase_modulation_strided_pairing():
+    """Regression: stride > 1 used to pair x with g(x) via a contiguous
+    center crop instead of sampling at the receptive-field centers."""
+    layer = PhaseConjConv1d(in_channels=1, kernel_size=1, stride=2)
+    x = torch.randn(1, 1, 8, dtype=torch.cfloat) + 0.1
+    out = layer(x)
+    # k=1, s=2: g(x)[j] is computed from x[2j], so y[j] = x[2j]*conj(g(x)[j]).
+    g_x = layer.conv(x)
+    expected = x[..., 0::2] * g_x.conj()
+    torch.testing.assert_close(out, expected)
+
+
+def test_phase_modulation_stride_one_matches_center_crop():
+    """For stride=1 shrinking convs the sampling equals the old center crop."""
+    layer = PhaseDivConv1d(in_channels=2, kernel_size=5, padding=0)
+    x = torch.randn(1, 2, 12, dtype=torch.cfloat) + 0.1
+    out = layer(x)
+    g_x = layer.conv(x).expand(1, 2, 8)
+    denom = (g_x.real**2 + g_x.imag**2 + layer.eps).to(x.dtype)
+    expected = x[..., 2:10] * g_x.conj() / denom
+    torch.testing.assert_close(out, expected)
+
+
+def test_phase_modulation_strided_2d_asymmetric():
+    """2-D case with different spatial sizes per dim keeps per-dim geometry."""
+    layer = PhaseConjConv2d(in_channels=2, kernel_size=3, stride=2, padding=1)
+    x = torch.randn(1, 2, 10, 6, dtype=torch.cfloat) + 0.1
+    out = layer(x)
+    g_x = layer.conv(x).expand(1, 2, 5, 3)
+    # k=3, p=1, s=2: receptive-field centers sit at input positions 0,2,4,...
+    expected = x[..., 0::2, 0::2] * g_x.conj()
+    torch.testing.assert_close(out, expected)
+
+
+def test_align_rejects_oversized_conv_output():
+    """Over-padded inner convs produce more outputs than pairable samples."""
+    layer = PhaseConjConv1d(in_channels=1, kernel_size=1, padding=2)
+    x = torch.randn(1, 1, 8, dtype=torch.cfloat)
+    with pytest.raises(ValueError, match="too large to pair"):
+        layer(x)
 
 
 def test_phase_modulation_grad_flows():

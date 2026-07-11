@@ -179,3 +179,21 @@ def test_mag_batchnorm_real_input_passthrough():
     out = bn(x)
     assert not out.is_complex()
     assert out.shape == x.shape
+
+
+@pytest.mark.parametrize(
+    ("cls", "shape"),
+    [
+        (BatchNorm1d, (4, 1, 8)),
+        (BatchNorm2d, (4, 1, 6, 6)),
+        (BatchNorm3d, (2, 1, 4, 4, 4)),
+    ],
+)
+def test_batchnorm_single_feature_trains(cls, shape):
+    """Regression: num_features=1 used to crash the running-mean update."""
+    bn = cls(num_features=1)
+    bn.train()
+    x = torch.randn(*shape, dtype=torch.cfloat) + 0.5
+    out = bn(x)
+    assert out.shape == x.shape
+    assert not torch.allclose(bn.running_mean, torch.zeros_like(bn.running_mean))

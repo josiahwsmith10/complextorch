@@ -31,6 +31,26 @@ def test_split_relu_zeros_negatives(cls, z):
     assert (out.imag >= 0).all()
 
 
+@pytest.mark.parametrize("cls", [CVSplitReLU, CReLU])
+def test_split_relu_default_is_out_of_place(cls, z):
+    """Default inplace=False: input unmodified, leaf tensors with grad work."""
+    original = z.clone()
+    cls()(z)
+    torch.testing.assert_close(z, original)
+    leaf = torch.randn(4, dtype=torch.cfloat, requires_grad=True)
+    out = cls()(leaf)  # must not raise on a leaf requiring grad
+    out.abs().sum().backward()
+    assert torch.isfinite(leaf.grad).all()
+
+
+def test_split_relu_inplace_opt_in(z):
+    """inplace=True remains available and rectifies the input itself."""
+    out = CVSplitReLU(inplace=True)(z)
+    assert (z.real >= 0).all()
+    assert (z.imag >= 0).all()
+    torch.testing.assert_close(out, z)
+
+
 def test_cprelu_learnable(z):
     act = CPReLU()
     out = act(z)
@@ -54,10 +74,64 @@ def test_zabsrelu_high_threshold_zeros_small():
 
 
 def test_zabsrelu_real_input_path():
-    """Test the non-complex branch in forward."""
+    """Real (non-complex) input works through the same gate."""
     x = torch.tensor([0.1, 5.0])  # real, not complex
     out = zAbsReLU(a_init=1.0)(x)
     assert out[0].abs().item() == 0.0
+    assert out[1].item() == 5.0
+    assert not out.is_complex()
+
+
+def test_zabsrelu_forward_is_bit_exact_hard_gate():
+    """The STE must not perturb the forward pass: bit-exact hard gate."""
+    z = torch.randn(64, dtype=torch.cfloat)
+    layer = zAbsReLU(a_init=1.0)
+    expected = z * (z.abs() >= 1.0).to(torch.float32)
+    assert torch.equal(layer(z), expected)
+
+
+def test_zabsrelu_no_grad_matches_grad_path():
+    """Under no_grad the surrogate is skipped, but the output is unchanged."""
+    z = torch.randn(64, dtype=torch.cfloat)
+    layer = zAbsReLU(a_init=0.5)
+    grad_out = layer(z)  # grad-enabled: goes through the STE surrogate
+    with torch.no_grad():
+        no_grad_out = layer(z)  # skips the surrogate entirely
+    assert torch.equal(grad_out.detach(), no_grad_out)
+
+
+def test_zabsrelu_threshold_receives_gradient():
+    """The learnable threshold gets a finite, nonzero surrogate gradient."""
+    z = torch.tensor([0.5 + 0j, 0.9 + 0.1j, 1.1 + 0j, 2.0 - 1.0j])
+    layer = zAbsReLU(a_init=1.0)
+    layer(z).abs().sum().backward()
+    assert layer.a.grad is not None
+    assert torch.isfinite(layer.a.grad).all()
+    assert layer.a.grad.item() != 0.0
+
+
+def test_zabsrelu_gradient_at_default_init():
+    """Even at the identity init a_init=0.0, `a` can still learn."""
+    z = torch.tensor([0.05 + 0j, 0.1 + 0.1j, 0.2 + 0j])
+    layer = zAbsReLU()
+    layer(z).abs().sum().backward()
+    assert torch.isfinite(layer.a.grad).all()
+    assert layer.a.grad.item() != 0.0
+
+
+def test_zabsrelu_input_grad_finite_at_zero():
+    """torch's sgn-based abs backward keeps an exact-zero element finite."""
+    z = torch.tensor([0.0 + 0j, 1.0 + 1.0j], requires_grad=True)
+    out = zAbsReLU(a_init=0.5)(z)
+    out.abs().sum().backward()
+    assert torch.isfinite(z.grad.real).all()
+    assert torch.isfinite(z.grad.imag).all()
+
+
+def test_zabsrelu_extra_repr_and_state_dict():
+    layer = zAbsReLU(a_init=0.3, tau=0.05)
+    assert "tau=0.05" in layer.extra_repr()
+    assert "a" in layer.state_dict()
 
 
 def test_zleakyrelu_first_quadrant_passes():

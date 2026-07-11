@@ -22,6 +22,13 @@ def test_phase_sigmoid_bounded_magnitude():
     assert out.abs().max().item() <= 1.0
 
 
+def test_phase_sigmoid_is_alias_of_complex_ratio_mask():
+    """PhaseSigmoid is a docstring-only subclass, not a duplicated body."""
+    assert issubclass(PhaseSigmoid, ComplexRatioMask)
+    x = torch.randn(16, dtype=torch.cfloat)
+    torch.testing.assert_close(PhaseSigmoid()(x), ComplexRatioMask()(x))
+
+
 def test_mag_min_max_norm_global():
     m = MagMinMaxNorm(dim=None)
     x = torch.tensor([1 + 0j, 2 + 0j, 5 + 0j], dtype=torch.cfloat)

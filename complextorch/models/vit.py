@@ -46,9 +46,11 @@ class ViTLayer(nn.Module):
     r"""
     Single Vision Transformer block (pre-norm).
 
-    Composition: pre-norm :class:`LayerNorm` -> :class:`MultiheadAttention`
-    (which itself adds residual + LayerNorm internally) -> pre-norm FFN with
-    its own residual.
+    Composition matches the original ViT (Dosovitskiy et al., Eq. 2-3 —
+    "Layernorm (LN) is applied before every block"): pre-norm
+    :class:`LayerNorm` -> :class:`MultiheadAttention` (raw projected output,
+    ``residual_norm=False``) -> external residual -> pre-norm FFN with its
+    own residual.
     """
 
     def __init__(
@@ -65,6 +67,7 @@ class ViTLayer(nn.Module):
         if dim % nhead != 0:
             raise ValueError(f"dim ({dim}) must be divisible by nhead ({nhead})")
         d_head = dim // nhead
+        self.norm1 = LayerNorm(dim, eps=layer_norm_eps)
         self.attn = MultiheadAttention(
             nhead,
             dim,
@@ -73,11 +76,13 @@ class ViTLayer(nn.Module):
             dropout=dropout,
             softmax_on=softmax_on,
             rotary=rotary,
+            residual_norm=False,
         )
         self.ffn = _ViTFFN(dim, mlp_dim, dropout, layer_norm_eps)
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
-        x = self.attn(x, x, x)
+        nx = self.norm1(x)
+        x = x + self.attn(nx, nx, nx)
         return self.ffn(x)
 
 
@@ -148,6 +153,8 @@ class ViT(nn.Module):
             self.cls_token.real.normal_(0, 0.02)
             self.cls_token.imag.normal_(0, 0.02)
 
+        # Introspectable config string (public in 2.1.0; keep it stable).
+        self.pos_encoding = pos_encoding
         self.pos_embed: nn.Parameter | None = None
         self.pos_enc: SinusoidalPositionalEncoding | None = None
         rotary: RotaryEmbedding | None = None

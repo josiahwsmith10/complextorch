@@ -132,9 +132,11 @@ class CDSInvariant(nn.Module):
         x = self.wfm4(x)
         x = self.fc1(x)
         # x shape [B, P, H', W'] cfloat — H', W' will normally be 1 after the
-        # global-pool conv but we keep this generic.
+        # global-pool conv but we keep this generic: BatchNorm1d natively
+        # accepts (B, C, L), so fold spatial into a trailing length dim
+        # instead of flattening it into the channel dim.
         b = x.shape[0]
-        real_flat = _complex_to_real_flat(x).reshape(b, -1)
+        real_flat = _complex_to_real_flat(x).reshape(b, 2 * self.prototype_size, -1)
         real_flat = self.bn(real_flat)
         x = _real_flat_to_complex(
             real_flat.reshape(b, 2 * self.prototype_size, *x.shape[2:])

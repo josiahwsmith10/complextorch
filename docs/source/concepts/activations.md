@@ -55,7 +55,9 @@ plane:
 - {class}`complextorch.nn.zReLU` — first-quadrant gating: passes $z$
   unchanged only when both $\Re z > 0$ and $\Im z > 0$.
 - {class}`complextorch.nn.zAbsReLU` — magnitude threshold with a learnable
-  cutoff; phase preserved.
+  cutoff; phase preserved. The forward pass is the exact hard gate; because
+  the indicator has zero gradient almost everywhere, the cutoff learns
+  through a straight-through sigmoid surrogate of width `tau`.
 - {class}`complextorch.nn.zLeakyReLU` — soft `zReLU` with a leaky slope
   outside the first quadrant.
 

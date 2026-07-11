@@ -59,6 +59,7 @@ class _ChannelDropoutNd(nn.Module):
     together and the phase of surviving entries is preserved.
     """
 
+    _nd = 1  # overridden in subclasses
     _dropout_fn = staticmethod(F.dropout1d)  # overridden in subclasses
 
     def __init__(self, p: float = 0.5, inplace: bool = False) -> None:
@@ -73,10 +74,14 @@ class _ChannelDropoutNd(nn.Module):
             return input
         if not input.is_complex():
             return self._dropout_fn(input, self.p, training=True, inplace=self.inplace)
-        # Trabelsi 2018 channel dropout: one Bernoulli sample per (batch, channel),
-        # shared across real and imag, broadcast over spatial dims.
-        b, c = input.shape[0], input.shape[1]
-        mask_shape = (b, c) + (1,) * (input.dim() - 2)
+        # Trabelsi 2018 channel dropout: one Bernoulli sample per channel
+        # (and batch entry, if present), shared across real and imag,
+        # broadcast over spatial dims. torch.nn.DropoutNd semantics: an input
+        # with nd+1 dims is an unbatched (C, spatial...) sample.
+        if input.dim() == self._nd + 1:
+            mask_shape = (input.shape[0],) + (1,) * self._nd
+        else:
+            mask_shape = input.shape[:2] + (1,) * (input.dim() - 2)
         mask = torch.empty(mask_shape, dtype=input.real.dtype, device=input.device)
         mask.bernoulli_(1 - self.p).div_(1 - self.p)
         return input * mask
@@ -94,9 +99,10 @@ class Dropout1d(_ChannelDropoutNd):
     using a single Bernoulli mask per channel applied to both real and
     imaginary parts. The phase of surviving entries is preserved.
 
-    Input shape: ``(B, C, L)``.
+    Input shape: ``(B, C, L)`` or unbatched ``(C, L)``.
     """
 
+    _nd = 1
     _dropout_fn = staticmethod(F.dropout1d)
 
 
@@ -109,9 +115,10 @@ class Dropout2d(_ChannelDropoutNd):
     using a single Bernoulli mask per channel applied to both real and
     imaginary parts.
 
-    Input shape: ``(B, C, H, W)``.
+    Input shape: ``(B, C, H, W)`` or unbatched ``(C, H, W)``.
     """
 
+    _nd = 2
     _dropout_fn = staticmethod(F.dropout2d)
 
 
@@ -124,7 +131,8 @@ class Dropout3d(_ChannelDropoutNd):
     using a single Bernoulli mask per channel applied to both real and
     imaginary parts.
 
-    Input shape: ``(B, C, D, H, W)``.
+    Input shape: ``(B, C, D, H, W)`` or unbatched ``(C, D, H, W)``.
     """
 
+    _nd = 3
     _dropout_fn = staticmethod(F.dropout3d)

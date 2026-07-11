@@ -67,6 +67,11 @@ CUDA/CPU target from <https://pytorch.org/get-started/locally/> first. See
   softmax are built on `apply_complex`, `apply_complex_split`, and
   `apply_complex_polar` in {mod}`complextorch.nn.functional` — see
   [Activations](concepts/activations.md) for the math.
+- **Sequence models with real mask support.** A
+  {class}`complextorch.nn.Transformer` mirroring `torch.nn.Transformer` —
+  including the full `attn_mask` / `key_padding_mask` API with well-defined
+  semantics under complex softmax ([details](concepts/transformer.md)) —
+  plus unitary RNNs, state-space models, and holographic attention.
 - **Beyond layers.** Includes {mod}`complextorch.signal` (a torch port of
   Welch's PSD), {mod}`complextorch.transforms` (torchcvnn-style transforms),
   {mod}`complextorch.nn.init` (variance-correct complex initializers),
@@ -99,6 +104,7 @@ examples/index
 concepts/activations
 concepts/native-vs-gauss
 concepts/co-domain-symmetry
+concepts/transformer
 concepts/positional-encoding
 concepts/holographic-attention
 concepts/state-space-models

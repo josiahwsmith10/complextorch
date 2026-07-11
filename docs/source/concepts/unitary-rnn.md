@@ -26,7 +26,10 @@ h_t = \sigma_{\text{modReLU}}(W h_{t-1} + V x_t).
 $$
 
 The generator is initialised semi-unitarily with
-{func}`complextorch.nn.init.trabelsi_independent_`.
+{func}`complextorch.nn.init.trabelsi_independent_` — for the square generator
+this yields an exactly unitary $M$ at init (unit scale). The Cayley transform
+produces a unitary $W$ for *any* $M$, so unitarity of the recurrence never
+depends on the init; only the initial dynamics do.
 
 ```python
 import torch

@@ -8,7 +8,6 @@ from complextorch.nn.modules.activation.complex_relu import (
     EquivariantPhaseReLU,
 )
 from complextorch.nn.modules.activation.fully_complex import (
-    CVSigmoid,
     zReLU,
     CVCardiod,
     CVSigLog,
@@ -52,7 +51,6 @@ __all__ = [
     "CVPolarTanh",
     "CVSigLog",
     # fully_complex
-    "CVSigmoid",
     "CVSplitAbs",
     "CVSplitCELU",
     "CVSplitELU",

@@ -187,6 +187,11 @@ def trabelsi_standard_(tensor: torch.Tensor, kind: str = "glorot") -> torch.Tens
     """
     _check_complex(tensor)
     fan_in, fan_out = _get_fans(tensor)
+    # Rayleigh scale sigma = 1/sqrt(fan_in + fan_out) gives E|w|^2 = 2 sigma^2,
+    # the paper's complex-Glorot variance target.  The reference
+    # deep_complex_networks repo passes the *un-rooted* 1/(fan_in + fan_out) as
+    # the Rayleigh scale, underscaling its weights; we deliberately follow the
+    # paper's math instead.
     if kind in ("glorot", "xavier"):
         sigma = 1.0 / math.sqrt(fan_in + fan_out)
     elif kind in ("he", "kaiming"):
@@ -215,25 +220,37 @@ def trabelsi_independent_(tensor: torch.Tensor, kind: str = "glorot") -> torch.T
     Generates a random complex matrix of the same flat shape and replaces its
     singular values with a constant via SVD, yielding a semi-unitary weight
     satisfying :math:`W^* W = c \cdot I` (or :math:`W W^* = c \cdot I` for
-    wide matrices). The constant :math:`c` is chosen to match either the
-    Glorot or He variance target.
+    wide matrices). The constant :math:`c` is chosen so the mean squared
+    entry magnitude lands exactly on the paper's variance target:
+    :math:`E|w|^2 = 2 / (\text{fan\_in} + \text{fan\_out})` for
+    ``kind='glorot'`` and :math:`2 / \text{fan\_in}` for ``kind='he'``.
     """
     _check_complex(tensor)
     if tensor.dim() < 2:
         raise ValueError("trabelsi_independent_ requires a tensor of at least 2 dims")
 
     fan_in, fan_out = _get_fans(tensor)
-    if kind in ("glorot", "xavier"):
-        scale = 1.0 / math.sqrt(fan_in + fan_out)
-    elif kind in ("he", "kaiming"):
-        scale = 1.0 / math.sqrt(fan_in)
-    else:
-        raise ValueError(f"Unknown kind {kind!r}")
 
     # Flatten to (out, in_total) for SVD.
     out_dim = tensor.size(0)
     in_total = tensor.numel() // out_dim
     rows, cols = out_dim, in_total
+
+    # u @ vh below has min(rows, cols) unit singular values, so its mean
+    # squared entry magnitude is exactly 1 / max(rows, cols).  A single
+    # analytic scalar rescale hits the complex-Glorot variance target
+    # E|w|^2 = 2 / (fan_in + fan_out) (kind='he': 2 / fan_in) while
+    # preserving exact semi-unitarity (W^H W = scale^2 I).  This deviates
+    # from the Trabelsi reference repo, which rescales the real and
+    # imaginary parts by separate empirical factors
+    # sqrt(var_target / np.var(part)) and thereby breaks exact
+    # semi-unitarity.
+    if kind in ("glorot", "xavier"):
+        scale = math.sqrt(2.0 * max(rows, cols) / (fan_in + fan_out))
+    elif kind in ("he", "kaiming"):
+        scale = math.sqrt(2.0 * max(rows, cols) / fan_in)
+    else:
+        raise ValueError(f"Unknown kind {kind!r}")
 
     # Draw a random complex matrix and take its (truncated) SVD.
     rng = torch.empty(rows, cols, dtype=tensor.dtype, device=tensor.device)

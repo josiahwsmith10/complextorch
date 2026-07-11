@@ -1,44 +1,7 @@
 import torch
 import torch.nn as nn
 
-__all__ = ["CVCardiod", "CVSigLog", "CVSigmoid", "Mod", "zReLU"]
-
-
-class CVSigmoid(nn.Module):
-    r"""
-    Complex-Valued Sigmoid Activation Function
-    ------------------------------------------
-
-    An extension of the sigmoid activation function to the complex domain.
-
-    Implements the operation:
-
-    .. math::
-
-        G(\mathbf{z}) = \frac{1}{1 + \exp{(\mathbf{z})}}.
-
-    Based on work from the following paper:
-
-        **T Nitta, Y Kuroe. Hyperbolic Gradient Operator and Hyperbolic Back-Propagation Learning Algorithms.**
-
-            - Eq. (71)
-
-            - https://ieeexplore.ieee.org/abstract/document/7885584
-    """
-
-    def __init__(self) -> None:
-        super().__init__()
-
-    def forward(self, input: torch.Tensor) -> torch.Tensor:
-        r"""Computes the complex-valued sigmoid activation function.
-
-        Args:
-            input (torch.Tensor): input tensor
-
-        Returns:
-            torch.Tensor: :math:`\frac{1}{1 + \exp{(\mathbf{z})}}`
-        """
-        return 1 / (1 + torch.exp(input))
+__all__ = ["CVCardiod", "CVSigLog", "Mod", "zReLU"]
 
 
 class zReLU(nn.Module):

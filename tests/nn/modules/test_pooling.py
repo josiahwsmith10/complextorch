@@ -246,3 +246,28 @@ def test_spectral_pool_rejects_bad_tuple_length():
 def test_spectral_pool_extra_repr():
     s = SpectralPool2d((4, 6)).extra_repr()
     assert "output_size=(4, 6)" in s
+
+
+@pytest.mark.parametrize(
+    ("cls", "shape"),
+    [
+        (MagMaxPool1d, (3, 6)),
+        (MagMaxPool2d, (3, 6, 6)),
+        (MagMaxPool3d, (3, 4, 4, 4)),
+    ],
+)
+def test_magmax_pool_unbatched_matches_batched(cls, shape):
+    """Regression: unbatched (C, spatial...) inputs used to flatten the whole
+    tensor and gather channel 0's values into every channel."""
+    pool = cls(kernel_size=2)
+    x = torch.randn(*shape, dtype=torch.cfloat)
+    out_unbatched = pool(x)
+    out_batched = pool(x.unsqueeze(0)).squeeze(0)
+    torch.testing.assert_close(out_unbatched, out_batched)
+
+
+def test_magmax_pool_unbatched_real_input():
+    pool = MagMaxPool1d(kernel_size=2)
+    x = torch.randn(3, 6)
+    out = pool(x)
+    torch.testing.assert_close(out, pool(x.unsqueeze(0)).squeeze(0))
