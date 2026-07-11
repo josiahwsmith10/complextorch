@@ -25,6 +25,16 @@ def test_cvsigmoid_forward(z):
     assert out.is_complex()
 
 
+def test_cvsigmoid_matches_real_sigmoid_on_real_axis():
+    """Regression: the activation was inverted (computed sigmoid(-z))."""
+    x = torch.linspace(-4.0, 4.0, 17)
+    out = CVSigmoid()(x.to(torch.cfloat))
+    torch.testing.assert_close(out.real, torch.sigmoid(x))
+    torch.testing.assert_close(out.imag, torch.zeros_like(x))
+    # Monotonically increasing along the real axis, like any sigmoid.
+    assert (out.real.diff() > 0).all()
+
+
 def test_zrelu_zeros_outside_first_quadrant():
     # In Q1 (angle in [0, pi/2]) -> passes; elsewhere -> 0
     z = torch.tensor([1 + 1j, -1 + 1j, -1 - 1j, 1 - 1j], dtype=torch.cfloat)

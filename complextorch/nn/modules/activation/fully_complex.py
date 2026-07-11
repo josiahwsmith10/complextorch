@@ -10,12 +10,13 @@ class CVSigmoid(nn.Module):
     ------------------------------------------
 
     An extension of the sigmoid activation function to the complex domain.
+    Reduces to the standard sigmoid on the real axis.
 
     Implements the operation:
 
     .. math::
 
-        G(\mathbf{z}) = \frac{1}{1 + \exp{(\mathbf{z})}}.
+        G(\mathbf{z}) = \frac{1}{1 + \exp{(-\mathbf{z})}}.
 
     Based on work from the following paper:
 
@@ -36,9 +37,9 @@ class CVSigmoid(nn.Module):
             input (torch.Tensor): input tensor
 
         Returns:
-            torch.Tensor: :math:`\frac{1}{1 + \exp{(\mathbf{z})}}`
+            torch.Tensor: :math:`\frac{1}{1 + \exp{(-\mathbf{z})}}`
         """
-        return 1 / (1 + torch.exp(input))
+        return 1 / (1 + torch.exp(-input))
 
 
 class zReLU(nn.Module):

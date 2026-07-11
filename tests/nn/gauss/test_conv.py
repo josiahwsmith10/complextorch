@@ -226,3 +226,38 @@ def test_gauss_weight_assignment_changes_forward_output():
     layer.weight = torch.randn_like(layer.weight)
     y_after = layer(x)
     assert not torch.allclose(y_before, y_after)
+
+
+def test_gauss_conv_parameter_assignment_routes_to_setter():
+    """Regression: assigning an nn.Parameter used to raise KeyError because
+    nn.Module.__setattr__ intercepted it before the property setter ran."""
+    layer = Conv1d(in_channels=2, out_channels=3, kernel_size=3)
+    target = torch.randn_like(layer.weight)
+    layer.weight = torch.nn.Parameter(target)
+    torch.testing.assert_close(layer.conv_r.weight, target.real)
+    torch.testing.assert_close(layer.conv_i.weight, target.imag)
+    bias_target = torch.randn_like(layer.bias)
+    layer.bias = torch.nn.Parameter(bias_target)
+    torch.testing.assert_close(layer.bias, bias_target)
+    # No phantom top-level "weight"/"bias" entries appear in the state dict.
+    assert set(layer.state_dict()) == {
+        "conv_r.weight",
+        "conv_i.weight",
+        "bias_r",
+        "bias_i",
+    }
+
+
+def test_gauss_convtranspose_parameter_assignment_routes_to_setter():
+    layer = ConvTranspose1d(in_channels=2, out_channels=3, kernel_size=3)
+    target = torch.randn_like(layer.weight)
+    layer.weight = torch.nn.Parameter(target)
+    torch.testing.assert_close(layer.convt_r.weight, target.real)
+    torch.testing.assert_close(layer.convt_i.weight, target.imag)
+
+
+def test_gauss_conv_non_routed_parameter_registers_normally():
+    """The __setattr__ routing must fall through for other names."""
+    layer = Conv1d(in_channels=2, out_channels=3, kernel_size=3)
+    layer.extra = torch.nn.Parameter(torch.randn(2))
+    assert "extra" in dict(layer.named_parameters())

@@ -60,14 +60,39 @@ class _RelevanceMixin(SparsityStats):
         return [(id(self.weight), n_dropped)]
 
 
+_VD_SERIES_THRESHOLD = -5.0
+
+
+def _log_uniform_vd_penalty(n_log_alpha: torch.Tensor) -> torch.Tensor:
+    r"""KL penalty :math:`\gamma + t - \mathrm{Ei}(-e^t)`, evaluated piecewise
+    for numerical stability (:math:`t` = ``n_log_alpha``).
+
+    For ``t < -5`` use the small-argument series of Ei:
+    ``Ei(-e^t) = gamma + t - e^t + e^{2t}/4 - O(e^{3t})``, so the penalty
+    collapses to ``e^t - e^{2t}/4 -> 0+`` smoothly as ``t -> -inf``.
+    Threshold justification (float32): at ``t = -5`` the two-term series
+    truncation error is ~2.5e-6 relative, while the exact branch already
+    carries ``|gamma + t| * eps / e^t`` ~ 8e-5 relative cancellation noise —
+    below the seam the series is strictly *more* accurate, and it avoids the
+    exp underflow (``t < -87``) and ``expi(-0.0) = -inf`` (``t < -103``)
+    failures entirely. Both branches are evaluated on clamped inputs because
+    ``torch.where`` differentiates the discarded branch too.
+    """
+    t = n_log_alpha
+    t_exact = t.clamp(min=_VD_SERIES_THRESHOLD)
+    exact = float(np.euler_gamma) + t_exact - torch_expi(-torch.exp(t_exact))
+    e = torch.exp(t.clamp(max=_VD_SERIES_THRESHOLD))
+    series = e - 0.25 * e * e
+    return torch.where(t < _VD_SERIES_THRESHOLD, series, exact)
+
+
 class _CplxVDMixin:
     r"""KL of complex Gaussian posterior vs scale-free log-uniform prior."""
 
     @property
     def penalty(self) -> torch.Tensor:
-        n_log_alpha = -self.log_alpha
         # Euler-Mascheroni constant ensures non-negativity.
-        return float(np.euler_gamma) + n_log_alpha - torch_expi(-torch.exp(n_log_alpha))
+        return _log_uniform_vd_penalty(-self.log_alpha)
 
 
 class _CplxARDMixin:

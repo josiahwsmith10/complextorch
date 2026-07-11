@@ -46,7 +46,7 @@ def test_cvpolar_log_monotonic_in_magnitude():
 
 
 def test_modrelu_static_bias_must_be_negative():
-    with pytest.raises(AssertionError, match="smaller than 0"):
+    with pytest.raises(ValueError, match="smaller than 0"):
         modReLU(bias=0.5)
 
 

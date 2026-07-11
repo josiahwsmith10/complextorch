@@ -4,7 +4,10 @@
 {class}`complextorch.nn.ScaledDotProductAttention` that treats attention as
 **wave interference** rather than a phase-blind correlation. It is motivated by
 signal-processing workloads (PolSAR, wireless channel prediction) where the
-amplitude–phase coupling carries the signal.
+amplitude–phase coupling carries the signal. It takes the same `attn_mask`
+argument as the scaled dot-product core (see
+[Complex transformer & attention masking](transformer.md)), so it composes
+with the full transformer mask API.
 
 It changes two things relative to standard scaled dot-product attention.
 

@@ -237,8 +237,8 @@ class modReLU(GeneralizedPolarActivation):
     def __init__(self, bias: float = -0.1, learnable: bool = False) -> None:
         # When learnable, the bias may move above 0 during training; only
         # validate the initialisation when it's a fixed constant.
-        if not learnable:
-            assert bias < 0, (
+        if not learnable and bias >= 0:
+            raise ValueError(
                 "bias must be smaller than 0 to have a non-linearity effect"
             )
         super().__init__(_modReLU(bias, learnable=learnable), None)

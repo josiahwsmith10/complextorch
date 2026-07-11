@@ -49,9 +49,8 @@ class RMSNorm(nn.Module):
         self.elementwise_affine = elementwise_affine
 
         if elementwise_affine:
-            # 2x2 affine on (Re, Im); initialized to identity / sqrt(2) so the
-            # zero-mean unit-variance assumption maps to a proper complex
-            # standardisation (same convention as the LayerNorm in this lib).
+            # 2x2 affine on (Re, Im); initialized to the identity so the
+            # module is a no-op affine at init, matching torch.nn.RMSNorm.
             self.weight = nn.Parameter(torch.empty(2, 2, *normalized_shape))
         else:
             self.register_parameter("weight", None)
@@ -61,9 +60,11 @@ class RMSNorm(nn.Module):
     def reset_parameters(self) -> None:
         if not self.elementwise_affine:
             return
-        eye = (0.70710678118 * torch.eye(2)).view(
-            2, 2, *([1] * len(self.normalized_shape))
-        )
+        # Identity, NOT the 1/sqrt(2)-scaled identity the whitening LayerNorm
+        # uses: LayerNorm's whitening gives each of (Re, Im) unit variance, so
+        # it needs 1/sqrt(2) to reach unit *complex* power, whereas the RMS
+        # division above already yields E|out|^2 = 1.
+        eye = torch.eye(2).view(2, 2, *([1] * len(self.normalized_shape)))
         self.weight.data.copy_(eye)
 
     def forward(self, input: torch.Tensor) -> torch.Tensor:

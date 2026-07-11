@@ -1,9 +1,11 @@
 # Complex positional encodings
 
 The native {class}`complextorch.nn.Transformer` and
-{class}`complextorch.nn.MultiheadAttention` apply **no** positional encoding on
-their own — attention is permutation-equivariant, so position has to be injected
-explicitly. `complextorch.nn` ships three complex-valued schemes.
+{class}`complextorch.nn.MultiheadAttention` (see
+[Complex transformer & attention masking](transformer.md)) apply **no**
+positional encoding on their own — attention is permutation-equivariant, so
+position has to be injected explicitly. `complextorch.nn` ships three
+complex-valued schemes.
 
 | Module | Type | Position | Mechanism |
 | --- | --- | --- | --- |

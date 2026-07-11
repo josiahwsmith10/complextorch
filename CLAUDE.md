@@ -105,4 +105,4 @@ A `tests/` tree mirrors `complextorch/` 1:1 so each coverage gap maps directly t
 
 ### Docs
 
-Sphinx sources are in `docs/source/`, one `.rst` per module mirroring the package layout (`nn.rst`, `nn/*.rst`). New public classes should get a corresponding autodoc entry.
+Sphinx sources are in `docs/source/` as MyST Markdown: narrative pages under `concepts/` (one per feature area — activations, native-vs-gauss, transformer/masking, positional encoding, etc.), the executable `examples/getting_started.md` notebook, and the autoapi-generated API reference (no hand-written per-module `.rst`; exporting a symbol from the right `__init__.py` is all that's needed). When a change alters user-visible behavior, update the matching `concepts/` page — the API reference updates itself, the narrative pages don't.

@@ -35,6 +35,10 @@ def analytic_signal(x: torch.Tensor, dim: int = -1) -> torch.Tensor:
     Returns:
         complex analytic signal of the same shape as ``x``.
     """
+    if x.is_complex():
+        # scipy.signal.hilbert parity: the spectrum-doubling construction
+        # assumes a real input with Hermitian-symmetric spectrum.
+        raise ValueError("x must be real.")
     n = x.shape[dim]
     xf = torch.fft.fft(x, dim=dim)
     h = torch.zeros(n, dtype=x.real.dtype, device=x.device)
@@ -162,14 +166,14 @@ def pwelch(
         raise ValueError(f"scaling must be 'density' or 'spectrum', got {scaling!r}")
     psd = psd * scale
 
-    # One-sided correction: double interior bins (DC and Nyquist unchanged)
-    if return_onesided:
-        # Indices 1..-2 (interior of rfft output) get a factor of 2
-        if psd.shape[-1] > 2:
-            psd_mid = psd[..., 1:-1] * 2.0
-            psd = torch.cat([psd[..., :1], psd_mid, psd[..., -1:]], dim=-1)
-        elif psd.shape[-1] == 2:
-            # Only DC + Nyquist
-            pass
+    # One-sided correction: double every non-DC bin except a true Nyquist
+    # bin. Even win_len: the last rfft bin is Nyquist and stays unscaled.
+    # Odd win_len: there is no Nyquist bin, so the last bin doubles too
+    # (scipy: `if nfft % 2: result[..., 1:] *= 2 else: result[..., 1:-1] *= 2`).
+    if return_onesided and psd.shape[-1] > 1:
+        if win_len % 2:
+            psd = torch.cat([psd[..., :1], psd[..., 1:] * 2.0], dim=-1)
+        elif psd.shape[-1] > 2:
+            psd = torch.cat([psd[..., :1], psd[..., 1:-1] * 2.0, psd[..., -1:]], dim=-1)
 
     return freqs, psd

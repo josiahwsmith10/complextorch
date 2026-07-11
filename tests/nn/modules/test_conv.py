@@ -57,3 +57,29 @@ def test_convtranspose3d_forward_shape():
     x = torch.randn(1, 2, 2, 2, 2, dtype=torch.cfloat)
     out = layer(x)
     assert out.is_complex()
+
+
+def test_conv_weight_bias_are_live_parameters():
+    layer = Conv1d(2, 3, 3)
+    assert layer.weight is layer.conv.weight
+    assert layer.bias is layer.conv.bias
+    x = torch.randn(1, 2, 8, dtype=torch.cfloat)
+    y_before = layer(x).detach().clone()
+    layer.weight.data.zero_()
+    assert not torch.allclose(layer(x), y_before)
+
+
+def test_convtranspose_weight_is_live_parameter():
+    layer = ConvTranspose1d(2, 3, 3)
+    assert layer.weight is layer.conv_transposed.weight
+    p = torch.nn.Parameter(torch.randn_like(layer.weight))
+    layer.weight = p
+    assert layer.conv_transposed.weight is p
+
+
+def test_conv_state_dict_keys_unchanged():
+    assert set(Conv1d(2, 3, 3).state_dict()) == {"conv.weight", "conv.bias"}
+    assert set(ConvTranspose1d(2, 3, 3).state_dict()) == {
+        "conv_transposed.weight",
+        "conv_transposed.bias",
+    }

@@ -81,6 +81,8 @@ def test_vit_pos_encoding_modes(pos_encoding):
     x = torch.randn(1, 1, 16, 16, dtype=torch.cfloat)
     out = vit(x)
     assert out.shape == (1, 5)
+    # Public config attribute (shipped in 2.1.0; regression for its removal).
+    assert vit.pos_encoding == pos_encoding
 
 
 def test_vit_invalid_pos_encoding():
@@ -123,3 +125,18 @@ def test_vit_factories_instantiate(factory):
     )
     # Just confirm it's a ViT.
     assert isinstance(model, ViT)
+
+
+def test_vitlayer_is_true_pre_norm():
+    """Regression: the attention sub-block used to be post-norm (internal
+    residual + LayerNorm inside MultiheadAttention)."""
+    layer = ViTLayer(dim=16, nhead=2, mlp_dim=32, dropout=0.0)
+    layer.eval()
+    # Structure: the attention core returns its raw projected output...
+    assert layer.attn.residual_norm is False
+    assert layer.attn.layer_norm is None
+    # ...and the block composes exactly x + attn(LN(x)), then the pre-norm FFN.
+    x = torch.randn(2, 5, 16, dtype=torch.cfloat)
+    nx = layer.norm1(x)
+    expected = layer.ffn(x + layer.attn(nx, nx, nx))
+    torch.testing.assert_close(layer(x), expected)

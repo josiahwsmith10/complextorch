@@ -84,7 +84,7 @@ class TransformerEncoderLayer(nn.Module):
         dropout: float = 0.1,
         activation: str = "gelu",
         layer_norm_eps: float = 1e-5,
-        batch_first: bool = True,
+        batch_first: bool = False,
         softmax_on: str = "complex",
     ) -> None:
         super().__init__()
@@ -104,9 +104,16 @@ class TransformerEncoderLayer(nn.Module):
         self.d_model = d_model
         self.nhead = nhead
 
-    def forward(self, src: torch.Tensor) -> torch.Tensor:
+    def forward(
+        self,
+        src: torch.Tensor,
+        src_mask: torch.Tensor | None = None,
+        src_key_padding_mask: torch.Tensor | None = None,
+    ) -> torch.Tensor:
         x = src if self.batch_first else src.transpose(0, 1)
-        x = self.self_attn(x, x, x)
+        x = self.self_attn(
+            x, x, x, attn_mask=src_mask, key_padding_mask=src_key_padding_mask
+        )
         x = self.ffn(x)
         return x if self.batch_first else x.transpose(0, 1)
 
@@ -125,10 +132,15 @@ class TransformerEncoder(nn.Module):
         self.num_layers = num_layers
         self.norm = norm
 
-    def forward(self, src: torch.Tensor) -> torch.Tensor:
+    def forward(
+        self,
+        src: torch.Tensor,
+        mask: torch.Tensor | None = None,
+        src_key_padding_mask: torch.Tensor | None = None,
+    ) -> torch.Tensor:
         x = src
         for layer in self.layers:
-            x = layer(x)
+            x = layer(x, src_mask=mask, src_key_padding_mask=src_key_padding_mask)
         if self.norm is not None:
             x = self.norm(x)
         return x
@@ -150,10 +162,14 @@ class TransformerDecoderLayer(nn.Module):
         dropout: float = 0.1,
         activation: str = "gelu",
         layer_norm_eps: float = 1e-5,
-        batch_first: bool = True,
+        batch_first: bool = False,
         softmax_on: str = "complex",
     ) -> None:
         super().__init__()
+        if d_model % nhead != 0:
+            raise ValueError(
+                f"d_model ({d_model}) must be divisible by nhead ({nhead})"
+            )
         self.batch_first = batch_first
         d_head = d_model // nhead
 
@@ -167,11 +183,23 @@ class TransformerDecoderLayer(nn.Module):
             d_model, dim_feedforward, activation, dropout, layer_norm_eps
         )
 
-    def forward(self, tgt: torch.Tensor, memory: torch.Tensor) -> torch.Tensor:
+    def forward(
+        self,
+        tgt: torch.Tensor,
+        memory: torch.Tensor,
+        tgt_mask: torch.Tensor | None = None,
+        memory_mask: torch.Tensor | None = None,
+        tgt_key_padding_mask: torch.Tensor | None = None,
+        memory_key_padding_mask: torch.Tensor | None = None,
+    ) -> torch.Tensor:
         x = tgt if self.batch_first else tgt.transpose(0, 1)
         m = memory if self.batch_first else memory.transpose(0, 1)
-        x = self.self_attn(x, x, x)
-        x = self.cross_attn(x, m, m)
+        x = self.self_attn(
+            x, x, x, attn_mask=tgt_mask, key_padding_mask=tgt_key_padding_mask
+        )
+        x = self.cross_attn(
+            x, m, m, attn_mask=memory_mask, key_padding_mask=memory_key_padding_mask
+        )
         x = self.ffn(x)
         return x if self.batch_first else x.transpose(0, 1)
 
@@ -190,10 +218,25 @@ class TransformerDecoder(nn.Module):
         self.num_layers = num_layers
         self.norm = norm
 
-    def forward(self, tgt: torch.Tensor, memory: torch.Tensor) -> torch.Tensor:
+    def forward(
+        self,
+        tgt: torch.Tensor,
+        memory: torch.Tensor,
+        tgt_mask: torch.Tensor | None = None,
+        memory_mask: torch.Tensor | None = None,
+        tgt_key_padding_mask: torch.Tensor | None = None,
+        memory_key_padding_mask: torch.Tensor | None = None,
+    ) -> torch.Tensor:
         x = tgt
         for layer in self.layers:
-            x = layer(x, memory)
+            x = layer(
+                x,
+                memory,
+                tgt_mask=tgt_mask,
+                memory_mask=memory_mask,
+                tgt_key_padding_mask=tgt_key_padding_mask,
+                memory_key_padding_mask=memory_key_padding_mask,
+            )
         if self.norm is not None:
             x = self.norm(x)
         return x
@@ -203,9 +246,16 @@ class Transformer(nn.Module):
     r"""
     Complex-Valued Transformer (encoder-decoder).
 
-    Mirrors :class:`torch.nn.Transformer`. ``forward(src, tgt)`` runs the
-    encoder on ``src`` and the decoder on ``tgt`` with the encoder output as
-    cross-attention memory.
+    Mirrors :class:`torch.nn.Transformer`, including the ``batch_first=False``
+    default (sequence-first ``(T, B, F)`` inputs) and the mask API:
+    ``src_mask`` / ``tgt_mask`` / ``memory_mask`` accept bool (``True`` =
+    disallowed) or additive float masks of shape ``(L_q, L_k)``, and the three
+    ``*_key_padding_mask`` arguments accept ``(B, L)`` masks (``True`` = pad)
+    regardless of ``batch_first``. Use
+    :meth:`generate_square_subsequent_mask` to build a causal ``tgt_mask``.
+
+    ``forward(src, tgt)`` runs the encoder on ``src`` and the decoder on
+    ``tgt`` with the encoder output as cross-attention memory.
     """
 
     def __init__(
@@ -218,7 +268,7 @@ class Transformer(nn.Module):
         dropout: float = 0.1,
         activation: str = "gelu",
         layer_norm_eps: float = 1e-5,
-        batch_first: bool = True,
+        batch_first: bool = False,
         softmax_on: str = "complex",
     ) -> None:
         super().__init__()
@@ -248,6 +298,37 @@ class Transformer(nn.Module):
         self.nhead = nhead
         self.batch_first = batch_first
 
-    def forward(self, src: torch.Tensor, tgt: torch.Tensor) -> torch.Tensor:
-        memory = self.encoder(src)
-        return self.decoder(tgt, memory)
+    def forward(
+        self,
+        src: torch.Tensor,
+        tgt: torch.Tensor,
+        src_mask: torch.Tensor | None = None,
+        tgt_mask: torch.Tensor | None = None,
+        memory_mask: torch.Tensor | None = None,
+        src_key_padding_mask: torch.Tensor | None = None,
+        tgt_key_padding_mask: torch.Tensor | None = None,
+        memory_key_padding_mask: torch.Tensor | None = None,
+    ) -> torch.Tensor:
+        memory = self.encoder(
+            src, mask=src_mask, src_key_padding_mask=src_key_padding_mask
+        )
+        return self.decoder(
+            tgt,
+            memory,
+            tgt_mask=tgt_mask,
+            memory_mask=memory_mask,
+            tgt_key_padding_mask=tgt_key_padding_mask,
+            memory_key_padding_mask=memory_key_padding_mask,
+        )
+
+    @staticmethod
+    def generate_square_subsequent_mask(
+        sz: int, device=None, dtype=None
+    ) -> torch.Tensor:
+        r"""Causal mask: 0 on and below the diagonal, ``-inf`` above."""
+        if dtype is None:
+            dtype = torch.get_default_dtype()
+        return torch.triu(
+            torch.full((sz, sz), float("-inf"), dtype=dtype, device=device),
+            diagonal=1,
+        )

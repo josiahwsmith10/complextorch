@@ -5,6 +5,119 @@ All notable changes to `complextorch` are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.2.0]
+
+Correctness release: fixes all 28 defects confirmed by a full-repo code
+review, several of which deliberately change numerical behaviour (they were
+corrections of silently-wrong math). Two changes are breaking — the
+transformer `batch_first` default and the ViT pre-norm restructure — and are
+called out below.
+
+### Changed (breaking)
+
+- `Transformer`, `TransformerEncoderLayer`, and `TransformerDecoderLayer` now
+  default to `batch_first=False`, matching `torch.nn.Transformer`
+  (sequence-first `(T, B, F)` inputs). Code that relied on the old
+  `batch_first=True` default must now pass it explicitly.
+- `ViTLayer` is now genuinely pre-norm, matching the original ViT
+  (Dosovitskiy et al., Eq. 2–3) that its docstring and the `vit_t/s/b/l/h`
+  presets claim: a new `norm1` LayerNorm runs before attention, the attention
+  core no longer applies an internal residual + LayerNorm, and the residual
+  is external. Saved ViT checkpoints from earlier versions do not load
+  (state-dict keys changed).
+
+### Fixed (numerical corrections — outputs change)
+
+- `CVSigmoid` computed `1/(1+e^z)` — the *inverted* sigmoid `σ(-z)`. It now
+  computes `σ(z)` and reduces to `torch.sigmoid` on the real axis.
+- `init.trabelsi_independent_` produced weights hundreds of times too small
+  (fixed `1/sqrt(fan_in+fan_out)` scale on an already-normalized semi-unitary
+  matrix). It now rescales analytically to the paper's variance target
+  `E|w|² = 2/(fan_in+fan_out)` (`'he'`: `2/fan_in`) while preserving exact
+  semi-unitarity — deviating deliberately from the reference
+  `deep_complex_networks` repo, which rescales the real/imag parts by
+  separate empirical factors and breaks exact semi-unitarity.
+  `UnitaryRNNCell`'s recurrence generator now initializes at unit scale.
+- `pwelch` halved the top PSD bin for odd window lengths (it treated the last
+  rfft bin as Nyquist unconditionally); it now matches `scipy.signal.welch`
+  for both parities.
+- `RMSNorm` initialized its 2×2 affine to `0.7071·I`, halving output power at
+  init; it now initializes to the identity (unit power, matching
+  `torch.nn.RMSNorm` semantics). The `1/√2` convention remains correct only
+  for the whitening `LayerNorm`.
+- `CVSplitReLU` / `CReLU` defaulted to `inplace=True`, silently mutating
+  inputs and crashing on leaf tensors requiring grad; the default is now
+  `inplace=False`, matching `torch.nn.ReLU`.
+- The Gauss-trick convolutions ignored `padding_mode` in their third (cross)
+  term, silently corrupting the imaginary output near borders for any mode
+  other than `'zeros'`; the term is now computed on an input pre-padded with
+  the requested mode.
+- `PhaseDivConv*d` / `PhaseConjConv*d` paired `x` with `g(x)` via a
+  contiguous center crop; for `stride > 1` each output mixed unrelated
+  samples. They now sample `x` at the inner conv's receptive-field centers.
+- `HolographicAttention`'s effective initial `α` was `softplus(alpha_init)`
+  instead of `alpha_init`; the raw parameter now stores the softplus inverse
+  (`alpha_init` must be positive).
+- `zAbsReLU`'s "learnable" threshold never received gradient (hard gate);
+  it now learns through a straight-through sigmoid surrogate of width `tau`
+  (new argument) while the forward pass remains the bit-exact hard gate.
+
+### Fixed (crashes and NaNs)
+
+- `BatchNorm1d/2d/3d(num_features=1)` crashed on every training forward
+  (a bare `.squeeze()` collapsed the feature dim in the running-mean update).
+- `CDSInvariant` crashed for input sizes whose conv stack leaves a non-unit
+  spatial output; the BatchNorm reshape now keeps the channel dim generic.
+- `CVLogCoshError` overflowed to `inf`/NaN for residuals `|x-y| ≳ 9.4`; it
+  now uses the stable identity `d + softplus(-2d) - log 2`.
+- The variational-dropout KL penalty returned `inf` with NaN gradients for
+  fully-pruned weights (`expi(-0.0)`); it now switches to the series
+  expansion of `Ei` in the pruned regime (also *more* accurate in float32)
+  and `torch_expi`'s backward is finite at `x = 0`.
+- `MagMaxPool1d/2d/3d` returned wrong channels for unbatched inputs; channel
+  dropout (`Dropout1d/2d/3d`) masked per element instead of per channel on
+  unbatched complex inputs. Both now handle unbatched inputs with
+  `torch.nn` semantics.
+- `ComplexGaborConv1d` / `MorletConv1d` accepted any channel count
+  (`in_channels` was decorative after the 2.1.1 channel-sum rewrite); they
+  now validate it.
+- `analytic_signal` / `hilbert` silently accepted complex input and returned
+  garbage; they now raise `ValueError` like `scipy.signal.hilbert`.
+- Assigning an `nn.Parameter` to `gauss.*.weight`/`.bias` raised `KeyError`
+  (`nn.Module.__setattr__` intercepted the value before the property setter);
+  assignment is now routed to the property setters.
+- `whiten2x2_layer_norm` mutated its input stack in place; centering is now
+  out-of-place like its batch-norm twin.
+- Argument/shape validation via bare `assert` (norm helpers, `modReLU`) is
+  now `raise ValueError`, surviving `python -O`.
+- `TransformerDecoderLayer` silently built a mis-dimensioned attention block
+  when `d_model % nhead != 0`; it now raises like the encoder layer.
+
+### Added
+
+- Full `torch.nn.Transformer`-parity attention masking: `attn_mask` /
+  `key_padding_mask` on `MultiheadAttention`, `ScaledDotProductAttention`,
+  and `HolographicAttention`; `src_mask` / `tgt_mask` / `memory_mask` and the
+  three `*_key_padding_mask` arguments through the encoder/decoder stacks and
+  `Transformer`; `Transformer.generate_square_subsequent_mask` for causal
+  decoding. Masked positions receive exactly zero attention weight in both
+  `softmax_on='real'` and `softmax_on='complex'` modes; all mask arguments
+  default to `None` (backward compatible). The complex softmax variants
+  (`CVSoftMax`, `PhaseSoftMax`, `MagSoftMax`) gained an optional `mask`
+  parameter; a custom `SoftMaxClass` must accept `(input, mask)` to be used
+  with masks.
+- `weight` / `bias` properties on the native `Conv1d/2d/3d`,
+  `ConvTranspose1d/2d/3d`, and `Linear` wrappers — the live complex
+  parameters of the wrapped `torch.nn` module, with torch-parity assignment.
+- `MultiheadAttention(residual_norm=False)` returns the raw projected
+  attention output for pre-norm compositions.
+- `GeneralizedPolarLoss` is now exported from `complextorch.nn`.
+- `models.ViT` regained the introspectable `pos_encoding` attribute
+  (removed in 2.1.1 despite the "no API change" note).
+- `PhaseSigmoid` is now a docstring-only alias subclass of
+  `ComplexRatioMask` instead of a duplicated implementation (identical
+  behaviour).
+
 ## [2.1.1]
 
 Internal cleanup and performance pass over the 2.1.0 architectures. No public

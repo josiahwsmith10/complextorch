@@ -110,7 +110,7 @@ from complextorch.nn.modules.softmax import CVSoftMax, MagSoftMax, PhaseSoftMax
 
 from complextorch.nn.modules.mask import ComplexRatioMask, PhaseSigmoid, MagMinMaxNorm
 
-from complextorch.nn.modules.loss import GeneralizedSplitLoss
+from complextorch.nn.modules.loss import GeneralizedPolarLoss, GeneralizedSplitLoss
 from complextorch.nn.modules.loss import (
     SSIM,
     SplitSSIM,
@@ -270,8 +270,9 @@ __all__ = [
     "GRUCell",
     "GTReLU",
     "GeneralizedPolarActivation",
-    "GeneralizedSplitActivation",
     # losses
+    "GeneralizedPolarLoss",
+    "GeneralizedSplitActivation",
     "GeneralizedSplitLoss",
     "GroupNorm",
     "HolographicAttention",

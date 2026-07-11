@@ -18,6 +18,16 @@ def test_cds_invariant_forward_backward():
     assert any(g.abs().sum().item() > 0 for g in grads)
 
 
+def test_cds_invariant_non_unit_spatial_output():
+    """Regression: inputs larger than 32x32 leave H'*W' > 1 after the conv
+    stack; the BN reshape must stay generic instead of crashing."""
+    model = CDSInvariant(input_channels=2, num_classes=10, prototype_size=32)
+    x = torch.randn(2, 2, 64, 64, dtype=torch.cfloat)
+    logits = model(x)
+    assert logits.shape == (2, 10)
+    assert torch.isfinite(logits).all()
+
+
 def test_cds_equivariant_forward_backward():
     model = CDSEquivariant(input_channels=2, num_classes=10, prototype_size=32)
     x = torch.randn(2, 2, 32, 32, dtype=torch.cfloat)

@@ -1,3 +1,5 @@
+import math
+
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
@@ -12,6 +14,7 @@ __all__ = [
     "CVLogCoshError",
     "CVLogError",
     "CVQuadError",
+    "GeneralizedPolarLoss",
     "GeneralizedSplitLoss",
     "HolographicReconstructionLoss",
     "MSELoss",
@@ -102,7 +105,7 @@ class GeneralizedPolarLoss(nn.Module):
             y (torch.Tensor): target/ground truth labels
 
         Returns:
-            torch.Tensor: w_{||} \mathcal{L}_{||}(|\mathbf{x}|, |\mathbf{y}|) + w_\angle \mathcal{L}_\angle(\angle\mathbf{x}, \angle\mathbf{y})
+            torch.Tensor: :math:`w_{||} \mathcal{L}_{||}(|\mathbf{x}|, |\mathbf{y}|) + w_\angle \mathcal{L}_\angle(\angle\mathbf{x}, \angle\mathbf{y})`
         """
         l_mag = self.weight_mag * self.loss_mag(x.abs(), y.abs())
         l_phase = self.weight_phase * self.loss_phase(x.angle(), y.angle())
@@ -429,7 +432,10 @@ class CVLogCoshError(nn.Module):
         self.reduction = reduction
 
     def forward(self, x: torch.Tensor, y: torch.Tensor) -> torch.Tensor:
-        return _reduce(torch.log(torch.cosh((x - y).abs() ** 2)), self.reduction)
+        # log(cosh(d)) = d + softplus(-2d) - log(2): numerically stable for
+        # large d, where cosh(d) itself overflows float32 (d > ~88.7).
+        d = (x - y).abs() ** 2
+        return _reduce(d + F.softplus(-2.0 * d) - math.log(2.0), self.reduction)
 
 
 class CVLogError(nn.Module):

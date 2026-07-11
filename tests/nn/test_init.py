@@ -129,6 +129,58 @@ def test_trabelsi_independent_kinds(kind):
     assert off.abs().mean().item() < 0.1 * diag.mean().item()
 
 
+@pytest.mark.parametrize("shape", [(64, 32), (32, 64)])
+@pytest.mark.parametrize("kind", ["glorot", "he"])
+def test_trabelsi_independent_variance_target(kind, shape):
+    """Mean |w|^2 lands exactly on the paper's complex-Glorot/He target."""
+    w = torch.empty(*shape, dtype=torch.cfloat)
+    init.trabelsi_independent_(w, kind=kind)
+    fan_in, fan_out = shape[1], shape[0]
+    target = 2.0 / (fan_in + fan_out) if kind == "glorot" else 2.0 / fan_in
+    assert abs(w.abs().pow(2).mean().item() - target) < 1e-3 * target
+
+
+def test_trabelsi_independent_conv_shape_variance_target():
+    """Conv-shaped tensor: fan_in = in * prod(kernel) = flat cols."""
+    w = torch.empty(8, 4, 3, dtype=torch.cfloat)
+    init.trabelsi_independent_(w)
+    fan_in, fan_out = 4 * 3, 8 * 3
+    target = 2.0 / (fan_in + fan_out)
+    assert abs(w.abs().pow(2).mean().item() - target) < 1e-3 * target
+    # The flattened (out, in*k) matrix stays exactly semi-unitary.
+    flat = w.reshape(8, -1)
+    prod = flat @ flat.conj().T
+    scale_sq = prod.diagonal().real.mean()
+    torch.testing.assert_close(
+        prod, scale_sq * torch.eye(8, dtype=prod.dtype), atol=1e-5, rtol=0
+    )
+
+
+@pytest.mark.parametrize("shape", [(32, 8), (8, 32)])
+def test_trabelsi_independent_exact_semi_unitarity(shape):
+    """W^H W = s^2 I (tall) or W W^H = s^2 I (wide), exactly."""
+    w = torch.empty(*shape, dtype=torch.cfloat)
+    init.trabelsi_independent_(w)
+    rows, cols = shape
+    prod = w.conj().T @ w if rows >= cols else w @ w.conj().T
+    scale_sq = prod.diagonal().real.mean()
+    torch.testing.assert_close(
+        prod,
+        scale_sq * torch.eye(min(rows, cols), dtype=prod.dtype),
+        atol=1e-5,
+        rtol=0,
+    )
+
+
+def test_trabelsi_independent_square_is_unitary():
+    """Square glorot: scale is exactly 1, so W is exactly unitary."""
+    w = torch.empty(16, 16, dtype=torch.cfloat)
+    init.trabelsi_independent_(w)
+    torch.testing.assert_close(
+        w.conj().T @ w, torch.eye(16, dtype=w.dtype), atol=1e-5, rtol=0
+    )
+
+
 def test_trabelsi_independent_invalid_kind():
     w = torch.empty(4, 4, dtype=torch.cfloat)
     with pytest.raises(ValueError, match="Unknown kind"):

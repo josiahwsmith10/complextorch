@@ -159,17 +159,18 @@ class AvgPool3d(nn.AvgPool3d):
 
 
 def _gather_max_by_magnitude(
-    input: torch.Tensor, indices: torch.Tensor
+    input: torch.Tensor, indices: torch.Tensor, n_spatial: int
 ) -> torch.Tensor:
     r"""Gather the *original* complex samples at ``indices`` (argmax-of-magnitude positions).
 
     ``indices`` come from ``F.max_poolNd_with_indices(|input|)``: they are linear
-    indices into the spatial dimensions (last N dims of the input). For each
-    output position, we select the corresponding complex sample from
-    ``input`` and return it, preserving the original phase.
+    indices into the spatial dimensions (last ``n_spatial`` dims of the input,
+    known from the pooling module's dimensionality — inferring it from
+    ``indices.dim()`` would miscount for unbatched inputs). For each output
+    position, we select the corresponding complex sample from ``input`` and
+    return it, preserving the original phase.
     """
     # Flatten spatial dimensions of input, then gather along that flat dim.
-    n_spatial = indices.dim() - 2  # batch, channel, then spatial
     flat_input = input.reshape(*input.shape[:-n_spatial], -1)
     flat_indices = indices.reshape(*indices.shape[:-n_spatial], -1)
     gathered = torch.gather(flat_input, dim=-1, index=flat_indices)
@@ -179,6 +180,7 @@ def _gather_max_by_magnitude(
 class _MagMaxPoolNd(nn.Module):
     r"""Internal base for magnitude-argmax complex max pooling."""
 
+    _nd = 1
     _max_pool_with_indices = staticmethod(F.max_pool1d_with_indices)
 
     def __init__(
@@ -208,11 +210,8 @@ class _MagMaxPoolNd(nn.Module):
             dilation=self.dilation,
             ceil_mode=self.ceil_mode,
         )
-        if input.is_complex():
-            out = _gather_max_by_magnitude(input, indices)
-        else:
-            # Real input: gather is equivalent to the max value itself
-            out = _gather_max_by_magnitude(input, indices)
+        # For real input the gather is equivalent to the max value itself.
+        out = _gather_max_by_magnitude(input, indices, self._nd)
         if self.return_indices:
             return out, indices
         return out
@@ -239,6 +238,7 @@ class MagMaxPool1d(_MagMaxPoolNd):
     analogue. Signature matches :class:`torch.nn.MaxPool1d`.
     """
 
+    _nd = 1
     _max_pool_with_indices = staticmethod(F.max_pool1d_with_indices)
 
 
@@ -250,6 +250,7 @@ class MagMaxPool2d(_MagMaxPoolNd):
     See :class:`MagMaxPool1d`. Signature matches :class:`torch.nn.MaxPool2d`.
     """
 
+    _nd = 2
     _max_pool_with_indices = staticmethod(F.max_pool2d_with_indices)
 
 
@@ -261,6 +262,7 @@ class MagMaxPool3d(_MagMaxPoolNd):
     See :class:`MagMaxPool1d`. Signature matches :class:`torch.nn.MaxPool3d`.
     """
 
+    _nd = 3
     _max_pool_with_indices = staticmethod(F.max_pool3d_with_indices)
 
 

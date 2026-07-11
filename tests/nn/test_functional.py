@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import pytest
 import torch
 import torch.nn as nn
 
@@ -199,3 +200,57 @@ def test_layer_norm_multi_dim_normalized_shape():
     z = torch.randn(4, 8, 8, dtype=torch.cfloat)
     out = F.layer_norm(z, normalized_shape=[8, 8])
     assert out.shape == z.shape
+
+
+def test_whiten2x2_batch_norm_single_feature_running_stats():
+    """num_features == 1: reshape(2, -1) must not collapse the feature dim."""
+    z = torch.randn(8, 1, 6, dtype=torch.cfloat)
+    x = _stack_re_im(z)
+    running_mean = torch.zeros(2, 1)
+    running_cov = torch.eye(2).unsqueeze(-1).clone()
+    out = F.whiten2x2_batch_norm(
+        x, training=True, running_mean=running_mean, running_cov=running_cov
+    )
+    assert out.shape == x.shape
+    assert running_mean.shape == (2, 1)
+    assert not torch.allclose(running_mean, torch.zeros(2, 1))
+
+
+def test_whiten2x2_layer_norm_does_not_mutate_input():
+    z = torch.randn(4, 16, dtype=torch.cfloat)
+    x = _stack_re_im(z)
+    x_before = x.clone()
+    F.whiten2x2_layer_norm(x, normalized_shape=[16])
+    torch.testing.assert_close(x, x_before)
+
+
+def test_whiten2x2_batch_norm_rejects_low_dim_input():
+    x = torch.randn(2, 8)  # only 2 dims; needs (2, B, F, ...)
+    with pytest.raises(ValueError, match="stacked tensor"):
+        F.whiten2x2_batch_norm(x, training=True)
+
+
+def test_whiten2x2_layer_norm_rejects_low_dim_input():
+    x = torch.randn(2, 8)
+    with pytest.raises(ValueError, match="stacked tensor"):
+        F.whiten2x2_layer_norm(x, normalized_shape=[8])
+
+
+def test_batch_norm_running_stats_must_come_together():
+    z = torch.randn(8, 4, 10, dtype=torch.cfloat)
+    with pytest.raises(ValueError, match="running_mean and running_var"):
+        F.batch_norm(z, running_mean=torch.zeros(2, 4), training=True)
+
+
+def test_batch_norm_weight_bias_must_come_together():
+    z = torch.randn(8, 4, 10, dtype=torch.cfloat)
+    weight = torch.eye(2).unsqueeze(-1).repeat(1, 1, 4)
+    with pytest.raises(ValueError, match="weight and bias"):
+        F.batch_norm(z, weight=weight, training=True)
+
+
+def test_layer_norm_weight_bias_must_come_together():
+    z = torch.randn(8, 16, dtype=torch.cfloat)
+    weight = torch.eye(2).unsqueeze(-1).repeat(1, 1, 16)
+    with pytest.raises(ValueError, match="weight and bias"):
+        F.layer_norm(z, normalized_shape=[16], weight=weight)

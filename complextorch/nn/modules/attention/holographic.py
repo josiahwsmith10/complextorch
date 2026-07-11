@@ -35,6 +35,8 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
+from complextorch.nn.modules.attention._mask import _canonical_mask
+
 __all__ = ["HolographicAttention"]
 
 
@@ -52,7 +54,9 @@ class HolographicAttention(nn.Module):
         temperature: score temperature, typically :math:`\sqrt{d_k}`.
         attn_dropout: dropout probability applied to the (real) attention
             weights.
-        alpha_init: initial value of the phase-discrepancy weight :math:`\alpha`.
+        alpha_init: initial value of the *effective* phase-discrepancy weight
+            :math:`\alpha = \mathrm{softplus}(\text{raw parameter})`. Must be
+            positive.
         eps: small constant guarding the magnitude normalisation.
     """
 
@@ -64,15 +68,24 @@ class HolographicAttention(nn.Module):
         eps: float = 1e-6,
     ) -> None:
         super().__init__()
+        if alpha_init <= 0:
+            raise ValueError(f"alpha_init must be positive, got {alpha_init}")
         self.temperature = temperature
         self.eps = eps
         self.dropout = nn.Dropout(attn_dropout)
         self.softmax = nn.Softmax(dim=-1)
         # Stored as a raw parameter; softplus keeps the effective weight >= 0.
-        self.alpha = nn.Parameter(torch.tensor(float(alpha_init)))
+        # Store the softplus-inverse log(expm1(y)) so the effective initial
+        # alpha equals alpha_init (not softplus(alpha_init)).
+        raw = torch.log(torch.expm1(torch.tensor(float(alpha_init))))
+        self.alpha = nn.Parameter(raw)
 
     def forward(
-        self, q: torch.Tensor, k: torch.Tensor, v: torch.Tensor
+        self,
+        q: torch.Tensor,
+        k: torch.Tensor,
+        v: torch.Tensor,
+        attn_mask: torch.Tensor | None = None,
     ) -> torch.Tensor:
         r"""Computes interference-aware attention.
 
@@ -80,10 +93,14 @@ class HolographicAttention(nn.Module):
             q (torch.Tensor): complex-valued query tensor ``(..., L_q, d_k)``.
             k (torch.Tensor): complex-valued key tensor ``(..., L_k, d_k)``.
             v (torch.Tensor): complex-valued value tensor ``(..., L_k, d_v)``.
+            attn_mask (torch.Tensor, optional): bool (``True`` = disallowed)
+                or real additive float mask (``-inf`` = disallowed),
+                broadcastable to the score shape ``(..., L_q, L_k)``.
 
         Returns:
             torch.Tensor: coherently-superposed complex output ``(..., L_q, d_v)``.
         """
+        attn_mask = _canonical_mask(attn_mask, "attn_mask")
         # Hermitian inner product -> complex score; its phase is Delta-phi.
         scores = torch.matmul(q, k.conj().transpose(-2, -1))
         dphi = scores.angle()
@@ -93,9 +110,13 @@ class HolographicAttention(nn.Module):
         sim = scores.real / (q_norm * k_norm + self.eps)
 
         gate = torch.exp(-F.softplus(self.alpha) * dphi.abs())
-        weights = self.softmax(sim / self.temperature * gate)
+        logits = sim / self.temperature * gate
+        if attn_mask is not None:
+            logits = logits + attn_mask
+        weights = self.softmax(logits)
         weights = self.dropout(weights)
 
         # Coherent superposition: rotate each value by its phase offset.
+        # A masked weight of exactly 0 zeroes the coefficient too.
         coeff = weights * torch.polar(torch.ones_like(dphi), dphi)
         return torch.matmul(coeff, v)

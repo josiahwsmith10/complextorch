@@ -60,3 +60,25 @@ def test_rmsnorm_unit_rms_when_no_affine():
     out = rms(x)
     rms_val = out.abs().pow(2).mean(dim=-1)
     torch.testing.assert_close(rms_val, torch.ones_like(rms_val), atol=0.01, rtol=0.01)
+
+
+def test_rmsnorm_affine_init_is_identity():
+    """Regression: the affine used to init at 0.7071*I, halving output power."""
+    rms = RMSNorm(8)
+    eye = torch.eye(2).view(2, 2, 1).expand(2, 2, 8)
+    torch.testing.assert_close(rms.weight.data, eye.contiguous())
+    # Unit power at init, exactly like the affine-free path.
+    x = torch.randn(64, 8, dtype=torch.cfloat) * 3
+    power = rms(x).abs().pow(2).mean(dim=-1)
+    torch.testing.assert_close(power, torch.ones_like(power), atol=0.01, rtol=0.01)
+
+
+def test_rmsnorm_matches_torch_rmsnorm_at_init_on_real_input():
+    """At init, agrees with torch.nn.RMSNorm on a real-valued cfloat input."""
+    rms = RMSNorm(8, eps=1e-6)
+    ref = torch.nn.RMSNorm(8, eps=1e-6)
+    x = torch.randn(4, 8)
+    out = rms(x.to(torch.cfloat))
+    # Real input has |z|^2 = x^2, so both compute x / sqrt(mean(x^2) + eps).
+    torch.testing.assert_close(out.real, ref(x))
+    torch.testing.assert_close(out.imag, torch.zeros_like(x))

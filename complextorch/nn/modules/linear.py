@@ -4,10 +4,12 @@ from typing import ClassVar
 import torch
 import torch.nn as nn
 
+from complextorch.nn._parameters import _WrappedWeightBiasMixin
+
 __all__ = ["Bilinear", "Linear"]
 
 
-class Linear(nn.Module):
+class Linear(_WrappedWeightBiasMixin, nn.Module):
     r"""
     Complex-Valued Linear using PyTorch
     -----------------------------------
@@ -18,7 +20,15 @@ class Linear(nn.Module):
 
         - See :mod:`complextorch.nn.gauss` for the hand-rolled real/imag-split
           variant using Gauss' trick (kept as a reference implementation).
+
+        - ``weight`` / ``bias`` expose the wrapped module's complex parameters
+          directly (storage-shared); assigning an :class:`~torch.nn.Parameter`
+          rebinds it exactly as on the raw ``torch.nn`` layer (unlike the
+          Gauss-trick variant, whose setters copy into the split real/imag
+          halves).
     """
+
+    _wrapped_attr = "linear"
 
     def __init__(
         self,

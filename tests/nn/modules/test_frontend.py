@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import pytest
 import torch
 import torch.nn as nn
 
@@ -105,6 +106,20 @@ def test_gabor_grad_flows_into_params():
 
 def test_gabor_extra_repr():
     assert "out_channels=8" in ComplexGaborConv1d(2, 8, 15).extra_repr()
+
+
+def test_gabor_wrong_channel_count_raises():
+    """Regression: in_channels used to be decorative after the channel-sum
+    rewrite — any channel count was silently accepted."""
+    conv = ComplexGaborConv1d(2, 8, kernel_size=15, padding=7)
+    with pytest.raises(ValueError, match="expected 2 input channels, got 3"):
+        conv(torch.randn(1, 3, 64, dtype=torch.cfloat))
+
+
+def test_morlet_wrong_channel_count_raises():
+    conv = MorletConv1d(2, 4, kernel_size=9, padding=4)
+    with pytest.raises(ValueError, match="expected 2 input channels"):
+        conv(torch.randn(1, 1, 32, dtype=torch.cfloat))
 
 
 def test_morlet_kernels_are_zero_mean():
